@@ -277,9 +277,9 @@ export function renderGeoJSONLayers() {
         const data = getMunicipalityData(feature.properties.code, feature.properties.name);
         return {
             fillColor: getStatusColor(data.status),
-            weight: 1.2,
-            opacity: 0.85,
-            color: 'rgba(255, 255, 255, 0.45)',
+            weight: 0.6,
+            opacity: 0.7,
+            color: 'rgba(255, 255, 255, 0.35)',
             fillOpacity: 0.35
         };
     }
