@@ -2587,6 +2587,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const settingsPasswordFields = document.getElementById("settings-password-fields");
         const btnSettingsChangePassword = document.getElementById("btn-settings-change-password");
         const btnSettingsPasswordText = document.getElementById("btn-settings-password-text");
+        const btnSettingsPasswordSubmit = document.getElementById("btn-settings-password-submit");
 
         const themeLightBtn = document.getElementById("theme-light-btn");
         const themeDarkBtn = document.getElementById("theme-dark-btn");
@@ -2743,6 +2744,55 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        // Secure separate Password Submit click event
+        if (btnSettingsPasswordSubmit) {
+            btnSettingsPasswordSubmit.addEventListener("click", () => {
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (!session) return; // ignore guest clicks
+
+                const currentVal = settingsPasswordCurrent.value;
+                const passVal = settingsPassword.value;
+                const confVal = settingsPasswordConfirm.value;
+
+                if (!currentVal || !passVal || !confVal) {
+                    alert("현재 비밀번호, 새 비밀번호, 확인 입력창을 모두 채워주세요.");
+                    return;
+                }
+
+                // Verify typed current password matches account password in DB
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const userIndex = users.findIndex(u => u.email === session.email);
+                if (userIndex === -1 || users[userIndex].password !== currentVal) {
+                    alert("입력하신 현재 비밀번호가 일치하지 않습니다.");
+                    return;
+                }
+
+                if (passVal !== confVal) {
+                    alert("입력하신 새 비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
+                    return;
+                }
+
+                if (passVal.length < 6) {
+                    alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+                    return;
+                }
+
+                // Update Database entry
+                users[userIndex].password = passVal;
+                localStorage.setItem("roothome_users", JSON.stringify(users));
+
+                // Clean fields and fold drawer
+                if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+                if (settingsPassword) settingsPassword.value = "";
+                if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
+                if (settingsPasswordFields) settingsPasswordFields.classList.add("hidden");
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+
+                alert("비밀번호가 성공적으로 변경되었습니다!");
+                // Note: No closeSettings() here! Modal remains wide open exactly as requested!
+            });
+        }
+
         // Settings Form Submission
         if (settingsForm) {
             settingsForm.addEventListener("submit", (e) => {
@@ -2760,40 +2810,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
 
-                    // Secure password validation flow
-                    let updatedPassword = "";
-                    const isPasswordChangeActive = !settingsPasswordFields.classList.contains("hidden");
-                    if (isPasswordChangeActive) {
-                        const currentVal = settingsPasswordCurrent.value;
-                        const passVal = settingsPassword.value;
-                        const confVal = settingsPasswordConfirm.value;
-
-                        if (!currentVal || !passVal || !confVal) {
-                            alert("현재 비밀번호, 새 비밀번호, 확인 입력창을 모두 채워주세요.");
-                            return;
-                        }
-
-                        // Verify typed current password matches account password in DB
-                        const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
-                        const user = users.find(u => u.email === session.email);
-                        if (!user || user.password !== currentVal) {
-                            alert("입력하신 현재 비밀번호가 일치하지 않습니다.");
-                            return;
-                        }
-
-                        if (passVal !== confVal) {
-                            alert("입력하신 새 비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
-                            return;
-                        }
-
-                        if (passVal.length < 6) {
-                            alert("비밀번호는 최소 6자리 이상이어야 합니다.");
-                            return;
-                        }
-
-                        updatedPassword = passVal;
-                    }
-
                     const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
                     
                     // Check if new email is already taken by someone else
@@ -2809,9 +2825,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Update Database entry
                         users[userIndex].name = name;
                         users[userIndex].email = email;
-                        if (updatedPassword) {
-                            users[userIndex].password = updatedPassword;
-                        }
                         users[userIndex].hometown = hometown;
                         users[userIndex].residence = residence;
                         localStorage.setItem("roothome_users", JSON.stringify(users));
