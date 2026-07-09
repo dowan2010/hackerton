@@ -437,9 +437,9 @@ export function resetNavigator() {
     const setNavStatusText = window.setNavStatusText || console.log;
     setNavStatusText("지도를 클릭해 출발지를 선택하세요.");
 
-    // Remove route widget from legend card if it exists
-    const widget = document.getElementById("nav-route-eta-widget");
-    if (widget) widget.remove();
+    // 왼쪽 하단 안전경로 안내 HUD 숨김 처리
+    const routeWidget = document.getElementById("map-route-widget");
+    if (routeWidget) routeWidget.classList.add("hidden");
 }
 
 function pointInPolygonRing(lat, lng, ring) {
@@ -660,37 +660,26 @@ export async function drawSafeRoute(start, end) {
 }
 
 function updateRouteWidgetUI(dist, eta, status) {
-    const legendCard = document.getElementById("map-legend-card");
-    if (!legendCard) return;
+    const routeWidget = document.getElementById("map-route-widget");
+    if (!routeWidget) return;
 
-    let widget = document.getElementById("nav-route-eta-widget");
-    if (!widget) {
-        widget = document.createElement("div");
-        widget.id = "nav-route-eta-widget";
-        widget.style.marginTop = "12px";
-        widget.style.padding = "12px";
-        widget.style.background = "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)";
-        widget.style.border = "1px solid rgba(255, 255, 255, 0.1)";
-        widget.style.borderRadius = "10px";
-        widget.style.animation = "slideUpFadeIn 0.4s ease";
-        legendCard.appendChild(widget);
+    const etaVal = document.getElementById("route-eta-val");
+    const distVal = document.getElementById("route-dist-val");
+    const bypassStatus = document.getElementById("route-bypass-status");
+
+    if (etaVal) etaVal.textContent = eta;
+    if (distVal) distVal.textContent = dist;
+    if (bypassStatus) {
+        if (status.includes("우회")) {
+            bypassStatus.innerHTML = "🟠 안전 우회로 작동중";
+            bypassStatus.style.color = "#EA580C";
+        } else {
+            bypassStatus.innerHTML = "🟢 안전 경로 작동중";
+            bypassStatus.style.color = "#16A34A";
+        }
     }
 
-    widget.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-            <span style="font-size: 11px; font-weight: 700; color: #94A3B8; letter-spacing: 0.5px;">기후피난 안전경로 안내</span>
-            <span style="font-size: 10px; font-weight: 800; background: ${status.includes("우회") ? "rgba(234, 88, 12, 0.2)" : "rgba(37, 99, 235, 0.2)"}; color: ${status.includes("우회") ? "#FB923C" : "#60A5FA"}; padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">${status}</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 14px;">
-            <div>
-                <span style="font-size: 10px; color: #64748B; display: block;">예상 소요 시간</span>
-                <span style="font-size: 16px; font-weight: 800; color: #F8FAFC;">${eta}</span>
-            </div>
-            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.1);"></div>
-            <div>
-                <span style="font-size: 10px; color: #64748B; display: block;">실주행 거리</span>
-                <span style="font-size: 16px; font-weight: 800; color: #F8FAFC;">${dist}</span>
-            </div>
-        </div>
-    `;
+    // 왼쪽 하단에 스르륵 투명 등장
+    routeWidget.classList.remove("hidden");
+    routeWidget.style.animation = "slideUpFadeIn 0.3s ease";
 }

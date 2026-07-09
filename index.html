@@ -156,6 +156,32 @@
                                     </div>
                                 </div>
 
+                                <!-- [NEW] 기후피난 안전경로 안내 HUD (구역 환경 상태처럼 왼쪽 하단에 단독 정박하는 HUD) -->
+                                <div class="map-legend-card hidden" id="map-route-widget" style="position: absolute; top: auto; bottom: 20px; left: 20px; width: 220px; border-left: 4px solid var(--color-primary); z-index: 10; background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+                                    <div class="legend-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <h4 class="legend-title" style="margin: 0; color: var(--color-primary-dark); display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;">
+                                                🧭 안전경로 안내
+                                            </h4>
+                                            <p class="legend-subtitle" style="margin: 0; margin-top: 2px; font-size: 11px; color: var(--color-text-muted);">OSRM 실제도로 실시간 탐색</p>
+                                        </div>
+                                    </div>
+                                    <div class="legend-body" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 11px; color: var(--color-text-muted);">예상 도착 시간 (ETA)</span>
+                                            <span id="route-eta-val" style="font-size: 13px; font-weight: 800; color: #DC2626;">-</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 11px; color: var(--color-text-muted);">실주행 거리</span>
+                                            <span id="route-dist-val" style="font-size: 12px; font-weight: 700; color: var(--color-text-main);">-</span>
+                                        </div>
+                                        <div class="legend-divider" style="margin: 6px 0; border-top: 1px solid var(--color-sidebar-border);"></div>
+                                        <div id="route-bypass-status" style="font-size: 11px; color: #16A34A; display: flex; align-items: center; gap: 4px; font-weight: 500;">
+                                            🟢 안전 우회로 작동중
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="grid-detail-popup">
                                     <div class="popup-icon-wrapper"><i data-lucide="map-pin"></i></div>
                                     <div class="popup-content">
