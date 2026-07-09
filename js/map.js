@@ -153,14 +153,21 @@ function getRegionFoodBias(code) {
 }
 
 export function getMunicipalityData(code, name) {
-    // timelinePercentage: 0=2016(오염), 0.5=현재, 1=2036(회복)
+    // timelinePercentage: 0=예보 초기 단계(2050), 0.5=부분 안정화(2070), 1=전면 자유귀향(2090)
     const t = window.timelinePercentage != null ? window.timelinePercentage : 0.5;
     const timelineBonus = (t - 0.5) * 60; // -30 ~ +30
+    const isEarlyStage = t <= 0.08; // 예보 초기 단계: 안정화 구역 없음, 예약가능도 극소수
 
     const zone = findZoneByCode(code);
     if (zone) {
-        const adjusted = Math.max(0, Math.min(100, zone.recovery_rate + timelineBonus));
-        const status = adjusted >= 82 ? "귀향시작" : adjusted >= 55 ? "예약가능" : "봉쇄";
+        let adjusted = Math.max(0, Math.min(100, zone.recovery_rate + timelineBonus));
+        let status;
+        if (isEarlyStage) {
+            adjusted = Math.min(adjusted, 78); // 귀향시작(82+) 도달 불가
+            status = adjusted >= 74 ? "예약가능" : "봉쇄"; // 최상위 구역만 예약가능
+        } else {
+            status = adjusted >= 82 ? "귀향시작" : adjusted >= 55 ? "예약가능" : "봉쇄";
+        }
         return {
             name: zone.zone_name.split(" - ")[1] || zone.zone_name,
             recovery_rate: Math.round(adjusted * 10) / 10,
@@ -179,11 +186,16 @@ export function getMunicipalityData(code, name) {
     const bias = getRegionFoodBias(code);
     const warmingDegrees = window.warmingDegrees || 0.0;
     const warmingPenalty = warmingDegrees * 12;
-    const recovery = Math.max(5, Math.min(98, Math.round((30 + randVal * 68 + bias - warmingPenalty + timelineBonus) * 10) / 10));
+    let recovery = Math.max(5, Math.min(98, Math.round((30 + randVal * 68 + bias - warmingPenalty + timelineBonus) * 10) / 10));
     let status;
-    if (recovery >= 82) status = "귀향시작";
-    else if (recovery >= 55) status = "예약가능";
-    else status = "봉쇄";
+    if (isEarlyStage) {
+        recovery = Math.min(recovery, 78);
+        status = recovery >= 74 ? "예약가능" : "봉쇄";
+    } else {
+        if (recovery >= 82) status = "귀향시작";
+        else if (recovery >= 55) status = "예약가능";
+        else status = "봉쇄";
+    }
     return { name: name, recovery_rate: recovery, status: status, zone: null, isKeyZone: false };
 }
 
