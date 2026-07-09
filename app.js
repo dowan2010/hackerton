@@ -46,6 +46,270 @@ document.addEventListener("DOMContentLoaded", () => {
         el.textContent = Math.max(0, Math.round((1 - timelinePercentage) * totalDays));
     }
 
+    // --- 2.5 Dynamic City Analysis Data ---
+    const cityAnalysisData = {
+        "KR-SL-01": { // 서울
+            name: "서울 특별시",
+            status: "안전함 (귀향 시작)",
+            statusClass: "safe",
+            summary: "서울 특별시 강남구 에코돔은 전후방식의 밀폐형 초고효율 자정 시스템을 탑재하여 미세먼지와 황사, 탄소를 전면 격리하고 있습니다. 극단적 이상 고온에서도 냉각 돔 인프라가 가동되어 거주민 안전도가 99%를 상회합니다.",
+            metrics: {
+                air: { val: "99/100", pct: 99, label: "최우수 등급 대기", desc: "초미세 정밀 집진 필터링 작동 중" },
+                soil: { val: "0.2 ppm", pct: 98, label: "중금속 제로 수준", desc: "인공 유기 유실 방지 조림 매트 구축" },
+                veg: { val: "0.90 NDVI", pct: 90, label: "울창한 실내 삼림 지수", desc: "돔 내부 자동 광합성 LED 그리드 작동" }
+            },
+            reasons: [
+                "<strong>인공 기후 통제 돔(Eco-Dome) 완비:</strong> 외부 황사와 산성비로부터 도심 전체를 기밀 밀폐 격리하여 대기질 지수(AQI)를 연중 99/100의 무오염 상태로 유지합니다.",
+                "<strong>자립형 수자원 인공 정화 루프:</strong> 하수 및 우수를 100% 회수하여 자체 삼중 여과 및 오존 멸균을 거친 산소 용존 청정수로 재공급합니다.",
+                "<strong>귀향 적합 판정 완료:</strong> 국가 기후복원위원회 심사 결과 거주 및 복귀 적합도 99.2% 판정을 받아, 기후 실향민 중 1급 시민에 한정하여 귀향 개시를 허가했습니다."
+            ]
+        },
+        "KR-BS-01": { // 부산
+            name: "부산 광역시",
+            status: "봉쇄 (진입 차단)",
+            statusClass: "blocked",
+            summary: "해수 상승으로 인한 영도 및 남구 저지대 침수 충격과 낙동강 수계 인접 항만 배후의 누적 오염이 해결되지 않은 심각한 오염 구역입니다. 임시 대피 캠프 수준으로 인명 안전성이 확보되지 않았습니다.",
+            metrics: {
+                air: { val: "55/100", pct: 55, label: "기후 황사 취약 등급", desc: "해양 염무 및 공장 매연 유입 지속" },
+                soil: { val: "68.0 ppm", pct: 32, label: "중금속 오염 기준치 초과", desc: "낙동강 화학 폐수 침전 및 유적" },
+                veg: { val: "0.28 NDVI", pct: 28, label: "해수 침식 조림 지수 불량", desc: "염수 역류로 식생 고사 진행 중" }
+            },
+            reasons: [
+                "<strong>해수 상승 및 침수 취약성:</strong> 기후 변화로 해수면이 상승하여 만조 및 해일 발생 시 수용소 하부 필터 시설이 완전 침수되는 물리적 붕괴 리스크가 상존합니다.",
+                "<strong>잔류 공장 중금속 토양 오염(68.0 ppm):</strong> 과거 가동되던 항만 및 배후 사하구 화학공장의 산업 폐수가 해안가 토양층 깊숙이 고착되어 중금속 및 다이옥신 독성이 계속 검출됩니다.",
+                "<strong>생활 인프라 붕괴에 따른 차단 조치:</strong> 청정 상수도 배관 부식 및 고장 빈도가 높고, 만성 오염수가 하구로 유입되어 기후 복구 안전성 기준치(복구율 52.9%)에 미달함에 따라 일반 거주민 진입을 전면 차단하고 있습니다."
+            ]
+        },
+        "KR-DG-01": { // 대구
+            name: "대구 광역시",
+            status: "봉쇄 (진입 차단)",
+            statusClass: "blocked",
+            summary: "대구 분지의 온난 기후 가속과 유해 먼지 가스 정체 현상으로 인한 열섬 충격이 극대화된 상태입니다. 옛 섬유공장 가동 부지 배후의 토착 중금속 독성이 정밀 정화 단계를 거치고 있습니다.",
+            metrics: {
+                air: { val: "52/100", pct: 52, label: "분지 가스 정체 등급", desc: "대기 대류 억제로 초미세먼지 누적" },
+                soil: { val: "74.0 ppm", pct: 26, label: "섬유 염색 폐수 중금속 잔류", desc: "비정정 침출수 지하 오염 유입" },
+                veg: { val: "0.20 NDVI", pct: 20, label: "사막화 진행 식생 지수", desc: "분지열로 인한 지표 수분 증발 급증" }
+            },
+            reasons: [
+                "<strong>분지 지형의 기온 열섬 가속:</strong> 산으로 둘러싸인 분지형 사막화 현상으로 외부 공기 순환이 완전 단절되어, 임시 피난 캠프 상공에 고농도 열섬 가스가 영구 체류하고 있습니다.",
+                "<strong>유해 섬유 오염물질 잔류(74.0 ppm):</strong> 유색 염색 공장이 존재했던 서구 일대 지하 토양층의 크롬 및 유독성 납 오염 수치가 정화 임계치 대비 3배 이상 초과 검출됩니다.",
+                "<strong>자정 복구율 임계치 미달:</strong> 냉각 식물 및 수막 차단 벽 복구 진행율이 51.5% 수준에 그쳐 안전성을 확보할 수 없으므로, 집중 정화 심사를 기점으로 전면 출입 차단 명령이 발령 중입니다."
+            ]
+        },
+        "KR-IC-01": { // 인천
+            name: "인천 광역시",
+            status: "봉쇄 (진입 차단)",
+            statusClass: "blocked",
+            summary: "남동공단 배후 수용소의 만성 미세 유독 가스와 미세 가루 먼지가 호흡기 임계치를 영구 위협하는 그레이 존입니다. 복구 설비 노후화로 유입된 화학 먼지층 정화가 정체되고 있습니다.",
+            metrics: {
+                air: { val: "48/100", pct: 48, label: "유해 가스 배출 주의보", desc: "공단 잔류 정밀 금속 분진 검출" },
+                soil: { val: "72.0 ppm", pct: 28, label: "공장 폐수 중합 오염 수치", desc: "수은 및 카드뮴 성분 토착 누적" },
+                veg: { val: "0.25 NDVI", pct: 25, label: "산성 먼지 피해 식생", desc: "산성 대기로 인한 조림 유실 발생" }
+            },
+            reasons: [
+                "<strong>배후 공단 미세 금속 분진 체류:</strong> 수십 년간 가동된 산업 단지의 미세 분진과 화학 산성 황사가 수용 캠프 전체를 위협하여 호흡기 안전도 지수(48.0)가 매우 낮습니다.",
+                "<strong>카드뮴/수은 중합 독성 검출(72.0 ppm):</strong> 남동 배후 평야 지대의 지층수에서 심각한 카드뮴 중독 리스크가 지속 식별되어 정착 농업이나 식수 개발이 전면 금지되어 있습니다.",
+                "<strong>환경 설비 미완성:</strong> 유입 대기 차단 스크러버와 중금속 이온 자정 가속기 조성이 55.4% 복구에 정체되어, 영유아 및 난민 노약자의 안전을 고려해 전면 진입 봉쇄 조치되어 있습니다."
+            ]
+        },
+        "KR-GJ-01": { // 광주
+            name: "광주 광역시",
+            status: "안전함 (귀향 시작)",
+            statusClass: "safe",
+            summary: "광주 AI제어단지는 실시간 독성 데이터 모니터링 시스템과 지능형 에코 가동망을 갖춘 청정 구역입니다. 호남 광역 전력망을 기반으로 자정 루프가 원활히 작동하며 복구 수준이 우수합니다.",
+            metrics: {
+                air: { val: "95/100", pct: 95, label: "청정 공기 정화 가동", desc: "스마트 환기 가로수 그리드 통제" },
+                soil: { val: "2.8 ppm", pct: 92, label: "유해 독성 제거 안전", desc: "미생물 분해 제어 작업 92% 완수" },
+                veg: { val: "0.82 NDVI", pct: 82, label: "조밀한 인공 식생림", desc: "고에너지 광합성 촉진제 자동 배포" }
+            },
+            reasons: [
+                "<strong>독성 정밀 분석 AI 탑재:</strong> 실시간 기후 위협 요인을 예측 차단하는 첨단 AI 관제 센터가 구동되어 공기질 지수를 최상급(95.0)으로 자율 케어하고 있습니다.",
+                "<strong>바이오 정밀 여과 미생물망:</strong> 하천 배후지와 토양층에 인공 미생물 군집을 증식시켜 토양 유해 중금속 오염을 2.8 ppm까지 말끔히 해소시켰습니다.",
+                "<strong>귀향 개시 안전 기준 통과:</strong> 식생 NDVI 지수 0.82와 실시간 대기 자율 정화 가동 신뢰도가 94%를 넘어서 주거 적합 판정을 승인받고, 최첨단 정착 거점으로 운영되고 있습니다."
+            ]
+        },
+        "KR-DJ-01": { // 대전
+            name: "대전 광역시",
+            status: "안전함 (귀향 시작)",
+            statusClass: "safe",
+            summary: "대전 유성구 연구단지는 대덕 연구소의 최신 기후 복원 원천 기술 시험 가용 돔 구역입니다. 대기 수자원 정밀 필터 패널이 우수 가동되어 복구율이 극히 양호합니다.",
+            metrics: {
+                air: { val: "97/100", pct: 97, label: "국가 안전 기포 돔 작동", desc: "특허 대기 흡착 필터 매주 교체" },
+                soil: { val: "1.0 ppm", pct: 95, label: "유기 화학 정화 마감", desc: "대덕 나노 자정 파우더 살포 완료" },
+                veg: { val: "0.88 NDVI", pct: 88, label: "나노 식물 성장 지수 우수", desc: "기후 저항 유전자 변형 나무 조림" }
+            },
+            reasons: [
+                "<strong>기술집약적 첨단 필터 인프라:</strong> 연구단지 상단 연구용 밀폐 필터 캐노피가 대공 분진과 황사를 97% 이상 물리 흡착하여 완벽한 호기 환경을 보장합니다.",
+                "<strong>나노 정밀 토양 복제 가습:</strong> 토양 잔류 중금속 흡착 나노 입자를 지속 분사하여 지하 오염 농도를 1.0 ppm 이하로 급격히 해소하고 생태 토대를 다졌습니다.",
+                "<strong>종합 안전 진단 통과:</strong> 회복율 98.5% 달성으로 기후 위기로부터 완벽히 분리된 안전 지대로 판정받아, 국가 연구 거주단지 귀향 프로그램을 가동하고 있습니다."
+            ]
+        },
+        "KR-US-01": { // 울산
+            name: "울산 광역시",
+            status: "봉쇄 (진입 차단)",
+            statusClass: "blocked",
+            summary: "석유 화학 콤비나트 배후 단지의 황산화물 및 발암 오염 물질이 지표면에 극심하게 누적되어 정화에 장기 조림 자원이 집중 요구되는 대표적인 기후 위험 공업 구역입니다.",
+            metrics: {
+                air: { val: "42/100", pct: 42, label: "석유 화학 가스 경보", desc: "산성 대기 오염 가스 분진 수시 유입" },
+                soil: { val: "78.0 ppm", pct: 22, label: "초유독 중금속 오염 극심", desc: "벤젠 및 고농도 황화 잔재물 침전" },
+                veg: { val: "0.18 NDVI", pct: 18, label: "고사 직전 황폐 토착림", desc: "화학 독성으로 식물 성장 제한" }
+            },
+            reasons: [
+                "<strong>고농도 발암 잔재 가스 정체:</strong> 화학 공장 배후 기슭에 대기 흡착막 설비가 부족하여 유해 매연 분진 지수가 42.0으로 호흡기 질환 리스크가 극히 높습니다.",
+                "<strong>지하 오염수 벤젠 오염 검출(78.0 ppm):</strong> 옛 중화학 설비 균열로 인해 누출된 유독성 타르 화학 물질이 심층 토양까지 도포되어, 복원 안전 수치에 절대적 장애 요인이 되고 있습니다.",
+                "<strong>정착 안전 심사 장기 유보:</strong> 식생 및 기후 복구율이 50.1%로 7대 핵심 지원 도시 중 가장 부진하며, 고농도 화학 대기의 유입으로 난민 보호를 위한 진입 금지 및 차단 등급이 유지되고 있습니다."
+            ]
+        }
+    };
+
+    window.updateCityAnalysis = function(zoneId) {
+        const predPanel = document.getElementById("subtab-prediction");
+        if (!predPanel) return;
+
+        const zone = window.zonesData.find(z => z.zone_id === zoneId);
+        if (!zone) return;
+
+        const isSupported = cityAnalysisData[zoneId] != null;
+
+        if (isSupported) {
+            const data = cityAnalysisData[zoneId];
+            predPanel.innerHTML = `
+                <!-- Dynamic City Summary Banner -->
+                <div class="dignity-card" style="background: var(--color-sidebar-bg); border: 1px solid var(--color-sidebar-border); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                    <div class="panel-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div class="panel-title-group" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <h2 class="panel-section-title" style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: var(--color-text-main); margin: 0;">\${data.name} 종합 도시 분석</h2>
+                            <span class="status-badge-premium status-\${data.statusClass}">
+                                \${data.status}
+                            </span>
+                        </div>
+                        <span class="badge-live"><span class="dot"></span> 정밀 모델링 연동</span>
+                    </div>
+                    <p style="font-size: 14px; color: var(--color-text-main); line-height: 1.6; margin-top: 12px; margin-bottom: 0; opacity: 0.9;">
+                        \${data.summary}
+                    </p>
+                </div>
+
+                <!-- 2-Column Responsive Dashboard -->
+                <div class="prediction-dashboard-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
+                    
+                    <!-- Left Column: Status Judge Reasons -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="metric-card" style="margin: 0; background: var(--color-sidebar-bg); border: 1px solid var(--color-sidebar-border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; height: 100%;">
+                            <h3 class="card-title" style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="shield-alert" style="color: var(--color-primary-dark);"></i> 등급 및 환경 상태 판정 근거
+                            </h3>
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 18px;">
+                                \${data.reasons.map(reason => `
+                                    <li style="font-size: 14px; color: var(--color-text-main); line-height: 1.6; display: flex; gap: 12px; align-items: flex-start;">
+                                        <i data-lucide="info" style="color: var(--color-primary-dark); width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                                        <span>\${reason}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Environmental metrics -->
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
+                        <div class="metric-card" style="margin: 0; background: var(--color-sidebar-bg); border: 1px solid var(--color-sidebar-border); border-radius: 16px; padding: 24px;">
+                            <h3 class="card-title" style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="sliders" style="color: var(--color-primary-dark);"></i> 핵심 환경 모니터링 지수
+                            </h3>
+                            
+                            <!-- AQI Progress -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 14px; font-weight: 600; color: var(--color-text-main);">대기질 품질 지수 (AQI)</span>
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">\${data.metrics.air.val}</span>
+                                </div>
+                                <div class="progress-bar-bg" style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 10px; width: 100%; overflow: hidden;">
+                                    <div class="progress-bar-fill" style="width: \${data.metrics.air.pct}%; background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: 0.8; color: var(--color-text-main);">
+                                    <span>\${data.metrics.air.label}</span>
+                                    <span>\${data.metrics.air.desc}</span>
+                                </div>
+                            </div>
+
+                            <!-- Soil Progress -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 14px; font-weight: 600; color: var(--color-text-main);">토양 복구 및 자정력</span>
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">\${data.metrics.soil.val}</span>
+                                </div>
+                                <div class="progress-bar-bg" style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 10px; width: 100%; overflow: hidden;">
+                                    <div class="progress-bar-fill" style="width: \${data.metrics.soil.pct}%; background: linear-gradient(90deg, #10b981, #34d399); height: 100%;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: 0.8; color: var(--color-text-main);">
+                                    <span>\${data.metrics.soil.label}</span>
+                                    <span>\${data.metrics.soil.desc}</span>
+                                </div>
+                            </div>
+
+                            <!-- Vegetation NDVI Progress -->
+                            <div style="margin-bottom: 8px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 14px; font-weight: 600; color: var(--color-text-main);">인공 식생림 밀집도 (NDVI)</span>
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">\${data.metrics.veg.val}</span>
+                                </div>
+                                <div class="progress-bar-bg" style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 10px; width: 100%; overflow: hidden;">
+                                    <div class="progress-bar-fill" style="width: \${data.metrics.veg.pct}%; background: linear-gradient(90deg, #eab308, #fbbf24); height: 100%;"></div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: 0.8; color: var(--color-text-main);">
+                                    <span>\${data.metrics.veg.label}</span>
+                                    <span>\${data.metrics.veg.desc}</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        } else {
+            const supportedCityButtons = Object.keys(cityAnalysisData).map(cid => {
+                const city = cityAnalysisData[cid];
+                let statusBadge = "🟢";
+                if (city.statusClass === "blocked") statusBadge = "🔴";
+                return `
+                    <button class="city-quick-btn" onclick="window.selectZone('\${cid}')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--color-sidebar-border); color: var(--color-text-main); font-weight: 600; padding: 10px 16px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: all 0.2s ease;">
+                        <span>\${statusBadge} \${city.name}</span>
+                        <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                    </button>
+                `;
+            }).join('');
+
+            predPanel.innerHTML = `
+                <div class="dignity-card" style="background: var(--color-sidebar-bg); border: 1px solid var(--color-sidebar-border); border-radius: 20px; padding: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 380px; backdrop-filter: blur(10px);">
+                    <div style="background: rgba(239, 68, 68, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                        <i data-lucide="shield-alert" style="color: #ef4444; width: 32px; height: 32px;"></i>
+                    </div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; color: var(--color-text-main); margin: 0 0 12px 0;">
+                        ⚠️ 아직 지원하지 않는 도시입니다
+                    </h2>
+                    <p style="font-size: 14px; color: var(--color-text-main); opacity: 0.8; max-width: 520px; line-height: 1.6; margin: 0 0 32px 0;">
+                        현재 선택된 <strong>[\${zone.zone_name.split(" - ")[1] || zone.zone_name}]</strong> 지역은 실시간 정밀 복구 분석 및 기후 귀향 정보 지원 대상이 아닙니다.
+                        루트홈 환경 시스템은 국가 핵심 7대 정착 도시만을 대상으로 정화 타임라인 및 거주 안정성 보고서를 독점 제공하고 있습니다.
+                    </p>
+                    
+                    <div style="width: 100%; border-top: 1px solid var(--color-sidebar-border); padding-top: 24px;">
+                        <h4 style="font-size: 13px; color: var(--color-text-main); opacity: 0.6; text-transform: uppercase; margin: 0 0 16px 0; font-weight: 700; letter-spacing: 0.5px;">
+                            핵심 7대 정착 도시 바로가기
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                            \${supportedCityButtons}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    };
+
     // --- 3. SELECTION & DETAILED STATS SYNCHRONIZER ---
     window.selectZone = function(zoneId) {
         window.selectedZoneId = zoneId;
@@ -113,6 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateCountdownDisplay();
         syncTimelineForZone(zoneId);
+        window.updateCityAnalysis(zoneId);
     };
 
     // --- 4. Predictive Machine Learning API Integration ---
