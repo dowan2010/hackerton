@@ -9,10 +9,17 @@
 
 ---
 
-## 🔒 중요 환경 변수 (.env) 안내
+## 🔑 중요 환경 변수 (.env) 및 API 키 안내
+
+로컬 개발 및 즉석 연동 심사를 위해 다음 키 설정을 사용해 `/backend/.env` 파일을 작성해 주시기 바랍니다.
+
+```env
+GEMINI_API_KEY=AQ.Ab8RN6LmgW0Un5kC0etMNfjCip5CZknC-qZ91Bn1EGLZK5iTDQ
+GOOGLE_MAPS_API_KEY=AIzaSyClHN9iALIhrdknJrF41PLvjttsLU4LqQQ
+```
 
 > [!IMPORTANT]
-> 로컬 테스트 및 실배포용 `.env` 설정 세부 정보(Gemini API Key, Google Maps API Key 등)는 **김도완**에게 직접 요청해 주시기 바랍니다.
+> 본 키 정보는 대구소프트웨어마이스터고 해커톤 심사 및 수동 테스트를 위한 공용 시연 키입니다. 외부 공용 커뮤니티로의 유출은 유의해 주시기 바랍니다.
 
 ---
 
