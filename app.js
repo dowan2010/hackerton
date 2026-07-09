@@ -909,6 +909,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isActivating) {
             window.syncActiveTab("rootmap", "desktop");
+            const realtimeBtn = document.querySelector("#header-nav-rootmap .nav-tab");
+            if (realtimeBtn && !realtimeBtn.classList.contains("active")) realtimeBtn.click();
             btn.classList.add("active");
             if (btnLabel) btnLabel.textContent = "내비게이터 종료";
             panel.classList.remove("hidden");
