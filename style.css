@@ -3525,7 +3525,8 @@ body.dark-theme .auth-modal-card,
 body.dark-theme .mobile-header,
 body.dark-theme .timeline-search-section,
 body.dark-theme .timeline-feed-card,
-body.dark-theme .mobile-nav-bar {
+body.dark-theme .mobile-nav-bar,
+body.dark-theme .metric-card {
     background-color: #1E293B !important;
     color: #F1F5F9 !important;
     border-color: #334155 !important;
@@ -3609,6 +3610,11 @@ body.dark-theme .global-search-input {
     background-color: #0F172A !important;
     border-color: #334155 !important;
     color: #F1F5F9 !important;
+}
+body.dark-theme .auth-input:focus,
+body.dark-theme .global-search-input:focus {
+    background-color: #0F172A !important;
+    border-color: #3B82F6 !important;
 }
 
 /* Mobile active tab overrides */
@@ -3811,6 +3817,118 @@ body.dark-theme .policy-article-icon {
 }
 body.dark-theme .policy-article-content {
     color: #CBD5E1;
+}
+
+/* =============================================================
+ * PREMIUM DARK MODE CONTRAST AND LEAFLET ACCESSIBILITY FIXES
+ * ============================================================= */
+
+/* 1. Leaflet Tooltip Dark Theme Overrides */
+body.dark-theme .leaflet-tooltip {
+    background-color: #1E293B !important; /* Slate 800 */
+    color: #F1F5F9 !important; /* Slate 100 */
+    border: 1px solid #334155 !important; /* Slate 700 */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    font-family: 'Inter', 'Outfit', sans-serif !important;
+}
+
+body.dark-theme .map-tooltip {
+    color: #F1F5F9 !important;
+    line-height: 1.5 !important;
+}
+
+body.dark-theme .map-tooltip strong {
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+}
+
+body.dark-theme .map-tooltip .badge-accent {
+    color: #60A5FA !important; /* Premium light blue highlight */
+    font-weight: 700 !important;
+}
+
+/* Tooltip border arrows in dark theme */
+body.dark-theme .leaflet-tooltip-left:before {
+    border-left-color: #1E293B !important;
+}
+body.dark-theme .leaflet-tooltip-right:before {
+    border-right-color: #1E293B !important;
+}
+body.dark-theme .leaflet-tooltip-top:before {
+    border-top-color: #1E293B !important;
+}
+body.dark-theme .leaflet-tooltip-bottom:before {
+    border-bottom-color: #1E293B !important;
+}
+
+/* 2. Tooltip status badge styling */
+.map-tooltip .status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 11px;
+}
+.map-tooltip .status-badge.status-red {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+}
+.map-tooltip .status-badge.status-orange {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    color: #f59e0b !important;
+}
+.map-tooltip .status-badge.status-green {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+}
+
+body.dark-theme .map-tooltip .status-badge.status-red {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important; /* Lighter red for high contrast */
+}
+body.dark-theme .map-tooltip .status-badge.status-orange {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #fbbf24 !important; /* Lighter orange/amber */
+}
+body.dark-theme .map-tooltip .status-badge.status-green {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #34d399 !important; /* Lighter green */
+}
+
+/* 3. Leaflet Zoom Controls and attribution in dark theme */
+body.dark-theme .leaflet-bar {
+    border-color: #334155 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+body.dark-theme .leaflet-bar a,
+body.dark-theme .leaflet-bar a:hover {
+    background-color: #1E293B !important;
+    color: #F1F5F9 !important;
+    border-bottom: 1px solid #334155 !important;
+}
+body.dark-theme .leaflet-bar a.leaflet-disabled {
+    background-color: #0F172A !important;
+    color: #475569 !important;
+}
+body.dark-theme .leaflet-control-attribution {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #94A3B8 !important;
+}
+body.dark-theme .leaflet-control-attribution a {
+    color: #3B82F6 !important;
+}
+
+/* 4. AI National Policy Generator Result Box Dark Theme */
+body.dark-theme #national-policy-result-box {
+    background-color: #0F172A !important;
+    border-color: #334155 !important;
+}
+
+/* 5. Progress Bar Backgrounds in dark theme */
+body.dark-theme .progress-bar-bg {
+    background-color: #334155 !important;
 }
 
 
