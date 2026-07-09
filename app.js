@@ -971,43 +971,40 @@ document.addEventListener("DOMContentLoaded", () => {
         // 대한민국 통계청 실제 250개 시·군·구 기초자치단체(도시) 경계 GeoJSON 로드 및 정밀 매핑
         loadMunicipalitiesGeoJSON();
 
-        function findZoneByMuniName(muniName) {
-            if (!muniName) return null;
-            if (muniName.includes("고성")) return zonesData.find(z => z.zone_id === "KR-GW-03") || zonesData[0];
-            if (muniName.includes("속초")) return zonesData.find(z => z.zone_id === "KR-GW-02") || zonesData[1];
-            if (muniName.includes("삼척")) return zonesData.find(z => z.zone_id === "KR-GW-04") || zonesData[2];
-            if (muniName.includes("동해")) return zonesData.find(z => z.zone_id === "KR-GW-05") || zonesData[13];
-            if (muniName.includes("강릉")) return zonesData.find(z => z.zone_id === "KR-GW-06") || zonesData[14];
-            
-            if (muniName.includes("울산") || muniName.includes("남구") || muniName.includes("울주")) return zonesData.find(z => z.zone_id === "KR-GN-01") || zonesData[7];
-            if (muniName.includes("기장") || muniName.includes("부산")) return zonesData.find(z => z.zone_id === "KR-GN-02") || zonesData[8];
-            
-            if (muniName.includes("대구") || muniName.includes("수성")) return zonesData.find(z => z.zone_id === "KR-GB-01") || zonesData[6];
-            if (muniName.includes("울진")) return zonesData.find(z => z.zone_id === "KR-GB-02") || zonesData[9];
-            if (muniName.includes("영덕")) return zonesData.find(z => z.zone_id === "KR-GB-03") || zonesData[10];
-            if (muniName.includes("포항")) return zonesData.find(z => z.zone_id === "KR-GB-04") || zonesData[11];
-            
-            if (muniName.includes("울릉")) return zonesData.find(z => z.zone_id === "KR-UL-01") || zonesData[12];
-            if (muniName.includes("여수")) return zonesData.find(z => z.zone_id === "KR-JN-01") || zonesData[3];
-            if (muniName.includes("제주") || muniName.includes("서귀포")) return zonesData.find(z => z.zone_id === "KR-JJ-01") || zonesData[4];
+        // 통계청 시군구 code(2013 kostat) -> zone_id 직접 매핑. 이름 매칭은 동명 구(남구/북구/서구 등)가
+        // 여러 도시에 겹쳐 존재해 오매칭이 나서, GeoJSON feature의 고유 code로 정확히 매칭한다.
+        const ZONE_CODE_MAP = {
+            "32400": "KR-GW-03", // 강원 고성군
+            "32390": "KR-GW-04", // 강원 인제군
+            "32360": "KR-GW-05", // 강원 철원군
+            "32380": "KR-GW-06", // 강원 양구군
+            "11230": "KR-SL-01", // 서울 강남구
+            "29010": "KR-SJ-01", // 세종시
+            "23050": "KR-IC-01", // 인천 남동구
+            "26020": "KR-US-01", // 울산 남구
+            "21100": "KR-BS-01", // 부산 사하구
+            "31092": "KR-AS-01", // 안산시 단원구
+            "36330": "KR-JN-01", // 구례군 (지리산 대표)
+            "39020": "KR-JJ-01", // 서귀포시 (한라산 대표)
+            "37420": "KR-UJ-01", // 울진군
+            "25040": "KR-DJ-01", // 대전 유성구
+            "24040": "KR-GJ-01", // 광주 북구
+            "22030": "KR-DG-01", // 대구 서구
+            "36020": "KR-YS-01", // 여수시
+            "34380": "KR-TA-01", // 태안군
+            "37430": "KR-DK-01", // 울릉군 (독도)
+            "31013": "KR-SU-01", // 수원시 팔달구
+            "31200": "KR-PJ-01", // 파주시
+            "34012": "KR-CN-02", // 천안시 서북구
+            "33310": "KR-CB-02", // 청원군 (오창)
+            "35012": "KR-JB-02", // 전주시 덕진구
+            "38112": "KR-GN-03"  // 창원시 성산구
+        };
 
-            // 신규 전국 거점 매핑
-            if (muniName.includes("수원")) return zonesData.find(z => z.zone_id === "KR-SU-01");
-            if (muniName.includes("파주")) return zonesData.find(z => z.zone_id === "KR-PJ-01");
-            if (muniName.includes("천안")) return zonesData.find(z => z.zone_id === "KR-CN-02");
-            if (muniName.includes("청주")) return zonesData.find(z => z.zone_id === "KR-CB-02");
-            if (muniName.includes("전주")) return zonesData.find(z => z.zone_id === "KR-JB-02");
-            if (muniName.includes("창원")) return zonesData.find(z => z.zone_id === "KR-GN-03");
-
-            // 신규 글로벌 허브 매핑
-            if (muniName.includes("Tokyo") || muniName.includes("도쿄")) return zonesData.find(z => z.zone_id === "GL-TY-01");
-            if (muniName.includes("New York") || muniName.includes("뉴욕")) return zonesData.find(z => z.zone_id === "GL-NY-01");
-            if (muniName.includes("London") || muniName.includes("런던")) return zonesData.find(z => z.zone_id === "GL-LD-01");
-            if (muniName.includes("Paris") || muniName.includes("파리")) return zonesData.find(z => z.zone_id === "GL-PR-01");
-            if (muniName.includes("Beijing") || muniName.includes("베이징")) return zonesData.find(z => z.zone_id === "GL-BJ-01");
-            if (muniName.includes("Sydney") || muniName.includes("시드니")) return zonesData.find(z => z.zone_id === "GL-SD-01");
-
-            return null; // 우리 관심 재난 영역이 아닌 일반 시군구들은 투명하게 배제하여 도 단위의 혼잡을 영구 도려냄!
+        function findZoneByCode(code) {
+            const zoneId = ZONE_CODE_MAP[code];
+            if (!zoneId) return null;
+            return zonesData.find(z => z.zone_id === zoneId) || null;
         }
 
         async function loadMunicipalitiesGeoJSON() {
@@ -1020,8 +1017,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 // 1) Desktop GeoJSON Layer Injection (시군구 정밀 도시 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const muniName = feature.properties.name;
-                        const zone = findZoneByMuniName(muniName);
+                        const code = feature.properties.code;
+                        const zone = findZoneByCode(code);
                         if (!zone) {
                             return {
                                 color: "transparent",
@@ -1039,11 +1036,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const muniName = feature.properties.name;
-                        const zone = findZoneByMuniName(muniName);
+                        const code = feature.properties.code;
+                        const zone = findZoneByCode(code);
                         if (zone) {
                             desktopMapCircles[zone.zone_id] = layer; // 대리 바인딩!
-                            const popupContent = `<strong>📍 도시 행정구역: ${muniName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
+                            const popupContent = `<strong>📍 ${zone.zone_name}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
                             layer.bindPopup(popupContent);
 
                             layer.on("click", () => {
@@ -1057,8 +1054,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 // 2) Mobile GeoJSON Layer Injection (시군구 정밀 도시 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const muniName = feature.properties.name;
-                        const zone = findZoneByMuniName(muniName);
+                        const code = feature.properties.code;
+                        const zone = findZoneByCode(code);
                         if (!zone) {
                             return {
                                 color: "transparent",
@@ -1076,11 +1073,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const muniName = feature.properties.name;
-                        const zone = findZoneByMuniName(muniName);
+                        const code = feature.properties.code;
+                        const zone = findZoneByCode(code);
                         if (zone) {
                             mobileMapCircles[zone.zone_id] = layer;
-                            const popupContent = `<strong>📍 ${muniName}</strong><br>복구율: ${zone.recovery_rate}%`;
+                            const popupContent = `<strong>📍 ${zone.zone_name}</strong><br>복구율: ${zone.recovery_rate}%`;
                             layer.bindPopup(popupContent);
 
                             layer.on("click", () => {
