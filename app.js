@@ -1204,7 +1204,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (prefix === "35" || prefix === "36") return 18; // 전북·전남
             if (prefix === "37" || prefix === "38") return -15; // 경북·경남
             if (prefix === "31") return -15; // 경기
-            if (prefix === "32") return 22; // 강원 (산림·저밀도 지역이라 자연 자정 속도가 빨라 안전 구역이 많음)
+            if (prefix === "32") return 10; // 강원 (산림·저밀도 지역이라 자연 자정 속도가 빨라 안전 구역이 많되, 봉쇄 지역도 소수 존재)
             if (["11", "21", "22", "23", "24", "25", "26", "29"].includes(prefix)) return -15; // 서울·7대광역시·세종
             return 0;
         }
