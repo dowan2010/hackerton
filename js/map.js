@@ -468,14 +468,16 @@ export function findSafeRoute(start, end, blockedRings) {
     function toLatLng(r, c) {
         return [latMin + r * latStep, lngMin + c * lngStep];
     }
+    const startCell = toCell(start[0], start[1]);
+    const endCell = toCell(end[0], end[1]);
+
     function isBlockedCell(r, c) {
+        if ((r === startCell[0] && c === startCell[1]) || (r === endCell[0] && c === endCell[1])) return false;
         if (r < 0 || r > GRID || c < 0 || c > GRID) return true;
         const [lat, lng] = toLatLng(r, c);
         return isLatLngBlocked(lat, lng, blockedRings);
     }
 
-    const startCell = toCell(start[0], start[1]);
-    const endCell = toCell(end[0], end[1]);
     const key = (r, c) => r + "," + c;
     const visited = new Set([key(startCell[0], startCell[1])]);
     const queue = [[startCell, [startCell]]];
