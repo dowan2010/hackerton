@@ -434,7 +434,40 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 24px;
+    height: 100%;
+}
+
+/* Subtab content container layouts for independent scrolling */
+.subtab-content {
+    width: 100%;
+    height: 100%;
+}
+
+#subtab-prediction,
+#subtab-policy {
+    overflow-y: auto !important;
+    height: 100%;
+    /* Minimalist premium scrollbar theme */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.15) transparent;
+    padding-bottom: 80px !important; /* Margin at the bottom to guarantee readability */
+}
+
+/* Premium Webkit scrollbar for subtabs */
+#subtab-prediction::-webkit-scrollbar,
+#subtab-policy::-webkit-scrollbar {
+    width: 6px;
+}
+
+#subtab-prediction::-webkit-scrollbar-track,
+#subtab-policy::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#subtab-prediction::-webkit-scrollbar-thumb,
+#subtab-policy::-webkit-scrollbar-thumb {
+    background-color: rgba(15, 23, 42, 0.15);
+    border-radius: 10px;
 }
 
 @keyframes fadeIn {
