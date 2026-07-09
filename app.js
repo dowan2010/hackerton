@@ -1007,6 +1007,29 @@ document.addEventListener("DOMContentLoaded", () => {
             return zonesData.find(z => z.zone_id === zoneId) || null;
         }
 
+        // 전국 모든 시군구(행정구역)에 대해 오염도/복구율/통제상태를 산출한다.
+        // - 손으로 매핑한 26개 핵심 재난 구역: 백엔드/스토리 실측 데이터 사용
+        // - 그 외 전 시군구: code를 시드로 한 결정론적 가상 오염 지표 생성(새로고침해도 값 고정)
+        function getMunicipalityData(code, name) {
+            const zone = findZoneByCode(code);
+            if (zone) {
+                return {
+                    name: zone.zone_name.split(" - ")[1] || zone.zone_name,
+                    recovery_rate: zone.recovery_rate,
+                    status: zone.status,
+                    zone: zone,
+                    isKeyZone: true
+                };
+            }
+            const rand = seedRandom("muni-" + code);
+            const recovery = Math.round((30 + rand() * 68) * 10) / 10; // 30.0 ~ 98.0%
+            let status;
+            if (recovery >= 82) status = "귀향시작";
+            else if (recovery >= 55) status = "예약가능";
+            else status = "봉쇄";
+            return { name: name, recovery_rate: recovery, status: status, zone: null, isKeyZone: false };
+        }
+
         async function loadMunicipalitiesGeoJSON() {
             try {
                 console.log("[GeoJSON] 대한민국 실제 250개 시군구 도시 행정 경계 정보 로딩 중...");
@@ -1014,77 +1037,64 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!res.ok) throw new Error("Local Si-Gun-Gu GeoJSON server response error");
                 const geoData = await res.json();
 
-                // 1) Desktop GeoJSON Layer Injection (시군구 정밀 도시 매핑)
+                // 1) Desktop GeoJSON Layer Injection (전국 시군구 전체 오염도 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const code = feature.properties.code;
-                        const zone = findZoneByCode(code);
-                        if (!zone) {
-                            return {
-                                color: "transparent",
-                                weight: 0,
-                                fillColor: "transparent",
-                                fillOpacity: 0
-                            };
-                        }
-                        const color = getStatusColor(zone.status);
+                        const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+                        const color = getStatusColor(data.status);
+                        // 핵심 재난 구역은 굵고 진하게, 일반 시군구는 얇고 옅게 → 도시 안 행정구역 계층감
                         return {
                             color: "#ffffff",
-                            weight: 1.8,
+                            weight: data.isKeyZone ? 1.8 : 0.6,
                             fillColor: color,
-                            fillOpacity: 0.52
+                            fillOpacity: data.isKeyZone ? 0.58 : 0.32
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const code = feature.properties.code;
-                        const zone = findZoneByCode(code);
-                        if (zone) {
-                            desktopMapCircles[zone.zone_id] = layer; // 대리 바인딩!
-                            const popupContent = `<strong>📍 ${zone.zone_name}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
-                            layer.bindPopup(popupContent);
-
-                            layer.on("click", () => {
-                                desktopMap.setView(layer.getBounds().getCenter(), 10, { animate: true });
-                                selectZone(zone.zone_id);
-                            });
+                        const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+                        const pollution = Math.round((100 - data.recovery_rate) * 10) / 10;
+                        const popupContent = `<strong>📍 ${data.name}</strong><br>오염도: ${pollution}%<br>복구율: ${data.recovery_rate}%<br>통제 상태: <strong>${data.status}</strong>`;
+                        layer.bindPopup(popupContent);
+                        if (data.zone) {
+                            desktopMapCircles[data.zone.zone_id] = layer; // 대리 바인딩!
                         }
+                        layer.on("click", () => {
+                            desktopMap.setView(layer.getBounds().getCenter(), 10, { animate: true });
+                            if (data.zone) selectZone(data.zone.zone_id);
+                        });
+                        // 호버 시 강조
+                        layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.72, weight: 2 }));
+                        layer.on("mouseout", () => layer.setStyle({
+                            fillOpacity: data.isKeyZone ? 0.58 : 0.32,
+                            weight: data.isKeyZone ? 1.8 : 0.6
+                        }));
                     }
                 }).addTo(desktopMap);
 
-                // 2) Mobile GeoJSON Layer Injection (시군구 정밀 도시 매핑)
+                // 2) Mobile GeoJSON Layer Injection (전국 시군구 전체 오염도 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const code = feature.properties.code;
-                        const zone = findZoneByCode(code);
-                        if (!zone) {
-                            return {
-                                color: "transparent",
-                                weight: 0,
-                                fillColor: "transparent",
-                                fillOpacity: 0
-                            };
-                        }
-                        const color = getStatusColor(zone.status);
+                        const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+                        const color = getStatusColor(data.status);
                         return {
                             color: "#ffffff",
-                            weight: 1.2,
+                            weight: data.isKeyZone ? 1.2 : 0.5,
                             fillColor: color,
-                            fillOpacity: 0.52
+                            fillOpacity: data.isKeyZone ? 0.58 : 0.32
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const code = feature.properties.code;
-                        const zone = findZoneByCode(code);
-                        if (zone) {
-                            mobileMapCircles[zone.zone_id] = layer;
-                            const popupContent = `<strong>📍 ${zone.zone_name}</strong><br>복구율: ${zone.recovery_rate}%`;
-                            layer.bindPopup(popupContent);
-
-                            layer.on("click", () => {
-                                mobileMap.setView(layer.getBounds().getCenter(), 9, { animate: true });
-                                selectZone(zone.zone_id);
-                            });
+                        const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+                        const pollution = Math.round((100 - data.recovery_rate) * 10) / 10;
+                        const popupContent = `<strong>📍 ${data.name}</strong><br>오염도: ${pollution}%<br>복구율: ${data.recovery_rate}%`;
+                        layer.bindPopup(popupContent);
+                        if (data.zone) {
+                            mobileMapCircles[data.zone.zone_id] = layer;
                         }
+                        layer.on("click", () => {
+                            mobileMap.setView(layer.getBounds().getCenter(), 9, { animate: true });
+                            if (data.zone) selectZone(data.zone.zone_id);
+                        });
                     }
                 }).addTo(mobileMap);
 
