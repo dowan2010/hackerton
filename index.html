@@ -404,7 +404,39 @@
                             </div>
                         </div>
                     </div>
-                                    <div class="timeline-feed-flow" id="desktop-timeline-flow">
+                </section>
+
+                <!-- TAB 3: SPRING TIMELINE (DESKTOP) -->
+                <section class="tab-content hidden" id="tab-timeline">
+                    <div class="timeline-container">
+                        <div class="timeline-header-row">
+                            <div class="timeline-title-group">
+                                <h2 class="timeline-section-title" id="desktop-timeline-region-title">고향의 봄 AI 타임라인</h2>
+                                <p class="timeline-section-subtitle" id="desktop-timeline-region-subtitle">선택된 구역의 기후 회복 추세와 감성 시뮬레이션 타임라인입니다.</p>
+                            </div>
+                            <span class="badge-active-feed"><i data-lucide="leaf"></i> 환경 복구 피드 활성화됨</span>
+                        </div>
+
+                        <!-- Selected Area quick indicators -->
+                        <div class="selected-region-info-banner">
+                            <i data-lucide="navigation" class="font-blue"></i>
+                            <span>현재 선택 지역: <strong id="desktop-timeline-active-zone" class="font-blue">강원도 고성군 아야진리</strong> (안전 복귀 지표 충족)</span>
+                        </div>
+
+                        <!-- Hometown address search bar -->
+                        <div class="timeline-search-section">
+                            <div class="address-input-wrapper">
+                                <i data-lucide="map-pin" class="input-pin-icon"></i>
+                                <input type="text" id="desktop-address-input" style="flex: 1; border: none; background: transparent; outline: none; font-size: 13px;" placeholder="그리운 고향의 상세 주소를 입력하세요 (예: 경상북도 울진군 산불 통제구역)">
+                                <button class="btn-generate-timeline" id="desktop-btn-generate">AI 고향의 봄 복구 일기 생성</button>
+                            </div>
+                        </div>
+                        <div id="desktop-timeline-loading" class="timeline-loading-box hidden">
+                            <div class="spinner"></div>
+                            <span>Gemini AI가 해당 지역의 미세기후 복원 시뮬레이션 일기를 실시간 작성 중입니다...</span>
+                        </div>
+
+                        <div class="timeline-feed-flow" id="desktop-timeline-flow">
                             <!-- Card 1 (2036년 - 미래) -->
                             <div class="timeline-card-wrapper future">
                                 <div class="timeline-marker"><div class="marker-circle"></div></div>
