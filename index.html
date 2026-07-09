@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="style.css?v=20260709-3">
+    <link rel="stylesheet" href="style.css?v=20260709-4">
 </head>
 <body>
     <div class="app-container">
@@ -471,7 +471,7 @@
                         </div>
 
                         <div class="timeline-feed-flow" id="desktop-timeline-flow">
-                            <!-- Card 1 -->
+                            <!-- Card 1 (2030년) -->
                             <div class="timeline-card-wrapper future">
                                 <div class="timeline-marker"><div class="marker-circle"></div></div>
                                 <div class="timeline-feed-card flex-row">
@@ -481,14 +481,14 @@
                                     </div>
                                     <div class="card-text-side">
                                         <div class="card-badge-row">
-                                            <span class="feed-date font-blue font-bold">2035년 4월 12일</span>
-                                            <span class="badge-status-blue">PREDICTED 2035</span>
+                                            <span class="feed-date font-blue font-bold">2030년 04월 12일</span>
+                                            <span class="badge-status-blue">PREDICTED 2030</span>
                                         </div>
                                         <p class="feed-content" id="desktop-feed-2035-p1">
                                             "오랜 시간 잊혔던 참나무들이 고향의 언덕을 다시 채우기 시작합니다. 산들바람에 실려오는 숲의 숨결은 그 어느 때보다 깊고 맑습니다."
                                         </p>
                                         <p class="feed-content-detail" id="desktop-feed-2035-p2">
-                                            지속 가능한 산림 경영과 AI 기반 토양 정화 기술의 결합으로, 유실되었던 토착 수종들이 자생력을 회복했습니다. 이제 이 숲은 연간 500톤 이상의 탄소를 흡수하며 지역 사회의 허파 역할을 수행합니다.
+                                            지속 가능한 산림 경영과 AI 기반 토양 정화 기술의 결합으로, 유실되었던 토착 수종들이 자생력을 회복했습니다. 2030년 완전 정화 선언에 따라 기후 실향민들의 자유로운 귀향과 정착이 법적으로 온전히 보장됩니다.
                                         </p>
                                         <div class="feed-metrics-row">
                                             <div class="feed-metric">
@@ -504,7 +504,7 @@
                                 </div>
                             </div>
 
-                            <!-- Card 2 -->
+                            <!-- Card 2 (2028년) -->
                             <div class="timeline-card-wrapper mid-term">
                                 <div class="timeline-marker"><div class="marker-circle"></div></div>
                                 <div class="timeline-feed-card flex-row-reverse">
@@ -514,7 +514,7 @@
                                     </div>
                                     <div class="card-text-side">
                                         <div class="card-badge-row">
-                                            <span class="feed-date font-blue font-bold">2029년 10월 05일</span>
+                                            <span class="feed-date font-blue font-bold">2028년 10월 05일</span>
                                         </div>
                                         <h4 class="feed-title">수변 생태계의 귀환</h4>
                                         <p class="feed-content" id="desktop-feed-2029-content">
@@ -540,33 +540,101 @@
                                 </div>
                             </div>
 
-                            <!-- Card 3 -->
+                            <!-- Card 3 (2026년) -->
                             <div class="timeline-card-wrapper start">
                                 <div class="timeline-marker"><div class="marker-circle"></div></div>
                                 <div class="timeline-feed-card single-column">
                                     <div class="card-badge-row">
-                                        <span class="feed-date text-slate font-bold">2025년 03월 20일</span>
-                                        <span class="badge-status-grey">INITIATED</span>
+                                        <span class="feed-date text-slate font-bold">2026년 03월 20일</span>
+                                        <span class="badge-status-grey">INITIATED 2026</span>
                                     </div>
-                                    <h4 class="feed-title">프로젝트 착수: 고향의 봄 1단계</h4>
+                                    <h4 class="feed-title">현재 시점: 기후 환경 측정 모니터링 망 가동</h4>
                                     <p class="feed-content-detail" id="desktop-feed-2025-content">
                                         스마트 센서 네트워크가 대상 지역 전역에 배치되었습니다. 실시간으로 수집되는 토양 및 대기 데이터는 AI 모델로 전송되어 최적의 복구 경로를 설계하는 데 사용됩니다.
                                     </p>
                                     <div class="progress-bar-timeline">
                                         <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" id="desktop-feed-2025-fill" style="width: 15%; background-color: #2563EB;"></div>
+                                            <div class="progress-bar-fill" id="desktop-feed-2025-fill" style="width: 100%; background-color: #2563EB;"></div>
                                         </div>
-                                        <div class="progress-percent-lbl" id="desktop-feed-2025-percent">분석 진행률 15%</div>
+                                        <div class="progress-percent-lbl" id="desktop-feed-2025-percent">분석 진행률 100% 완료</div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="timeline-cta-box">
-                            <div class="cta-sparkle-circle"><i data-lucide="sparkles"></i></div>
-                            <h3 class="cta-title">더 먼 미래를 보고 싶으신가요?</h3>
-                            <p class="cta-desc">AI 시뮬레이션을 확장하여 2050년까지의 생태 변화를 예측할 수 있습니다.</p>
-                            <button class="btn-cta-action" id="desktop-btn-expand">미래 예측 확장하기</button>
+                            <!-- Card 4 (2024년) -->
+                            <div class="timeline-card-wrapper">
+                                <div class="timeline-marker"><div class="marker-circle"></div></div>
+                                <div class="timeline-feed-card single-column">
+                                    <div class="card-badge-row">
+                                        <span class="feed-date text-slate font-bold">2024년 06월 15일</span>
+                                        <span class="badge-status-grey" style="background: rgba(37,99,235,0.1); color: #2563EB;">COMPLETED</span>
+                                    </div>
+                                    <h4 class="feed-title">2단계: 무인 드론 기후 제어 및 정화 촉진제 투하</h4>
+                                    <p class="feed-content-detail">
+                                        무인 자동 정화 드론 편대가 오염 격리 장벽 상공에 대규모 투입되어 300헥타르 범위 내의 토양 정화 촉진 물질 및 고속 흡착 유도 분말 투하 작전을 무사히 완수했습니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card 5 (2022년) -->
+                            <div class="timeline-card-wrapper">
+                                <div class="timeline-marker"><div class="marker-circle"></div></div>
+                                <div class="timeline-feed-card single-column">
+                                    <div class="card-badge-row">
+                                        <span class="feed-date text-slate font-bold">2022년 11월 12일</span>
+                                        <span class="badge-status-grey" style="background: rgba(37,99,235,0.1); color: #2563EB;">COMPLETED</span>
+                                    </div>
+                                    <h4 class="feed-title">1단계: 차단용 특별 지반 격리 장벽 및 무인 초소 완공</h4>
+                                    <p class="feed-content-detail">
+                                        오염수의 지하수 확산을 차단하기 위한 영구적 특수 지반 복원벽 및 실시간 모니터링 무인 관리 초소가 수립되어 외곽 오염 밀도가 92% 이상 고정되는 성과를 거두었습니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card 6 (2020년) -->
+                            <div class="timeline-card-wrapper">
+                                <div class="timeline-marker"><div class="marker-circle"></div></div>
+                                <div class="timeline-feed-card single-column">
+                                    <div class="card-badge-row">
+                                        <span class="feed-date text-slate font-bold">2020년 08월 30일</span>
+                                        <span class="badge-status-grey" style="background: rgba(16,185,129,0.1); color: #10b981;">BUDGET PASSED</span>
+                                    </div>
+                                    <h4 class="feed-title">미세기후 자정 유도 및 생태 복원 특별 국가 예산 가결</h4>
+                                    <p class="feed-content-detail">
+                                        국토안전위원회 및 환경행정부 공동 발의안에 따라 총 2.4조원 규모의 미세기후 촉진 특별 예산이 가결되었으며, 거점 격리 구역에 대한 친환경 대정화 인프라 보조가 시작되었습니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card 7 (2018년) -->
+                            <div class="timeline-card-wrapper">
+                                <div class="timeline-marker"><div class="marker-circle"></div></div>
+                                <div class="timeline-feed-card single-column">
+                                    <div class="card-badge-row">
+                                        <span class="feed-date text-slate font-bold">2018년 05월 14일</span>
+                                        <span class="badge-status-grey" style="background: rgba(16,185,129,0.1); color: #10b981;">LAW ACT</span>
+                                    </div>
+                                    <h4 class="feed-title">기후 실향민 안심 이주 영구 안정 보상 법안 정식 발효</h4>
+                                    <p class="feed-content-detail">
+                                        정부 차원에서 임시 거주지 난민들의 안전 보상, 복구 분양 우선 가중치 부여, 주민등록등본 및 의료 서류 전산화 가이드라인 조항을 골자로 하는 특별 보상법이 최종 승인되었습니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card 8 (2016년) -->
+                            <div class="timeline-card-wrapper">
+                                <div class="timeline-marker"><div class="marker-circle"></div></div>
+                                <div class="timeline-feed-card single-column">
+                                    <div class="card-badge-row">
+                                        <span class="feed-date text-slate font-bold">2016년 03월 10일</span>
+                                        <span class="badge-status-grey" style="background: rgba(120,113,108,0.1); color: #78716c;">RESEARCH START</span>
+                                    </div>
+                                    <h4 class="feed-title">고향의 봄 AI 타임라인 추적 연구 및 예측 평점 수립 착수</h4>
+                                    <p class="feed-content-detail">
+                                        기후 실향민들을 위한 행정구역별 귀향 우선권 분석 시뮬레이터 개발이 연구소 차원에서 시작되었습니다. 위성 센서 기반 환경 독성 감쇄 공식의 수립과 검증이 설계된 뜻깊은 원년입니다.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -831,12 +899,12 @@
 
                 <!-- Timeline List Flow -->
                 <div class="mobile-timeline-flow" id="mobile-timeline-flow">
-                    <!-- Card 1: 3월 12일 첫 싹 -->
+                    <!-- Card 1: 2030년 완전 정착 -->
                     <div class="mobile-timeline-node">
                         <div class="node-marker"><div class="circle"></div></div>
                         <div class="mobile-timeline-card">
                             <div class="card-top-row">
-                                <span class="date" id="mobile-feed-2035-date">2035년 4월 12일</span>
+                                <span class="date" id="mobile-feed-2035-date">2030년 04월 12일</span>
                                 <i data-lucide="sprout" class="icon-sprout font-blue"></i>
                             </div>
                             <h3 class="card-title-bold" id="mobile-feed-2035-title">복원된 참나무 숲</h3>
@@ -863,12 +931,12 @@
                         <div class="img-overlay-brand">고향의 봄 AI 타임라인</div>
                     </div>
 
-                    <!-- Card 2: 4월 5일 맑은 시냇물 -->
+                    <!-- Card 2: 2028년 은어 귀환 -->
                     <div class="mobile-timeline-node">
                         <div class="node-marker"><div class="circle"></div></div>
                         <div class="mobile-timeline-card">
                             <div class="card-top-row">
-                                <span class="date">2029년 10월 05일</span>
+                                <span class="date">2028년 10월 05일</span>
                                 <i data-lucide="waves" class="icon-waves font-blue"></i>
                             </div>
                             <h3 class="card-title-bold">수변 생태계의 귀환</h3>
@@ -894,25 +962,25 @@
                         <img id="mobile-feed-sep2-img" src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=600" alt="glowing stream">
                     </div>
 
-                    <!-- Card 3: 5월 21일 완전한 평형 -->
+                    <!-- Card 3: 2026년 모니터링 수집 -->
                     <div class="mobile-timeline-node">
                         <div class="node-marker"><div class="circle"></div></div>
                         <div class="mobile-timeline-card">
                             <div class="card-top-row">
-                                <span class="date">2025년 03월 20일</span>
+                                <span class="date">2026년 03월 20일</span>
                                 <i data-lucide="check-circle-2" class="icon-check font-blue"></i>
                             </div>
-                            <h3 class="card-title-bold">프로젝트 착수: 고향의 봄 1단계</h3>
+                            <h3 class="card-title-bold">현재 시점: 기후 환경 측정 모니터링 망 가동</h3>
                             <p class="card-quote">
                                 "RootHome 시스템이 공식적으로 이 지역을 '복원 완료'로 분류했습니다. 공기는 한결 가벼워졌고, 이제 시스템은 자가 유지 보수 모드로 전환되었습니다."
                             </p>
                             <div class="card-metrics-box-progress">
                                 <div class="progress-label-row">
                                     <span class="lbl">복원 상태</span>
-                                    <span class="val font-bold" id="mobile-feed-2025-status">15% 진행중</span>
+                                    <span class="val font-bold" id="mobile-feed-2025-status">100% 완료</span>
                                 </div>
                                 <div class="progress-bar-bg">
-                                    <div class="progress-bar-fill" id="mobile-feed-2025-fill" style="width: 15%; background-color: #2563EB;"></div>
+                                    <div class="progress-bar-fill" id="mobile-feed-2025-fill" style="width: 100%; background-color: #2563EB;"></div>
                                 </div>
                                 <div class="progress-check-lbl" id="mobile-feed-2025-check">
                                     <i data-lucide="check" class="check-icon"></i> 실시간 대기 분석 연동 완료
@@ -981,6 +1049,6 @@
 
     <!-- Leaflet JS Map API -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="app.js?v=20260709-3"></script>
+    <script src="app.js?v=20260709-4"></script>
 </body>
 </html>
