@@ -10,12 +10,13 @@ import {
     mobileMap, 
     desktopMapCircles, 
     mobileMapCircles, 
-    setNavigatorModeActive, 
-    resetNavigator, 
+    setNavigatorModeActive,
+    resetNavigator,
     getStatusColor,
     getMunicipalityData,
     allMunicipalityLayers,
-    cachedGeoData
+    cachedGeoData,
+    renderGeoJSONLayers
 } from './js/map.js?v=20260710-3';
 import { initDignitySystem, initNationalPolicyGenerator } from './js/dignity.js?v=20260710-3';
 
@@ -181,7 +182,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (mHandle) mHandle.style.left = leftVal;
             if (mFill) mFill.style.width = leftVal;
 
+            window.timelinePercentage = timelinePercentage;
             updateCountdownDisplay();
+            renderGeoJSONLayers();
         };
 
         const setupDrag = (handle, track) => {
