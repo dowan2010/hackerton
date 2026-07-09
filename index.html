@@ -137,17 +137,20 @@
                                         <button class="btn-toggle-legend" id="btn-toggle-legend" title="접기/펼치기" style="background: none; border: none; padding: 4px; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; outline: none; border-radius: 4px; transition: all 0.2s;"><i data-lucide="minus" style="width: 16px; height: 16px;"></i></button>
                                     </div>
                                     <div class="legend-body" id="legend-body">
-                                        <div class="legend-list" style="margin-top: 12px;">
-                                            <div class="legend-item">
-                                                <span class="legend-name">🔴 차단됨 (복원 진행중)</span>
+                                            <div class="legend-list" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                                                <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                                                    <i data-lucide="lock" style="width: 14px; height: 14px; color: #EF4444; flex-shrink: 0;"></i>
+                                                    <span class="legend-name">차단됨 (복원 진행중)</span>
+                                                </div>
+                                                <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                                                    <i data-lucide="calendar-days" style="width: 14px; height: 14px; color: #F59E0B; flex-shrink: 0;"></i>
+                                                    <span class="legend-name">예약 가능 (정화 가속)</span>
+                                                </div>
+                                                <div class="legend-item" style="display: flex; align-items: center; gap: 8px;">
+                                                    <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #10B981; flex-shrink: 0;"></i>
+                                                    <span class="legend-name">안전함 (귀향 시작)</span>
+                                                </div>
                                             </div>
-                                            <div class="legend-item">
-                                                <span class="legend-name">🟡 예약 가능 (정화 가속)</span>
-                                            </div>
-                                            <div class="legend-item">
-                                                <span class="legend-name">🟢 안전함 (귀향 시작)</span>
-                                            </div>
-                                        </div>
                                         <div class="legend-divider" style="margin: 12px 0; border-top: 1px solid var(--color-sidebar-border);"></div>
                                         <div class="legend-item">
                                             <i data-lucide="info" style="width: 14px; height: 14px; color: var(--color-primary);"></i>
@@ -177,7 +180,7 @@
                                         </div>
                                         <div class="legend-divider" style="margin: 6px 0; border-top: 1px solid var(--color-sidebar-border);"></div>
                                         <div id="route-bypass-status" style="font-size: 11px; color: #16A34A; display: flex; align-items: center; gap: 4px; font-weight: 500;">
-                                            🟢 안전 우회로 작동중
+                                            <i data-lucide="shield-check" style="width: 13px; height: 13px; color: #16A34A; display: inline-block;"></i> 안전 경로 작동중
                                         </div>
                                     </div>
                                 </div>
@@ -626,10 +629,10 @@
                         <div id="mobile-map" class="map-instance"></div>
                         <div class="mobile-map-legend">
                             <h4 class="legend-title">구역 상태</h4>
-                            <div class="mob-legend-list">
-                                <div class="mob-legend-item"><span>🟢 안전함 / 복구 완료</span></div>
-                                <div class="mob-legend-item"><span>🟡 예약 가능 / 정화 진행 중</span></div>
-                                <div class="mob-legend-item"><span>🔴 차단됨 / 고농도 오염</span></div>
+                            <div class="mob-legend-list" style="display: flex; flex-direction: column; gap: 4px;">
+                                <div class="mob-legend-item" style="display: flex; align-items: center; gap: 6px;"><i data-lucide="shield-check" style="width: 12px; height: 12px; color: #10B981; display: inline-block;"></i><span>안전함 / 복구 완료</span></div>
+                                <div class="mob-legend-item" style="display: flex; align-items: center; gap: 6px;"><i data-lucide="calendar-days" style="width: 12px; height: 12px; color: #F59E0B; display: inline-block;"></i><span>예약 가능 / 정화 진행 중</span></div>
+                                <div class="mob-legend-item" style="display: flex; align-items: center; gap: 6px;"><i data-lucide="lock" style="width: 12px; height: 12px; color: #EF4444; display: inline-block;"></i><span>차단됨 / 고농도 오염</span></div>
                             </div>
                         </div>
                     </div>
