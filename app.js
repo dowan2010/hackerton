@@ -709,8 +709,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const centerPoint = [36.3000, 127.8000]; // Center of South Korea
         const baseZoom = 7; // Nation-wide zoom
 
-        const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-        const attribution = '&copy; OpenStreetMap &copy; CartoDB';
+        const tileUrl = 'https://tiles.osm.kr/hot/{z}/{x}/{y}.png';
+        const attribution = '&copy; OpenStreetMap contributors, Map tiles by OSM Korea';
 
         // Limit bounding box to South Korea
         const southKoreaBounds = L.latLngBounds(
@@ -718,40 +718,31 @@ document.addEventListener("DOMContentLoaded", () => {
             L.latLng([38.7, 132.2])  // Northeast
         );
 
-        // 1) Desktop Map
+        // 1) Desktop Map (locked to South Korea scale)
         desktopMap = L.map('desktop-map', {
             center: centerPoint,
             zoom: baseZoom,
-            minZoom: 6,
-            maxZoom: 12,
+            minZoom: 7, // Restricted to fit South Korea, cannot zoom out further
+            maxZoom: 13,
             maxBounds: southKoreaBounds,
             maxBoundsViscosity: 1.0,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
 
-        // 2) Mobile Map
+        // 2) Mobile Map (locked to South Korea scale)
         mobileMap = L.map('mobile-map', {
             center: centerPoint,
-            zoom: baseZoom - 1, // slightly smaller zoom for mobile
-            minZoom: 5,
-            maxZoom: 11,
+            zoom: baseZoom, // Default zoom 7 to match desktop scale
+            minZoom: 6, // Restricted for mobile
+            maxZoom: 12,
             maxBounds: southKoreaBounds,
             maxBoundsViscosity: 1.0,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(mobileMap);
 
-        // Add "황해" text label in the Yellow Sea (West Sea)
-        const yellowSeaCoords = [36.2, 123.8];
-        const yellowSeaIcon = L.divIcon({
-            className: 'map-label-yellow-sea',
-            html: '<div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: bold; color: #4b5563; text-shadow: 0 0 4px #ffffff; white-space: nowrap; opacity: 0.85;">황해</div>',
-            iconSize: [80, 20],
-            iconAnchor: [40, 10]
-        });
-        L.marker(yellowSeaCoords, { icon: yellowSeaIcon, interactive: false }).addTo(desktopMap);
-        L.marker(yellowSeaCoords, { icon: yellowSeaIcon, interactive: false }).addTo(mobileMap);
+
 
         // Helper function for deterministic pseudo-random generator
         function seedRandom(str) {
