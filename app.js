@@ -1061,12 +1061,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Prepopulate users and session
-        if (!localStorage.getItem("roothome_users")) {
-            localStorage.setItem("roothome_users", JSON.stringify([
-                { email: "test@roothome.org", name: "강유진", password: "password123" }
-            ]));
-        }
 
         // Open/Close Modal
         function openAuth() {
@@ -1103,26 +1097,39 @@ document.addEventListener("DOMContentLoaded", () => {
         tabSignupBtn.addEventListener("click", () => switchTab("signup"));
 
         // Login Handler
-        loginForm.addEventListener("submit", (e) => {
+        loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value;
+            const submitBtn = loginForm.querySelector("button[type='submit']");
+            if (submitBtn) submitBtn.disabled = true;
 
-            const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
-            const user = users.find(u => u.email === email && u.password === password);
+            try {
+                const response = await fetch(`${window.backendUrl}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
 
-            if (user) {
-                localStorage.setItem("roothome_session", JSON.stringify({ email: user.email, name: user.name }));
-                updateAuthStateUI();
-                closeAuth();
-                alert(`반갑고 안온한 복귀입니다, ${user.name} 님!`);
-            } else {
-                alert("이메일 주소 또는 비밀번호가 일치하지 않습니다.");
+                if (response.ok) {
+                    localStorage.setItem("roothome_session", JSON.stringify({ email: data.email, name: data.name }));
+                    updateAuthStateUI();
+                    closeAuth();
+                    alert(`반갑고 안온한 복귀입니다, ${data.name} 님!`);
+                } else {
+                    alert(data.detail || "이메일 주소 또는 비밀번호가 일치하지 않습니다.");
+                }
+            } catch (err) {
+                console.warn("[Auth] 로그인 API 호출 실패:", err);
+                alert("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
 
         // Signup Handler
-        signupForm.addEventListener("submit", (e) => {
+        signupForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const name = document.getElementById("signup-name").value.trim();
             const email = document.getElementById("signup-email").value.trim();
@@ -1133,16 +1140,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
-            if (users.some(u => u.email === email)) {
-                alert("이미 등록된 이메일 주소입니다.");
-                return;
-            }
+            const submitBtn = signupForm.querySelector("button[type='submit']");
+            if (submitBtn) submitBtn.disabled = true;
 
-            users.push({ email, name, password });
-            localStorage.setItem("roothome_users", JSON.stringify(users));
-            alert("회원가입이 성공적으로 완료되었습니다! 로그인 해 주세요.");
-            switchTab("login");
+            try {
+                const response = await fetch(`${window.backendUrl}/api/auth/signup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, name, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("회원가입이 성공적으로 완료되었습니다! 로그인 해 주세요.");
+                    switchTab("login");
+                } else {
+                    alert(data.detail || "회원가입에 실패했습니다.");
+                }
+            } catch (err) {
+                console.warn("[Auth] 회원가입 API 호출 실패:", err);
+                alert("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
+            }
         });
 
         // Toggle state triggers

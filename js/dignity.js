@@ -252,25 +252,38 @@ export function initNationalPolicyGenerator() {
         return result;
     }
 
-    // Helper: Registered laws persistence (localStorage)
-    const LAWS_STORAGE_KEY = "roothome_registered_laws";
-
-    function getRegisteredLaws() {
+    // Helper: Registered laws persistence (backend API + Firestore)
+    function getCurrentUserId() {
         try {
-            return JSON.parse(localStorage.getItem(LAWS_STORAGE_KEY)) || [];
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            return session ? session.email : null;
         } catch (e) {
+            return null;
+        }
+    }
+
+    async function fetchRegisteredLaws(userId) {
+        try {
+            const res = await fetch(`${window.backendUrl}/api/laws?user_id=${encodeURIComponent(userId)}`);
+            if (!res.ok) return [];
+            return await res.json();
+        } catch (e) {
+            console.warn("[Policy] 법안 목록 조회 실패:", e);
             return [];
         }
     }
 
-    function saveRegisteredLaws(laws) {
-        localStorage.setItem(LAWS_STORAGE_KEY, JSON.stringify(laws));
-    }
-
-    function renderRegisteredLaws() {
+    async function renderRegisteredLaws() {
         const listEl = document.getElementById("registered-laws-list");
         if (!listEl) return;
-        const laws = getRegisteredLaws();
+
+        const userId = getCurrentUserId();
+        if (!userId) {
+            listEl.innerHTML = `<p style="font-size: 12px; color: #94A3B8; text-align: center; padding: 20px 0;">로그인 후 법안을 등록/조회할 수 있습니다.</p>`;
+            return;
+        }
+
+        const laws = await fetchRegisteredLaws(userId);
 
         if (laws.length === 0) {
             listEl.innerHTML = `<p id="registered-laws-empty" style="font-size: 12px; color: #94A3B8; text-align: center; padding: 20px 0;">아직 등록된 법안이 없습니다.</p>`;
@@ -295,11 +308,24 @@ export function initNationalPolicyGenerator() {
         lucide.createIcons();
 
         listEl.querySelectorAll(".btn-delete-law").forEach(btn => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 const id = btn.dataset.lawId;
-                const remaining = getRegisteredLaws().filter(l => l.id !== id);
-                saveRegisteredLaws(remaining);
-                renderRegisteredLaws();
+                btn.disabled = true;
+                try {
+                    const res = await fetch(`${window.backendUrl}/api/laws/${id}?user_id=${encodeURIComponent(userId)}`, {
+                        method: "DELETE"
+                    });
+                    if (!res.ok) {
+                        alert("법안 삭제에 실패했습니다.");
+                        btn.disabled = false;
+                        return;
+                    }
+                    renderRegisteredLaws();
+                } catch (e) {
+                    console.warn("[Policy] 법안 삭제 실패:", e);
+                    alert("서버에 연결할 수 없습니다.");
+                    btn.disabled = false;
+                }
             });
         });
     }
@@ -358,18 +384,32 @@ export function initNationalPolicyGenerator() {
 
         const registerBtn = document.getElementById("btn-register-law");
         if (registerBtn) {
-            registerBtn.addEventListener("click", () => {
-                const laws = getRegisteredLaws();
-                laws.unshift({
-                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                    badge: parsed.badge,
-                    title: parsed.title
-                });
-                saveRegisteredLaws(laws);
-                renderRegisteredLaws();
+            registerBtn.addEventListener("click", async () => {
+                const userId = getCurrentUserId();
+                if (!userId) {
+                    alert("로그인 후 법안을 등록할 수 있습니다.");
+                    return;
+                }
                 registerBtn.disabled = true;
-                registerBtn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i> 등록 완료';
-                lucide.createIcons();
+                try {
+                    const res = await fetch(`${window.backendUrl}/api/laws`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_id: userId, badge: parsed.badge, title: parsed.title })
+                    });
+                    if (!res.ok) {
+                        alert("법안 등록에 실패했습니다.");
+                        registerBtn.disabled = false;
+                        return;
+                    }
+                    renderRegisteredLaws();
+                    registerBtn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i> 등록 완료';
+                    lucide.createIcons();
+                } catch (e) {
+                    console.warn("[Policy] 법안 등록 실패:", e);
+                    alert("서버에 연결할 수 없습니다.");
+                    registerBtn.disabled = false;
+                }
             });
         }
     }
