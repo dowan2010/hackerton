@@ -1161,7 +1161,7 @@
                 <i data-lucide="x"></i>
             </button>
             <div style="margin-bottom: 24px; text-align: center;">
-                <h3 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: #0F172A; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: var(--color-text-main); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="settings" style="color: var(--color-primary); width: 22px; height: 22px;"></i>
                     사용자 정보 및 고향 설정
                 </h3>
@@ -1169,6 +1169,36 @@
             </div>
             
             <form class="auth-form" id="settings-form">
+                <!-- PERSONAL INFO SECTION -->
+                <div style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed rgba(15,23,42,0.1);">
+                    계정 및 개인정보 수정
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">이름 (Name)</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="user" class="auth-input-icon"></i>
+                        <input type="text" id="settings-name" class="auth-input" placeholder="로그인 후 변경 가능">
+                    </div>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">이메일 주소 (Email)</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="mail" class="auth-input-icon"></i>
+                        <input type="email" id="settings-email" class="auth-input" placeholder="로그인 후 변경 가능">
+                    </div>
+                </div>
+                <div class="auth-input-group" style="margin-bottom: 18px;">
+                    <label class="auth-label">새 비밀번호 (Password)</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="lock" class="auth-input-icon"></i>
+                        <input type="password" id="settings-password" class="auth-input" placeholder="로그인 후 변경 가능">
+                    </div>
+                </div>
+
+                <!-- REGION INFO SECTION -->
+                <div style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--color-text-main); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed rgba(15,23,42,0.1); margin-top: 6px;">
+                    고향 및 거주지 설정
+                </div>
                 <div class="auth-input-group">
                     <label class="auth-label">그리운 내 고향 (Hometown)</label>
                     <div class="auth-input-wrapper">
@@ -1183,6 +1213,21 @@
                         <input type="text" id="settings-residence" class="auth-input" placeholder="예: 서울특별시 마포구" required>
                     </div>
                 </div>
+
+                <div class="auth-input-group">
+                    <label class="auth-label">화면 테마 설정 (Theme Mode)</label>
+                    <div class="theme-toggle-wrapper" style="display: flex; gap: 8px; margin-top: 6px;">
+                        <button type="button" class="theme-btn" id="theme-light-btn" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--color-sidebar-border); background: #FFFFFF; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                            <i data-lucide="sun" style="width: 16px; height: 16px;"></i>
+                            화이트 화면
+                        </button>
+                        <button type="button" class="theme-btn" id="theme-dark-btn" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--color-sidebar-border); background: #F1F5F9; color: #64748B; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                            <i data-lucide="moon" style="width: 16px; height: 16px;"></i>
+                            블랙 화면
+                        </button>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn-auth-submit">설정 저장 완료</button>
             </form>
         </div>

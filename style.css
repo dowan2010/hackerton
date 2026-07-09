@@ -3410,4 +3410,106 @@ body {
     }
 }
 
+/* =================================================------------
+ * 🔳 DARK MODE / BLACK SCREEN OVERRIDES (ROOTMAP PREMIUM)
+ * =================================================------------ */
+body.dark-theme {
+    --color-bg-app: #0F172A !important; /* Slate 900 */
+    --color-sidebar-bg: #1E293B !important; /* Slate 800 */
+    --color-sidebar-border: #334155 !important; /* Slate 700 */
+    --color-sidebar-active: #1E293B !important;
+    --color-text-main: #F1F5F9 !important; /* Slate 100 */
+    --color-text-muted: #94A3B8 !important; /* Slate 400 */
+    --color-text-light: #64748B !important; /* Slate 500 */
+    --color-neutral-bg: #1E293B !important; /* Slate 800 */
+    --color-primary-light: #1E3A8A !important; /* Dark blue */
+    --color-primary-dark: #60A5FA !important; /* Blue 400 */
+}
+
+/* Force dark-theme background overrides for key components */
+body.dark-theme header,
+body.dark-theme .sidebar,
+body.dark-theme .sub-header,
+body.dark-theme .map-legend-card,
+body.dark-theme .map-bottom-timeline,
+body.dark-theme .grid-detail-popup,
+body.dark-theme .dignity-card,
+body.dark-theme .policy-card,
+body.dark-theme .timeline-sidebar,
+body.dark-theme .timeline-preview-card,
+body.dark-theme .mobile-card,
+body.dark-theme .profile-main-card,
+body.dark-theme .auth-modal-card,
+body.dark-theme .mobile-header,
+body.dark-theme .mobile-nav-bar {
+    background-color: #1E293B !important;
+    color: #F1F5F9 !important;
+    border-color: #334155 !important;
+}
+
+/* Specific text color fixes for dark mode */
+body.dark-theme h1,
+body.dark-theme h2,
+body.dark-theme h3,
+body.dark-theme h4,
+body.dark-theme h5,
+body.dark-theme h6,
+body.dark-theme span,
+body.dark-theme p,
+body.dark-theme label,
+body.dark-theme a,
+body.dark-theme .title,
+body.dark-theme .subtitle,
+body.dark-theme .profile-name,
+body.dark-theme .profile-user-name,
+body.dark-theme .countdown-val .num,
+body.dark-theme .status-val,
+body.dark-theme .btn-export-report {
+    color: #F1F5F9 !important;
+}
+
+/* Keep muted colors properly contrasted in dark mode */
+body.dark-theme .profile-role,
+body.dark-theme .legend-subtitle,
+body.dark-theme .popup-description,
+body.dark-theme .countdown-label,
+body.dark-theme .status-label,
+body.dark-theme .auth-label,
+body.dark-theme .auth-modal-card p,
+body.dark-theme .footer-link {
+    color: #94A3B8 !important;
+}
+
+/* Form input styling inside settings and auth modals in dark theme */
+body.dark-theme .auth-input,
+body.dark-theme .global-search-input {
+    background-color: #0F172A !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+}
+
+/* Mobile active tab overrides */
+body.dark-theme .mobile-nav-item.active {
+    color: #3B82F6 !important;
+}
+
+/* Style active button states in theme segment control */
+.theme-btn.active {
+    background-color: var(--color-primary) !important;
+    color: #FFFFFF !important;
+    border-color: var(--color-primary-hover) !important;
+}
+.theme-btn.active i {
+    color: #FFFFFF !important;
+}
+body.dark-theme .theme-btn:not(.active) {
+    background-color: #0F172A !important;
+    border-color: #334155 !important;
+    color: #94A3B8 !important;
+}
+body.dark-theme .theme-btn:not(.active) i {
+    color: #94A3B8 !important;
+}
+
+
 

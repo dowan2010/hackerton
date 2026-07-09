@@ -2579,8 +2579,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const settingsHometown = document.getElementById("settings-hometown");
         const settingsResidence = document.getElementById("settings-residence");
 
+        const settingsName = document.getElementById("settings-name");
+        const settingsEmail = document.getElementById("settings-email");
+        const settingsPassword = document.getElementById("settings-password");
+
+        const themeLightBtn = document.getElementById("theme-light-btn");
+        const themeDarkBtn = document.getElementById("theme-dark-btn");
+        let selectedTheme = localStorage.getItem("roothome_theme") || "light";
+
+        // Initialize Theme from localStorage on Startup
+        if (selectedTheme === "dark") {
+            document.body.classList.add("dark-theme");
+        } else {
+            document.body.classList.remove("dark-theme");
+        }
+
         function openSettings() {
             const session = JSON.parse(localStorage.getItem("roothome_session"));
+            let nameVal = "";
+            let emailVal = "";
+            let passwordVal = "";
             let hometownVal = "";
             let residenceVal = "";
 
@@ -2588,17 +2606,40 @@ document.addEventListener("DOMContentLoaded", () => {
                 const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
                 const user = users.find(u => u.email === session.email);
                 if (user) {
+                    nameVal = user.name || "";
+                    emailVal = user.email || "";
+                    passwordVal = user.password || "";
                     hometownVal = user.hometown || "";
                     residenceVal = user.residence || "";
                 }
+                
+                if (settingsName) { settingsName.value = nameVal; settingsName.disabled = false; settingsName.placeholder = "이름을 입력하세요"; }
+                if (settingsEmail) { settingsEmail.value = emailVal; settingsEmail.disabled = false; settingsEmail.placeholder = "이메일을 입력하세요"; }
+                if (settingsPassword) { settingsPassword.value = passwordVal; settingsPassword.disabled = false; settingsPassword.placeholder = "비밀번호를 입력하세요"; }
             } else {
                 const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
                 hometownVal = guestSettings.hometown || "";
                 residenceVal = guestSettings.residence || "";
+                
+                if (settingsName) { settingsName.value = ""; settingsName.disabled = true; settingsName.placeholder = "로그인 시 활성화됩니다"; }
+                if (settingsEmail) { settingsEmail.value = ""; settingsEmail.disabled = true; settingsEmail.placeholder = "로그인 시 활성화됩니다"; }
+                if (settingsPassword) { settingsPassword.value = ""; settingsPassword.disabled = true; settingsPassword.placeholder = "로그인 시 활성화됩니다"; }
             }
 
             if (settingsHometown) settingsHometown.value = hometownVal;
             if (settingsResidence) settingsResidence.value = residenceVal;
+
+            // Sync theme button active states with current theme in body
+            const isDark = document.body.classList.contains("dark-theme");
+            if (isDark) {
+                if (themeDarkBtn) themeDarkBtn.classList.add("active");
+                if (themeLightBtn) themeLightBtn.classList.remove("active");
+                selectedTheme = "dark";
+            } else {
+                if (themeLightBtn) themeLightBtn.classList.add("active");
+                if (themeDarkBtn) themeDarkBtn.classList.remove("active");
+                selectedTheme = "light";
+            }
 
             if (settingsModal) settingsModal.classList.remove("hidden");
         }
@@ -2642,6 +2683,25 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        // Real-time Live Theme Preview Toggles
+        if (themeLightBtn) {
+            themeLightBtn.addEventListener("click", () => {
+                if (themeLightBtn) themeLightBtn.classList.add("active");
+                if (themeDarkBtn) themeDarkBtn.classList.remove("active");
+                document.body.classList.remove("dark-theme");
+                selectedTheme = "light";
+            });
+        }
+
+        if (themeDarkBtn) {
+            themeDarkBtn.addEventListener("click", () => {
+                if (themeDarkBtn) themeDarkBtn.classList.add("active");
+                if (themeLightBtn) themeLightBtn.classList.remove("active");
+                document.body.classList.add("dark-theme");
+                selectedTheme = "dark";
+            });
+        }
+
         // Settings Form Submission
         if (settingsForm) {
             settingsForm.addEventListener("submit", (e) => {
@@ -2651,17 +2711,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const session = JSON.parse(localStorage.getItem("roothome_session"));
                 if (session) {
+                    const name = settingsName.value.trim();
+                    const email = settingsEmail.value.trim();
+                    const password = settingsPassword.value.trim();
+
+                    if (!name || !email || !password) {
+                        alert("이름, 이메일, 비밀번호는 필수 입력 사항입니다.");
+                        return;
+                    }
+
                     const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                    
+                    // Check if new email is already taken by someone else
+                    const emailExists = users.some(u => u.email === email && u.email !== session.email);
+                    if (emailExists) {
+                        alert("이미 등록된 다른 사용자의 이메일 주소입니다.");
+                        return;
+                    }
+
+                    // Find index using session email (the original identifier)
                     const userIndex = users.findIndex(u => u.email === session.email);
                     if (userIndex !== -1) {
+                        // Update Database entry
+                        users[userIndex].name = name;
+                        users[userIndex].email = email;
+                        users[userIndex].password = password;
                         users[userIndex].hometown = hometown;
                         users[userIndex].residence = residence;
                         localStorage.setItem("roothome_users", JSON.stringify(users));
+
+                        // Sync Active Session info
+                        session.name = name;
+                        session.email = email;
+                        localStorage.setItem("roothome_session", JSON.stringify(session));
                     }
                 } else {
                     const guestSettings = { hometown, residence };
                     localStorage.setItem("roothome_guest_settings", JSON.stringify(guestSettings));
                 }
+
+                // Persist theme selection
+                localStorage.setItem("roothome_theme", selectedTheme);
 
                 updateAuthStateUI();
                 autoPrefillTimelineAddresses();
