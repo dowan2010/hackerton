@@ -425,6 +425,25 @@ body {
     grid-template-columns: 1fr;
 }
 
+/* Make subtab-realtime (Map Tab) cover 100% of screen edge-to-edge by counteracting content-body padding */
+#subtab-realtime {
+    margin: -24px;
+    height: calc(100% + 48px);
+    width: calc(100% + 48px);
+}
+
+#subtab-realtime .rootmap-grid-layout {
+    height: 100%;
+    gap: 0;
+}
+
+#subtab-realtime .map-panel {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    height: 100%;
+}
+
 /* Left Stats Panel */
 .stats-panel {
     display: flex;
