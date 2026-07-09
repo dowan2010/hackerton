@@ -1,6 +1,6 @@
 // js/map.js
 // Leaflet Map & Safe Route Navigation Engine Module
-import { mockZones } from './data.js';
+import { mockZones } from './data.js?v=20260710-3';
 
 // Dedicated Map State variables
 export let desktopMap = null;
