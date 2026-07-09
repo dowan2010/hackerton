@@ -440,40 +440,6 @@ export function renderGeoJSONLayers() {
     }).addTo(mobileMap);
     allMunicipalityLayers.push(mGeoLayer);
 
-    // 2) Main Circles for key zones
-    const activeZones = window.zonesData || mockZones;
-    activeZones.forEach(z => {
-        const lat = z.lat ?? (z.zone_center && z.zone_center[0]);
-        const lng = z.lng ?? (z.zone_center && z.zone_center[1]);
-        if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return;
-        const center = [lat, lng];
-        const color = getStatusColor(z.status);
-
-        const dCircle = L.circleMarker(center, {
-            radius: 8,
-            fillColor: color,
-            color: '#FFFFFF',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.9,
-            zIndexOffset: 1000
-        }).addTo(desktopMap);
-
-        dCircle.on("click", () => {
-            window.selectZone(z.zone_id);
-        });
-        desktopMapCircles[z.zone_id] = dCircle;
-
-        const mCircle = L.circleMarker(center, {
-            radius: 6,
-            fillColor: color,
-            color: '#FFFFFF',
-            weight: 1.5,
-            opacity: 1,
-            fillOpacity: 0.9
-        }).addTo(mobileMap);
-        mobileMapCircles[z.zone_id] = mCircle;
-    });
 }
 
 // 3) Safe Path Finder Logic (REAL ROAD OSRM Routing + Blocked Zone Bypassing)
