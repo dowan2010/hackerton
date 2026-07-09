@@ -59,6 +59,19 @@ def run_integration_tests():
     except Exception as e:
         print(f"[FAIL] 서류 판독 및 채점 API 오류: {str(e)}")
 
+    # 5. 50개년 기후 오염 예측 시뮬레이션 API 테스트
+    try:
+        r = requests.get(f"{base_url}/api/zones/prediction")
+        r.raise_for_status()
+        res_data = r.json()
+        print("[SUCCESS] 50개년 기후 예측 시계열 API 통과!")
+        print(f"         - 첫 구역 예측지: {res_data[0]['zone_name']}")
+        print(f"         - 2026년 예측 오염도: {res_data[0]['predictions'][0]['pollution_rate']}% ({res_data[0]['predictions'][0]['status']})")
+        print(f"         - 2050년 예측 오염도: {res_data[0]['predictions'][12]['pollution_rate']}% ({res_data[0]['predictions'][12]['status']})")
+        print(f"         - 2076년 예측 오염도: {res_data[0]['predictions'][25]['pollution_rate']}% ({res_data[0]['predictions'][25]['status']})")
+    except Exception as e:
+        print(f"[FAIL] 50개년 기후 예측 API 오류: {str(e)}")
+
     print("====================== 🎉 모든 백엔드 통합 API 테스트 완료! ======================")
 
 if __name__ == "__main__":

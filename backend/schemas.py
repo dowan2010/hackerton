@@ -42,3 +42,17 @@ class ZoneRecoveryData(BaseModel):
 class TimelineFeedRequest(BaseModel):
     """고향의 봄 AI 타임라인 시뮬레이터 입력을 위한 주소 스키마"""
     address: str = Field(description="원거주민이 거주했던 옛 고향의 대략적인 주소 또는 지명")
+
+from typing import List
+
+class YearlyPrediction(BaseModel):
+    """2년 단위 연도별 환경 오염도 및 재난 취약성 수준 예측 스키마"""
+    year: int = Field(description="예측 대상 연도 (2026 ~ 2076)")
+    pollution_rate: float = Field(ge=0.0, le=100.0, description="예측 기후 환경 오염도 비율 (%)")
+    status: str = Field(description="해당 연도의 봉쇄/개방 상태 예보 텍스트")
+
+class ZonePredictionResponse(BaseModel):
+    """구역별 50년 전체 시계열 예측 보고서 스키마"""
+    zone_id: str = Field(description="구역 고유 식별 코드 (예: KR-GW-01)")
+    zone_name: str = Field(description="구역 지명")
+    predictions: List[YearlyPrediction] = Field(description="2년 단위, 총 50년치 (26개 포인트) 예보 데이터 리스트")

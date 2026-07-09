@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 env_path = os.path.join(os.path.dirname(__file__), ".env")
 load_dotenv(dotenv_path=env_path)
 
-from schemas import ZoneRecoveryData, PriorityScoreResponse, TimelineFeedRequest
+from schemas import ZoneRecoveryData, PriorityScoreResponse, TimelineFeedRequest, ZonePredictionResponse
 from services.gemini_service import GeminiService
 from services.firebase_service import FirebaseService
 
@@ -52,6 +52,25 @@ async def get_zones():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"구역 데이터를 읽어오는 도중 실패했습니다: {str(e)}"
+        )
+
+@app.get("/api/zones/prediction", response_model=list[ZonePredictionResponse])
+async def get_zones_prediction():
+    """
+    4. 50개년 기후 오염도 및 재난 위험도 실시간 예측 시뮬레이션 API (2년 단위)
+    각 구역별로 2026년부터 2076년까지의 통계 예측 어레이 데이터를 동적으로 뿜어냅니다.
+    """
+    try:
+        zones = firebase_service.get_all_zones()
+        predictions_report = []
+        for zone in zones:
+            pred_data = gemini_service.predict_50year_pollution(zone.zone_id, zone.zone_name)
+            predictions_report.append(pred_data)
+        return predictions_report
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"50개년 기후 예측 연산 중 장애 발생: {str(e)}"
         )
 
 @app.post("/api/applicants/upload", response_model=PriorityScoreResponse)

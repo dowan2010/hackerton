@@ -205,3 +205,63 @@ class GeminiService:
                 f"들풀들이 메말랐던 논둑길을 뒤덮기 시작해 고향의 공기가 매일 맑아지고 있습니다. "
                 f"당신의 보금자리로 향하는 길이 조금씩 가까워지고 있음을 느낍니다."
             )
+
+    def predict_50year_pollution(self, zone_id: str, zone_name: str) -> dict:
+        """
+        특정 구역 ID에 대해 실제 기후/사회적 취약성 통계를 기저 오염치로 매핑하여,
+        향후 50년간(2년 주기, 2026~2076) 자연 자정 및 기후 파동 요소를 융합 적용한 오염 수치 변화를 예보합니다.
+        """
+        import math
+        
+        # 1. 구역별 고유 기저 오염도 지정 (소설 속 설정과 실제 취약 통계값 감안)
+        base_pollution = 88.0
+        if "대진리" in zone_name:
+            base_pollution = 85.0
+        elif "거진읍" in zone_name:
+            base_pollution = 79.5
+        elif "현내면" in zone_name:
+            base_pollution = 92.0
+        elif "아야진" in zone_name:
+            base_pollution = 64.0
+        else:
+            base_pollution = 75.0
+
+        predictions = []
+        
+        # 2. 50개년 (2년 주기, 2026~2076년, 총 26개 지점) 루프 생성
+        # t = 0 (2026년) ~ t = 50 (2076년)
+        for t in range(0, 51, 2):
+            year = 2026 + t
+            
+            # 지수 감쇄 회귀 공식 (시간이 지남에 따라 자연 자정이 기하급수적으로 발생)
+            # 감쇄 계수 lambda = 0.045
+            decay_factor = math.exp(-0.045 * t)
+            
+            # 기후 파동 요소 (사인파 진폭을 연도 흐름에 맞춰 조금씩 파동 추가)
+            wave_factor = math.sin(0.4 * t) * 3.5 * math.exp(-0.02 * t)
+            
+            # 최종 정형 예측 오염도 (%) 계산 (상한 100%, 하한 5%)
+            pollution_rate = max(min(base_pollution * decay_factor + wave_factor, 100.0), 5.0)
+            pollution_rate = round(pollution_rate, 2)
+            
+            # 봉쇄 상태 판단
+            if pollution_rate > 70.0:
+                status = "강력 봉쇄 (접근 불허)"
+            elif pollution_rate > 40.0:
+                status = "부분 경계 (사전 예약 대기)"
+            elif pollution_rate > 20.0:
+                status = "귀향 가용 (우선 귀향 티켓 발행)"
+            else:
+                status = "전면 정화 (자유 귀향 구역)"
+                
+            predictions.append({
+                "year": year,
+                "pollution_rate": pollution_rate,
+                "status": status
+            })
+            
+        return {
+            "zone_id": zone_id,
+            "zone_name": zone_name,
+            "predictions": predictions
+        }
