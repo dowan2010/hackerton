@@ -751,9 +751,9 @@ document.addEventListener("DOMContentLoaded", () => {
         function generateDistrictPolygon(zoneId, lat, lng) {
             const rand = seedRandom(zoneId);
             const points = [];
-            let radiusKm = 12; // Increased from 9 to 12
-            if (zoneId === "KR-DK-01") radiusKm = 4.0; // Increased from 2.5 to 4.0
-            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 18; // Increased from 14 to 18
+            let radiusKm = 42; // Upgraded from 12 to province-scale 42km!
+            if (zoneId === "KR-DK-01") radiusKm = 24.0; // Enlarged to 24km
+            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 65; // Massive province coverage 65km!
             
             const latOffsetDegree = radiusKm / 110.574;
             const lngOffsetDegree = radiusKm / (111.320 * Math.cos(lat * Math.PI / 180));
