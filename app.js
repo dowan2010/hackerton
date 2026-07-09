@@ -709,35 +709,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const centerPoint = [36.3000, 127.8000]; // Center of South Korea
         const baseZoom = 7; // Nation-wide zoom
 
-        const tileUrl = 'https://mt1.google.com/vt/lyrs=m&hl=ko&gl=kr&x={x}&y={y}&z={z}';
+        const tileUrl = 'https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}';
         const attribution = '&copy; Google Maps';
 
-        // Limit bounding box to South Korea
-        const southKoreaBounds = L.latLngBounds(
-            L.latLng([32.5, 123.5]), // Southwest
-            L.latLng([38.7, 132.2])  // Northeast
-        );
-
-        // 1) Desktop Map (locked to South Korea scale)
+        // 1) Desktop Map (Global scale unlocked!)
         desktopMap = L.map('desktop-map', {
             center: centerPoint,
-            zoom: baseZoom,
-            minZoom: 7, // Restricted to fit South Korea, cannot zoom out further
-            maxZoom: 13,
-            maxBounds: southKoreaBounds,
-            maxBoundsViscosity: 1.0,
+            zoom: 6,
+            minZoom: 2, // Fully unlocked to see the whole Earth
+            maxZoom: 18,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
 
-        // 2) Mobile Map (locked to South Korea scale)
+        // 2) Mobile Map (Global scale unlocked!)
         mobileMap = L.map('mobile-map', {
             center: centerPoint,
-            zoom: baseZoom, // Default zoom 7 to match desktop scale
-            minZoom: 6, // Restricted for mobile
-            maxZoom: 12,
-            maxBounds: southKoreaBounds,
-            maxBoundsViscosity: 1.0,
+            zoom: 5,
+            minZoom: 2, // Fully unlocked to see the whole Earth
+            maxZoom: 18,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(mobileMap);
