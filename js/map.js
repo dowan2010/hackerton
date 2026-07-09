@@ -259,6 +259,24 @@ export function renderGeoJSONLayers() {
     });
 
     const metroLayers = [];
+    let selectedMetroOutline = null;
+
+    function clearMetroSelection() {
+        if (selectedMetroOutline) {
+            desktopMap.removeLayer(selectedMetroOutline);
+            selectedMetroOutline = null;
+        }
+    }
+
+    function selectMetro(bounds) {
+        clearMetroSelection();
+        selectedMetroOutline = L.rectangle(bounds, {
+            color: '#2563EB',
+            weight: 3.5,
+            fill: false,
+            interactive: false
+        }).addTo(desktopMap);
+    }
 
     function districtStyle(feature) {
         const data = getMunicipalityData(feature.properties.code, feature.properties.name);
@@ -321,7 +339,7 @@ export function renderGeoJSONLayers() {
                         handleNavigatorClick(e.latlng);
                         return;
                     }
-                    metroLayers.forEach(ml => ml.setStyle({ weight: ml._baseWeight, color: 'rgba(255,255,255,0.35)' }));
+                    clearMetroSelection();
                     if (data.zone) {
                         window.selectZone(data.zone.zone_id);
                     } else {
@@ -377,7 +395,6 @@ export function renderGeoJSONLayers() {
             }
         }).addTo(desktopMap);
 
-        metroLayer._baseWeight = 0.6;
         metroLayer.on({
             mouseover: () => { if (!navigatorModeActive) metroLayer.setStyle({ fillOpacity: 0.7 }); },
             mouseout: () => { if (!navigatorModeActive) metroLayer.setStyle({ fillOpacity: 0.5 }); },
@@ -388,8 +405,7 @@ export function renderGeoJSONLayers() {
                     handleNavigatorClick(e.latlng);
                     return;
                 }
-                metroLayers.forEach(ml => ml.setStyle({ weight: ml._baseWeight, color: 'rgba(255,255,255,0.35)' }));
-                metroLayer.setStyle({ weight: 3.5, color: '#2563EB' });
+                selectMetro(metroLayer.getBounds());
 
                 const fakeZoneId = `METRO-${prefix}`;
                 if (window.zonesData && !window.zonesData.find(z => z.zone_id === fakeZoneId)) {
@@ -466,7 +482,7 @@ export function renderGeoJSONLayers() {
     });
 
     window.deselectMetroLayers = function() {
-        metroLayers.forEach(ml => ml.setStyle({ weight: ml._baseWeight, color: 'rgba(255,255,255,0.35)' }));
+        clearMetroSelection();
     };
 }
 
