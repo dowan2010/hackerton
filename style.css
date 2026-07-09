@@ -812,10 +812,6 @@ body {
     background-color: #E5E7EB;
 }
 
-/* GeoJSON SVG 레이어가 지도 경계 밖으로 삐져나오는 현상 방지 */
-.leaflet-container {
-    overflow: hidden !important;
-}
 
 /* Leaflet container & SVG Vector focus ring outline resets (Eradicates ghost rectangles upon clicks) */
 .leaflet-container:focus,
