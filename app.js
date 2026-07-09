@@ -1492,6 +1492,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        // Bind Emergency Support Trigger
+        const btnEmergency = document.querySelector(".btn-emergency");
+        if (btnEmergency) {
+            btnEmergency.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("지원 요청을 보냈습니다.");
+            });
+        }
+
         const headerSettingsBtn = document.getElementById("header-settings-btn");
         if (headerSettingsBtn) {
             headerSettingsBtn.addEventListener("click", (e) => {
