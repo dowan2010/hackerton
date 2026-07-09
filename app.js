@@ -1020,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // 1) Desktop GeoJSON Layer Injection (시군구 정밀 도시 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const muniName = feature.properties.name_ko;
+                        const muniName = feature.properties.name;
                         const zone = findZoneByMuniName(muniName);
                         if (!zone) {
                             return {
@@ -1039,7 +1039,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const muniName = feature.properties.name_ko;
+                        const muniName = feature.properties.name;
                         const zone = findZoneByMuniName(muniName);
                         if (zone) {
                             desktopMapCircles[zone.zone_id] = layer; // 대리 바인딩!
@@ -1057,7 +1057,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // 2) Mobile GeoJSON Layer Injection (시군구 정밀 도시 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const muniName = feature.properties.name_ko;
+                        const muniName = feature.properties.name;
                         const zone = findZoneByMuniName(muniName);
                         if (!zone) {
                             return {
@@ -1076,7 +1076,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const muniName = feature.properties.name_ko;
+                        const muniName = feature.properties.name;
                         const zone = findZoneByMuniName(muniName);
                         if (zone) {
                             mobileMapCircles[zone.zone_id] = layer;

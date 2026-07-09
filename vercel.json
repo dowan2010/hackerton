@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "name": "hackerton",
+  "cleanUrls": true,
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
