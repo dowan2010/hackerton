@@ -164,6 +164,8 @@ export function initNationalPolicyGenerator() {
     const resultBox = document.getElementById("national-policy-result-box");
     if (!btnPolicy || !resultBox) return;
 
+    renderRegisteredLaws();
+
     const policies = [
         `[제2035-09호] 대한민국 기후 피난민 대안착 및 국가 대자연 정제 비상조치법안
 
@@ -250,6 +252,58 @@ export function initNationalPolicyGenerator() {
         return result;
     }
 
+    // Helper: Registered laws persistence (localStorage)
+    const LAWS_STORAGE_KEY = "roothome_registered_laws";
+
+    function getRegisteredLaws() {
+        try {
+            return JSON.parse(localStorage.getItem(LAWS_STORAGE_KEY)) || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveRegisteredLaws(laws) {
+        localStorage.setItem(LAWS_STORAGE_KEY, JSON.stringify(laws));
+    }
+
+    function renderRegisteredLaws() {
+        const listEl = document.getElementById("registered-laws-list");
+        if (!listEl) return;
+        const laws = getRegisteredLaws();
+
+        if (laws.length === 0) {
+            listEl.innerHTML = `<p id="registered-laws-empty" style="font-size: 12px; color: #94A3B8; text-align: center; padding: 20px 0;">아직 등록된 법안이 없습니다.</p>`;
+            return;
+        }
+
+        listEl.innerHTML = laws.map(law => `
+            <div class="registered-law-item" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 16px;">
+                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                    <i data-lucide="scroll-text" style="width: 18px; height: 18px; color: var(--color-primary); flex-shrink: 0;"></i>
+                    <div style="min-width: 0;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px;">${law.badge}</div>
+                        <div style="font-size: 13px; font-weight: 600; color: #0F172A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${law.title}</div>
+                    </div>
+                </div>
+                <button class="btn-delete-law" data-law-id="${law.id}" style="flex-shrink: 0; background: rgba(220,38,38,0.1); color: #DC2626; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> 삭제
+                </button>
+            </div>
+        `).join('');
+
+        lucide.createIcons();
+
+        listEl.querySelectorAll(".btn-delete-law").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const id = btn.dataset.lawId;
+                const remaining = getRegisteredLaws().filter(l => l.id !== id);
+                saveRegisteredLaws(remaining);
+                renderRegisteredLaws();
+            });
+        });
+    }
+
     // Helper: Renderer for premium responsive card components
     function renderPolicyCards(parsed, element) {
         const getIconForArticle = (title) => {
@@ -289,8 +343,11 @@ export function initNationalPolicyGenerator() {
                         <span class="policy-banner-badge">${parsed.badge}</span>
                         <h4 class="policy-banner-title">${parsed.title}</h4>
                     </div>
+                    <button id="btn-register-law" style="margin-left: auto; flex-shrink: 0; background: var(--color-primary); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="bookmark-plus" style="width: 14px; height: 14px;"></i> 법안으로 등록
+                    </button>
                 </div>
-                
+
                 <div class="policy-articles-grid">
                     ${articlesHtml}
                 </div>
@@ -298,6 +355,23 @@ export function initNationalPolicyGenerator() {
         `;
 
         lucide.createIcons();
+
+        const registerBtn = document.getElementById("btn-register-law");
+        if (registerBtn) {
+            registerBtn.addEventListener("click", () => {
+                const laws = getRegisteredLaws();
+                laws.unshift({
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    badge: parsed.badge,
+                    title: parsed.title
+                });
+                saveRegisteredLaws(laws);
+                renderRegisteredLaws();
+                registerBtn.disabled = true;
+                registerBtn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i> 등록 완료';
+                lucide.createIcons();
+            });
+        }
     }
 
     btnPolicy.addEventListener("click", function() {
