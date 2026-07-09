@@ -443,8 +443,10 @@ export function renderGeoJSONLayers() {
     // 2) Main Circles for key zones
     const activeZones = window.zonesData || mockZones;
     activeZones.forEach(z => {
-        const center = z.zone_center;
-        if (!center || center[0] == null || center[1] == null) return;
+        const lat = z.lat ?? (z.zone_center && z.zone_center[0]);
+        const lng = z.lng ?? (z.zone_center && z.zone_center[1]);
+        if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return;
+        const center = [lat, lng];
         const color = getStatusColor(z.status);
 
         const dCircle = L.circleMarker(center, {
