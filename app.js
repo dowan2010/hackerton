@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let warmingDegrees = 0; // "지구 온도가 N도 오른다면" 시뮬레이터 (0~5도)
     let cachedGeoData = null; // loadMunicipalitiesGeoJSON에서 받은 원본을 안전 경로 탐색 등에서 재사용
     let allMunicipalityLayers = []; // 온난화 슬라이더로 색을 다시 칠하기 위한 {layer, code, name} 목록
-    let navigatorMap = null;
+    let navigatorModeActive = false; // 안전 경로 탐색 모드 — 켜지면 루트맵(desktopMap) 클릭으로 출발/도착지 지정
     let navPoints = [];
     let navMarkers = [];
     let navRouteLine = null;
@@ -935,6 +935,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 2. INITIALIZE ICONS ---
     lucide.createIcons();
 
+    // Map Legend Collapse/Expand toggle handler
+    const btnToggleLegend = document.getElementById("btn-toggle-legend");
+    const mapLegendCard = document.getElementById("map-legend-card");
+    if (btnToggleLegend && mapLegendCard) {
+        btnToggleLegend.addEventListener("click", function() {
+            const isCollapsed = mapLegendCard.classList.toggle("collapsed");
+            if (isCollapsed) {
+                btnToggleLegend.innerHTML = '<i data-lucide="plus" style="width: 16px; height: 16px;"></i>';
+                btnToggleLegend.title = "펼치기";
+            } else {
+                btnToggleLegend.innerHTML = '<i data-lucide="minus" style="width: 16px; height: 16px;"></i>';
+                btnToggleLegend.title = "접기";
+            }
+            lucide.createIcons();
+        });
+    }
+
     // --- 3. DUAL ROUTING & TAB SYNC (Desktop & Mobile) ---
     const desktopMenuItems = document.querySelectorAll(".sidebar-menu .menu-item");
     const desktopTabContents = document.querySelectorAll(".main-content .tab-content");
@@ -1104,6 +1121,7 @@ document.addEventListener("DOMContentLoaded", () => {
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
+        desktopMap.on("click", (e) => { if (navigatorModeActive) handleNavigatorClick(e.latlng); });
 
         // 2) Mobile Map (Global scale unlocked!)
         mobileMap = L.map('mobile-map', {
@@ -1302,6 +1320,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (isDesktop) allMunicipalityLayers.push({ layer, code: feature.properties.code, name: feature.properties.name, isKeyZone: data.isKeyZone });
                     layer.on("click", (e) => {
                         if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+                        if (isDesktop && navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
                         if (!metroPrefix) collapseExpandedMetro();
                         map.setView(layer.getBounds().getCenter(), zoomOnClick, { animate: true });
                         if (data.zone) selectZone(data.zone.zone_id);
@@ -1348,7 +1367,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     style: () => ({ color: getStatusColor(avgStatus), weight: 0, fillColor: getStatusColor(avgStatus), fillOpacity: 0.5 }),
                     onEachFeature: (feature, layer) => {
                         layer.bindPopup(`<strong>📍 ${cityName}</strong><br>평균 오염도: ${avgPollution}%<br>평균 복구율: ${avgRecovery}%<br>통제 상태: <strong>${avgStatus}</strong><br><span style="font-size:11px;color:#64748B;">클릭하면 구·군별 상세 보기</span>`);
-                        layer.on("click", () => expandMetro(prefix));
+                        layer.on("click", (e) => {
+                            if (isDesktop && navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
+                            expandMetro(prefix);
+                        });
                         if (isDesktop) {
                             layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.68 }));
                             layer.on("mouseout", () => layer.setStyle({ fillOpacity: 0.5 }));
@@ -1405,7 +1427,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         deskPoly.bindPopup(popupContent);
                         mobPoly.bindPopup(`<strong>📍 ${cleanName}</strong><br>복구율: ${zone.recovery_rate}%`);
 
-                        deskPoly.on("click", () => {
+                        deskPoly.on("click", (e) => {
+                            if (navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
                             desktopMap.setView([zone.lat, zone.lng], 9, { animate: true });
                             selectZone(zone.zone_id);
                         });
@@ -2680,11 +2703,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let navigatorInitialized = false;
 
     function initNavigatorTab() {
-        if (navigatorInitialized) {
-            setTimeout(() => { if (navigatorMap) navigatorMap.invalidateSize(); }, 100);
-            refreshWarmingStats();
-            return;
-        }
+        refreshWarmingStats();
+        if (navigatorInitialized) return;
         navigatorInitialized = true;
 
         const slider = document.getElementById("warming-slider");
@@ -2698,25 +2718,27 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        navigatorMap = L.map("navigator-map", { center: [36.3, 127.8], zoom: 7, zoomControl: true });
-        L.tileLayer("https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}", { attribution: "&copy; Google Maps" }).addTo(navigatorMap);
-
-        if (cachedGeoData) {
-            L.geoJSON(cachedGeoData, {
-                style: feature => {
-                    const data = getMunicipalityData(feature.properties.code, feature.properties.name);
-                    return { color: "#ffffff", weight: 0.6, fillColor: getStatusColor(data.status), fillOpacity: 0.35 };
-                }
-            }).addTo(navigatorMap);
-        }
-
-        navigatorMap.on("click", (e) => handleNavigatorClick(e.latlng));
+        const toggleBtn = document.getElementById("nav-mode-toggle-btn");
+        if (toggleBtn) toggleBtn.addEventListener("click", toggleNavigatorMode);
 
         const resetBtn = document.getElementById("nav-reset-btn");
         if (resetBtn) resetBtn.addEventListener("click", resetNavigator);
+    }
 
-        setTimeout(() => navigatorMap.invalidateSize(), 100);
-        refreshWarmingStats();
+    // 안전 경로 탐색 모드를 켜면 루트맵 탭(desktopMap)으로 전환해 지도를 직접 클릭하게 한다.
+    function toggleNavigatorMode() {
+        navigatorModeActive = !navigatorModeActive;
+        const toggleBtn = document.getElementById("nav-mode-toggle-btn");
+        const banner = document.getElementById("nav-mode-banner");
+        if (navigatorModeActive) {
+            if (toggleBtn) toggleBtn.textContent = "안전 경로 탐색 모드 끄기";
+            if (banner) banner.classList.remove("hidden");
+            resetNavigator();
+            syncActiveTab("rootmap", "desktop");
+        } else {
+            if (toggleBtn) toggleBtn.textContent = "안전 경로 탐색 모드 켜기";
+            if (banner) banner.classList.add("hidden");
+        }
     }
 
     function refreshAllMunicipalityStyles() {
@@ -2737,30 +2759,35 @@ document.addEventListener("DOMContentLoaded", () => {
         label.textContent = Math.round((blocked / cachedGeoData.features.length) * 100) + "%";
     }
 
+    function setNavStatusText(text) {
+        const statusEl = document.getElementById("nav-status-text");
+        const banner = document.getElementById("nav-mode-banner");
+        if (statusEl) statusEl.textContent = text;
+        if (banner) banner.textContent = "🧭 " + text;
+    }
+
     function handleNavigatorClick(latlng) {
         if (navPoints.length >= 2) resetNavigator();
 
         navPoints.push([latlng.lat, latlng.lng]);
         const color = navPoints.length === 1 ? "#2563EB" : "#ef4444";
-        const marker = L.circleMarker(latlng, { radius: 7, color, fillColor: color, fillOpacity: 1 }).addTo(navigatorMap);
+        const marker = L.circleMarker(latlng, { radius: 7, color, fillColor: color, fillOpacity: 1 }).addTo(desktopMap);
         navMarkers.push(marker);
 
-        const statusEl = document.getElementById("nav-status-text");
         if (navPoints.length === 1) {
-            if (statusEl) statusEl.textContent = "도착지를 클릭하세요.";
+            setNavStatusText("도착지를 클릭하세요.");
         } else if (navPoints.length === 2) {
-            if (statusEl) statusEl.textContent = "봉쇄 구역을 피해 경로를 계산 중...";
+            setNavStatusText("봉쇄 구역을 피해 경로를 계산 중...");
             drawSafeRoute(navPoints[0], navPoints[1]);
         }
     }
 
     function resetNavigator() {
         navPoints = [];
-        navMarkers.forEach(m => navigatorMap.removeLayer(m));
+        navMarkers.forEach(m => desktopMap.removeLayer(m));
         navMarkers = [];
-        if (navRouteLine) { navigatorMap.removeLayer(navRouteLine); navRouteLine = null; }
-        const statusEl = document.getElementById("nav-status-text");
-        if (statusEl) statusEl.textContent = "지도를 클릭해 출발지를 선택하세요.";
+        if (navRouteLine) { desktopMap.removeLayer(navRouteLine); navRouteLine = null; }
+        setNavStatusText("지도를 클릭해 출발지를 선택하세요.");
     }
 
     // ray-casting point-in-polygon. ring: [[lng,lat], ...] (구멍 없는 단순 시군구 폴리곤 기준)
@@ -2848,12 +2875,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const blockedRings = getBlockedPolygons();
         const routeLatLngs = findSafeRoute(start, end, blockedRings);
 
-        if (navRouteLine) navigatorMap.removeLayer(navRouteLine);
-        navRouteLine = L.polyline(routeLatLngs, { color: "#2563EB", weight: 4, opacity: 0.85, dashArray: "8 4" }).addTo(navigatorMap);
-        navigatorMap.fitBounds(navRouteLine.getBounds(), { padding: [30, 30] });
+        if (navRouteLine) desktopMap.removeLayer(navRouteLine);
+        navRouteLine = L.polyline(routeLatLngs, { color: "#2563EB", weight: 4, opacity: 0.85, dashArray: "8 4" }).addTo(desktopMap);
+        desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [30, 30] });
 
-        const statusEl = document.getElementById("nav-status-text");
-        if (statusEl) statusEl.textContent = `경로 탐색 완료 — 우회 대상 봉쇄 구역 ${blockedRings.length}곳.`;
+        setNavStatusText(`경로 탐색 완료 — 우회 대상 봉쇄 구역 ${blockedRings.length}곳.`);
     }
 
     // --- 8. STARTUP INITIALIZATION ---

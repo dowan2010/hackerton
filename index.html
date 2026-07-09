@@ -131,24 +131,33 @@
                                 <!-- Real Map instance replacing grid -->
                                 <div id="desktop-map" class="map-instance"></div>
 
-                                <div class="map-legend-card">
-                                    <h4 class="legend-title">구역 환경 상태</h4>
-                                    <p class="legend-subtitle">상세 복원 행정 단위</p>
-                                    <div class="legend-list">
-                                        <div class="legend-item">
-                                            <span class="legend-name">🔴 차단됨 (복원 진행중)</span>
+                                <div class="hidden" id="nav-mode-banner" style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--color-primary); color: #fff; padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-md); pointer-events: none;">🧭 안전 경로 탐색 모드 — 지도를 클릭해 출발지를 선택하세요.</div>
+
+                                <div class="map-legend-card" id="map-legend-card">
+                                    <div class="legend-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <h4 class="legend-title" style="margin: 0;">구역 환경 상태</h4>
+                                            <p class="legend-subtitle" style="margin: 0; margin-top: 2px;">상세 복원 행정 단위</p>
                                         </div>
-                                        <div class="legend-item">
-                                            <span class="legend-name">🟡 예약 가능 (정화 가속)</span>
-                                        </div>
-                                        <div class="legend-item">
-                                            <span class="legend-name">🟢 안전함 (귀향 시작)</span>
-                                        </div>
+                                        <button class="btn-toggle-legend" id="btn-toggle-legend" title="접기/펼치기" style="background: none; border: none; padding: 4px; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; outline: none; border-radius: 4px; transition: all 0.2s;"><i data-lucide="minus" style="width: 16px; height: 16px;"></i></button>
                                     </div>
-                                    <div class="legend-divider"></div>
-                                    <div class="legend-item">
-                                        <i data-lucide="info" style="width: 14px; height: 14px; color: var(--color-primary);"></i>
-                                        <span class="legend-name">마커 클릭시 줌인 및 분석</span>
+                                    <div class="legend-body" id="legend-body">
+                                        <div class="legend-list" style="margin-top: 12px;">
+                                            <div class="legend-item">
+                                                <span class="legend-name">🔴 차단됨 (복원 진행중)</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-name">🟡 예약 가능 (정화 가속)</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-name">🟢 안전함 (귀향 시작)</span>
+                                            </div>
+                                        </div>
+                                        <div class="legend-divider" style="margin: 12px 0; border-top: 1px solid var(--color-sidebar-border);"></div>
+                                        <div class="legend-item">
+                                            <i data-lucide="info" style="width: 14px; height: 14px; color: var(--color-primary);"></i>
+                                            <span class="legend-name">마커 클릭시 줌인 및 분석</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -661,12 +670,14 @@
 
                     <div class="dignity-card">
                         <h2 class="panel-section-title" style="margin-bottom: 4px;">🧭 안전 경로 탐색</h2>
-                        <p class="panel-section-subtitle" style="margin-bottom: 16px;">지도를 클릭해 출발지를, 다시 클릭해 도착지를 지정하면 봉쇄 구역을 피해 경로를 찾습니다.</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span id="nav-status-text" style="font-size: 13px; color: var(--color-text-muted);">지도를 클릭해 출발지를 선택하세요.</span>
-                            <button class="btn-popup-action" id="nav-reset-btn" style="width: auto; padding: 6px 16px;">경로 초기화</button>
+                        <p class="panel-section-subtitle" style="margin-bottom: 16px;">루트맵의 지도에서 바로 출발지·도착지를 찍어 봉쇄 구역을 피한 경로를 찾습니다.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span id="nav-status-text" style="font-size: 13px; color: var(--color-text-muted);">아래 버튼을 눌러 탐색 모드를 켜세요.</span>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-popup-action" id="nav-mode-toggle-btn" style="width: auto; padding: 6px 16px;">안전 경로 탐색 모드 켜기</button>
+                                <button class="btn-popup-action" id="nav-reset-btn" style="width: auto; padding: 6px 16px; background: var(--color-text-muted);">경로 초기화</button>
+                            </div>
                         </div>
-                        <div id="navigator-map" style="width: 100%; height: 480px; border-radius: var(--radius-lg); overflow: hidden;"></div>
                     </div>
                 </section>
             </div>
