@@ -27,6 +27,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let mobileMap = null;
     let desktopMapCircles = {};
     let mobileMapCircles = {};
+    let warmingDegrees = 0; // "지구 온도가 N도 오른다면" 시뮬레이터 (0~5도)
+    let cachedGeoData = null; // loadMunicipalitiesGeoJSON에서 받은 원본을 안전 경로 탐색 등에서 재사용
+    let allMunicipalityLayers = []; // 온난화 슬라이더로 색을 다시 칠하기 위한 {layer, code, name} 목록
+    let navigatorMap = null;
+    let navPoints = [];
+    let navMarkers = [];
+    let navRouteLine = null;
     let backendUrl = `https://roothome-backend-686146847894.asia-northeast3.run.app`;
     if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
         backendUrl = "http://127.0.0.1:8000";
@@ -857,7 +864,14 @@ document.addEventListener("DOMContentLoaded", () => {
     desktopMenuItems.forEach(item => {
         item.addEventListener("click", (e) => {
             e.preventDefault();
-            syncActiveTab(item.getAttribute("data-tab"), "desktop");
+            const tabId = item.getAttribute("data-tab");
+            if (tabId === "navigator" && !JSON.parse(localStorage.getItem("roothome_session") || "null")) {
+                const authModal = document.getElementById("auth-modal");
+                if (authModal) authModal.classList.remove("hidden");
+                return;
+            }
+            syncActiveTab(tabId, "desktop");
+            if (tabId === "navigator") initNavigatorTab();
         });
     });
 
@@ -1048,7 +1062,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const rand = seedRandom("muni-" + code);
             const bias = getRegionFoodBias(code);
-            const recovery = Math.max(5, Math.min(98, Math.round((30 + rand() * 68 + bias) * 10) / 10));
+            const warmingPenalty = warmingDegrees * 12; // 1도당 복구율 12점 하락 시뮬레이션
+            const recovery = Math.max(5, Math.min(98, Math.round((30 + rand() * 68 + bias - warmingPenalty) * 10) / 10));
             let status;
             if (recovery >= 82) status = "귀향시작";
             else if (recovery >= 55) status = "예약가능";
@@ -1124,6 +1139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const pollution = Math.round((100 - data.recovery_rate) * 10) / 10;
                     layer.bindPopup(`<strong>📍 ${data.name}</strong><br>오염도: ${pollution}%<br>복구율: ${data.recovery_rate}%<br>통제 상태: <strong>${data.status}</strong>`);
                     if (data.zone) mapCircles[data.zone.zone_id] = layer;
+                    if (isDesktop) allMunicipalityLayers.push({ layer, code: feature.properties.code, name: feature.properties.name, isKeyZone: data.isKeyZone });
                     layer.on("click", (e) => {
                         if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
                         if (!metroPrefix) collapseExpandedMetro();
@@ -1190,6 +1206,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const res = await fetch("./skorea_municipalities_simple.json");
                 if (!res.ok) throw new Error("Local Si-Gun-Gu GeoJSON server response error");
                 const geoData = await res.json();
+                cachedGeoData = geoData;
 
                 // 1) Desktop: 일반 시군구는 개별, 광역시는 통합→상세 2단계로 렌더링
                 renderMunicipalities(geoData, desktopMap, desktopMapCircles, true);
@@ -2500,6 +2517,186 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Prefill Timeline Input Box on load
         autoPrefillTimelineAddresses();
+    }
+
+    // --- 7.7 SAFE NAVIGATOR & WARMING SIMULATOR (로그인 필요 탭) ---
+    let navigatorInitialized = false;
+
+    function initNavigatorTab() {
+        if (navigatorInitialized) {
+            setTimeout(() => { if (navigatorMap) navigatorMap.invalidateSize(); }, 100);
+            refreshWarmingStats();
+            return;
+        }
+        navigatorInitialized = true;
+
+        const slider = document.getElementById("warming-slider");
+        const valueLabel = document.getElementById("warming-value");
+        if (slider) {
+            slider.addEventListener("input", () => {
+                warmingDegrees = parseFloat(slider.value);
+                if (valueLabel) valueLabel.textContent = warmingDegrees;
+                refreshAllMunicipalityStyles();
+                refreshWarmingStats();
+            });
+        }
+
+        navigatorMap = L.map("navigator-map", { center: [36.3, 127.8], zoom: 7, zoomControl: true });
+        L.tileLayer("https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}", { attribution: "&copy; Google Maps" }).addTo(navigatorMap);
+
+        if (cachedGeoData) {
+            L.geoJSON(cachedGeoData, {
+                style: feature => {
+                    const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+                    return { color: "#ffffff", weight: 0.6, fillColor: getStatusColor(data.status), fillOpacity: 0.35 };
+                }
+            }).addTo(navigatorMap);
+        }
+
+        navigatorMap.on("click", (e) => handleNavigatorClick(e.latlng));
+
+        const resetBtn = document.getElementById("nav-reset-btn");
+        if (resetBtn) resetBtn.addEventListener("click", resetNavigator);
+
+        setTimeout(() => navigatorMap.invalidateSize(), 100);
+        refreshWarmingStats();
+    }
+
+    function refreshAllMunicipalityStyles() {
+        allMunicipalityLayers.forEach(({ layer, code, name, isKeyZone }) => {
+            const data = getMunicipalityData(code, name);
+            layer.setStyle({ fillColor: getStatusColor(data.status), fillOpacity: isKeyZone ? 0.58 : 0.32 });
+        });
+    }
+
+    function refreshWarmingStats() {
+        const label = document.getElementById("warming-blocked-ratio");
+        if (!label || !cachedGeoData) return;
+        let blocked = 0;
+        cachedGeoData.features.forEach(f => {
+            const data = getMunicipalityData(f.properties.code, f.properties.name);
+            if (data.status === "봉쇄") blocked++;
+        });
+        label.textContent = Math.round((blocked / cachedGeoData.features.length) * 100) + "%";
+    }
+
+    function handleNavigatorClick(latlng) {
+        if (navPoints.length >= 2) resetNavigator();
+
+        navPoints.push([latlng.lat, latlng.lng]);
+        const color = navPoints.length === 1 ? "#2563EB" : "#ef4444";
+        const marker = L.circleMarker(latlng, { radius: 7, color, fillColor: color, fillOpacity: 1 }).addTo(navigatorMap);
+        navMarkers.push(marker);
+
+        const statusEl = document.getElementById("nav-status-text");
+        if (navPoints.length === 1) {
+            if (statusEl) statusEl.textContent = "도착지를 클릭하세요.";
+        } else if (navPoints.length === 2) {
+            if (statusEl) statusEl.textContent = "봉쇄 구역을 피해 경로를 계산 중...";
+            drawSafeRoute(navPoints[0], navPoints[1]);
+        }
+    }
+
+    function resetNavigator() {
+        navPoints = [];
+        navMarkers.forEach(m => navigatorMap.removeLayer(m));
+        navMarkers = [];
+        if (navRouteLine) { navigatorMap.removeLayer(navRouteLine); navRouteLine = null; }
+        const statusEl = document.getElementById("nav-status-text");
+        if (statusEl) statusEl.textContent = "지도를 클릭해 출발지를 선택하세요.";
+    }
+
+    // ray-casting point-in-polygon. ring: [[lng,lat], ...] (구멍 없는 단순 시군구 폴리곤 기준)
+    function pointInPolygonRing(lat, lng, ring) {
+        let inside = false;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+            const xi = ring[i][0], yi = ring[i][1];
+            const xj = ring[j][0], yj = ring[j][1];
+            const intersect = ((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    function getBlockedPolygons() {
+        if (!cachedGeoData) return [];
+        const polys = [];
+        cachedGeoData.features.forEach(f => {
+            const data = getMunicipalityData(f.properties.code, f.properties.name);
+            if (data.status !== "봉쇄") return;
+            const geom = f.geometry;
+            if (geom.type === "Polygon") polys.push(geom.coordinates[0]);
+            else if (geom.type === "MultiPolygon") geom.coordinates.forEach(p => polys.push(p[0]));
+        });
+        return polys;
+    }
+
+    function isLatLngBlocked(lat, lng, blockedRings) {
+        for (const ring of blockedRings) {
+            if (pointInPolygonRing(lat, lng, ring)) return true;
+        }
+        return false;
+    }
+
+    // 그리드 BFS로 봉쇄 구역(폴리곤)을 장애물 삼아 우회 경로를 찾는다. 실제 도로망 데이터가
+    // 없는 데모 앱이라 "봉쇄 구역을 최대한 피하는 경로"를 흉내내는 수준으로 충분하다.
+    function findSafeRoute(start, end, blockedRings) {
+        const GRID = 32;
+        const pad = 0.08;
+        const latMin = Math.min(start[0], end[0]) - pad;
+        const latMax = Math.max(start[0], end[0]) + pad;
+        const lngMin = Math.min(start[1], end[1]) - pad;
+        const lngMax = Math.max(start[1], end[1]) + pad;
+        const latStep = (latMax - latMin) / GRID;
+        const lngStep = (lngMax - lngMin) / GRID;
+
+        function toCell(lat, lng) {
+            return [Math.round((lat - latMin) / latStep), Math.round((lng - lngMin) / lngStep)];
+        }
+        function toLatLng(r, c) {
+            return [latMin + r * latStep, lngMin + c * lngStep];
+        }
+        function isBlockedCell(r, c) {
+            if (r < 0 || r > GRID || c < 0 || c > GRID) return true;
+            const [lat, lng] = toLatLng(r, c);
+            return isLatLngBlocked(lat, lng, blockedRings);
+        }
+
+        const startCell = toCell(start[0], start[1]);
+        const endCell = toCell(end[0], end[1]);
+        const key = (r, c) => r + "," + c;
+        const visited = new Set([key(startCell[0], startCell[1])]);
+        const queue = [[startCell, [startCell]]];
+        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+        let foundPath = null;
+
+        while (queue.length) {
+            const [cur, path] = queue.shift();
+            if (cur[0] === endCell[0] && cur[1] === endCell[1]) { foundPath = path; break; }
+            for (const [dr, dc] of dirs) {
+                const nr = cur[0] + dr, nc = cur[1] + dc;
+                const k = key(nr, nc);
+                if (visited.has(k)) continue;
+                if (isBlockedCell(nr, nc)) continue;
+                visited.add(k);
+                queue.push([[nr, nc], [...path, [nr, nc]]]);
+            }
+        }
+
+        if (!foundPath) return [start, end]; // 완전 회피 불가시 직선 대체
+        return foundPath.map(([r, c]) => toLatLng(r, c));
+    }
+
+    function drawSafeRoute(start, end) {
+        const blockedRings = getBlockedPolygons();
+        const routeLatLngs = findSafeRoute(start, end, blockedRings);
+
+        if (navRouteLine) navigatorMap.removeLayer(navRouteLine);
+        navRouteLine = L.polyline(routeLatLngs, { color: "#2563EB", weight: 4, opacity: 0.85, dashArray: "8 4" }).addTo(navigatorMap);
+        navigatorMap.fitBounds(navRouteLine.getBounds(), { padding: [30, 30] });
+
+        const statusEl = document.getElementById("nav-status-text");
+        if (statusEl) statusEl.textContent = `경로 탐색 완료 — 우회 대상 봉쇄 구역 ${blockedRings.length}곳.`;
     }
 
     // --- 8. STARTUP INITIALIZATION ---

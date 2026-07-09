@@ -44,6 +44,10 @@
                     <i data-lucide="activity"></i>
                     <span>스프링 타임라인</span>
                 </a>
+                <a href="#" class="menu-item" data-tab="navigator">
+                    <i data-lucide="navigation"></i>
+                    <span>안전 경로 · 온난화 시뮬레이터</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -640,6 +644,29 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: SAFE NAVIGATOR & WARMING SIMULATOR (로그인 필요) -->
+                <section class="tab-content hidden" id="tab-navigator" style="padding: 24px; overflow-y: auto;">
+                    <div class="dignity-card" style="margin-bottom: 24px;">
+                        <h2 class="panel-section-title" style="margin-bottom: 4px;">🌡️ 지구 온도 상승 시뮬레이터</h2>
+                        <p class="panel-section-subtitle" style="margin-bottom: 16px;">"만약 지구 평균 기온이 N도 더 오른다면?" — 전국 시군구 복구율에 실시간 반영합니다.</p>
+                        <input type="range" id="warming-slider" min="0" max="5" step="0.5" value="0" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: var(--color-text-muted);">
+                            <span>현재 +<span id="warming-value">0</span>°C</span>
+                            <span>전국 봉쇄 비율: <strong id="warming-blocked-ratio">-</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="dignity-card">
+                        <h2 class="panel-section-title" style="margin-bottom: 4px;">🧭 안전 경로 탐색</h2>
+                        <p class="panel-section-subtitle" style="margin-bottom: 16px;">지도를 클릭해 출발지를, 다시 클릭해 도착지를 지정하면 봉쇄 구역을 피해 경로를 찾습니다.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span id="nav-status-text" style="font-size: 13px; color: var(--color-text-muted);">지도를 클릭해 출발지를 선택하세요.</span>
+                            <button class="btn-popup-action" id="nav-reset-btn" style="width: auto; padding: 6px 16px;">경로 초기화</button>
+                        </div>
+                        <div id="navigator-map" style="width: 100%; height: 480px; border-radius: var(--radius-lg); overflow: hidden;"></div>
                     </div>
                 </section>
             </div>
