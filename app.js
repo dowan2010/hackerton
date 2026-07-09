@@ -1230,6 +1230,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const zone = zonesData.find(z => z.zone_id === zoneId);
         if (!zone) return;
 
+        // Calculate dynamic relocation years in 4-year increments based on recovery rate
+        const R = zone.recovery_rate;
+        let T = 0;
+        if (R >= 90) {
+            T = 0;
+        } else if (R >= 70) {
+            T = 4;
+        } else if (R >= 50) {
+            T = 8;
+        } else if (R >= 30) {
+            T = 12;
+        } else {
+            T = 16;
+        }
+        zone.time_to_safe_years = T;
+
+        // Sync status to match dynamic calculation
+        if (R <= 30.0) {
+            zone.status = "봉쇄";
+        } else if (R <= 90.0) {
+            zone.status = "예약가능";
+        } else {
+            zone.status = "귀향시작";
+        }
+
         zonesData.forEach(z => {
             const deskC = desktopMapCircles[z.zone_id];
             const mobC = mobileMapCircles[z.zone_id];
@@ -1392,6 +1417,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const future = zoneFutureTimelines[zone.zone_id];
 
+        // Ensure dynamic 4-year increments timeline calculation
+        let T = zone.time_to_safe_years;
+        if (T === undefined) {
+            const R = zone.recovery_rate;
+            if (R >= 90) {
+                T = 0;
+            } else if (R >= 70) {
+                T = 4;
+            } else if (R >= 50) {
+                T = 8;
+            } else if (R >= 30) {
+                T = 12;
+            } else {
+                T = 16;
+            }
+        }
+
         // Update images and overlays dynamically
         const ecoType = getEcologyType(zone.zone_id);
         const assets = zoneEcologyAssets[ecoType];
@@ -1413,7 +1455,42 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("desktop-timeline-active-zone").textContent = zone.zone_name;
         document.getElementById("mobile-timeline-active-zone").textContent = zone.zone_name;
 
-        // 1. Desktop Timeline Card updates
+        // --- 1. Desktop Timeline Card updates ---
+        const deskCard1 = document.querySelector(".timeline-card-wrapper.future");
+        const deskCard2 = document.querySelector(".timeline-card-wrapper.mid-term");
+        const deskCard3 = document.querySelector(".timeline-card-wrapper.start");
+
+        if (deskCard3) {
+            const dateEl = deskCard3.querySelector(".feed-date");
+            if (dateEl) dateEl.textContent = "2026년 03월 20일";
+            const badgeEl = deskCard3.querySelector(".badge-status-grey");
+            if (badgeEl) badgeEl.textContent = "INITIATED 2026";
+        }
+
+        if (deskCard2) {
+            const dateEl = deskCard2.querySelector(".feed-date");
+            if (dateEl) {
+                const midYear = T >= 4 ? 2030 : 2026;
+                dateEl.textContent = `${midYear}년 10월 05일`;
+            }
+        }
+
+        if (deskCard1) {
+            const dateEl = deskCard1.querySelector(".feed-date");
+            if (dateEl) {
+                dateEl.textContent = `${2026 + T}년 04월 12일`;
+            }
+            const badgeEl = deskCard1.querySelector(".badge-status-blue") || deskCard1.querySelector('[class^="badge-status-"]');
+            if (badgeEl) {
+                if (T === 0) {
+                    badgeEl.textContent = "RETURN SAFE (2026)";
+                    badgeEl.className = "badge-status-blue";
+                } else {
+                    badgeEl.textContent = `PREDICTED ${2026 + T}`;
+                }
+            }
+        }
+
         document.getElementById("desktop-feed-2035-p1").textContent = future ? `"${future.futureP1}"` : `"${diary.p1}"`;
         document.getElementById("desktop-feed-2035-p2").textContent = future ? future.futureP2 : diary.p2;
         
@@ -1437,22 +1514,34 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("desktop-feed-2025-fill").style.width = `${currentProgress}%`;
         document.getElementById("desktop-feed-2025-percent").textContent = `분석 진행률 ${currentProgress}%`;
 
-        // 2. Mobile Timeline Card updates
+        // --- 2. Mobile Timeline Card updates ---
         const mobTimeline = document.getElementById("mobile-timeline-flow");
         if (mobTimeline) {
             const mobCards = mobTimeline.querySelectorAll(".mobile-timeline-node");
             if (mobCards.length >= 3) {
-                // Card 1 (Future 2035)
+                // Card 1 (Future)
+                const mobCard1Date = mobCards[0].querySelector(".date");
+                if (mobCard1Date) mobCard1Date.textContent = `${2026 + T}년 04월 12일`;
+
                 mobCards[0].querySelector(".card-title-bold").textContent = future ? future.futureTitle : "복원된 참나무 숲";
                 mobCards[0].querySelector(".card-quote").textContent = future ? `"${future.futureP1}"` : `"${diary.p1}"`;
                 mobCards[0].querySelector(".val").innerHTML = `${toxPpm} ppm <span class="trend-down"><i data-lucide="arrow-down"></i> ${Math.round(zone.recovery_rate / 3)}%</span>`;
 
-                // Card 2 (Mid 2029)
+                // Card 2 (Mid-term)
+                const mobCard2Date = mobCards[1].querySelector(".date");
+                if (mobCard2Date) {
+                    const midYear = T >= 4 ? 2030 : 2026;
+                    mobCard2Date.textContent = `${midYear}년 10월 05일`;
+                }
+
                 mobCards[1].querySelector(".card-title-bold").textContent = future ? future.midTitle : "수변 생태계의 귀환";
                 mobCards[1].querySelector(".card-quote").textContent = future ? `"${future.midContent}"` : `"정화 필터 배치 완료"`;
                 mobCards[1].querySelector(".val").innerHTML = `${Math.round(100 - zone.recovery_rate)}% <span class="trend-down"><i data-lucide="arrow-down"></i> ${Math.round(zone.recovery_rate / 2)}%</span>`;
 
-                // Card 3 (Start 2025)
+                // Card 3 (Start)
+                const mobCard3Date = mobCards[2].querySelector(".date");
+                if (mobCard3Date) mobCard3Date.textContent = "2026년 03월 20일";
+
                 mobCards[2].querySelector(".card-quote").textContent = future ? `"${future.startContent}"` : `"분석 가동 시작"`;
                 const progressFill = mobCards[2].querySelector(".progress-bar-fill");
                 if (progressFill) progressFill.style.width = `${currentProgress}%`;
@@ -1658,17 +1747,91 @@ document.addEventListener("DOMContentLoaded", () => {
         const sim1 = paragraphs[0] || "";
         const sim2 = paragraphs[1] || "";
 
+        // Determine T from active zone
+        const activeZone = zonesData.find(z => z.zone_id === selectedZoneId) || zonesData[2];
+        const R = activeZone.recovery_rate;
+        let T = 0;
+        if (R >= 90) {
+            T = 0;
+        } else if (R >= 70) {
+            T = 4;
+        } else if (R >= 50) {
+            T = 8;
+        } else if (R >= 30) {
+            T = 12;
+        } else {
+            T = 16;
+        }
+
         document.getElementById("desktop-timeline-active-zone").textContent = `${address} (시뮬레이션 반영)`;
         document.getElementById("mobile-timeline-active-zone").textContent = address;
+
+        // --- Desktop Dates & Badges Updates ---
+        const deskCard1 = document.querySelector(".timeline-card-wrapper.future");
+        const deskCard2 = document.querySelector(".timeline-card-wrapper.mid-term");
+        const deskCard3 = document.querySelector(".timeline-card-wrapper.start");
+
+        if (deskCard3) {
+            const dateEl = deskCard3.querySelector(".feed-date");
+            if (dateEl) dateEl.textContent = "2026년 03월 20일";
+            const badgeEl = deskCard3.querySelector(".badge-status-grey");
+            if (badgeEl) badgeEl.textContent = "INITIATED 2026";
+        }
+
+        if (deskCard2) {
+            const dateEl = deskCard2.querySelector(".feed-date");
+            if (dateEl) {
+                const midYear = T >= 4 ? 2030 : 2026;
+                dateEl.textContent = `${midYear}년 10월 05일`;
+            }
+        }
+
+        if (deskCard1) {
+            const dateEl = deskCard1.querySelector(".feed-date");
+            if (dateEl) {
+                dateEl.textContent = `${2026 + T}년 04월 12일`;
+            }
+            const badgeEl = deskCard1.querySelector(".badge-status-blue") || deskCard1.querySelector('[class^="badge-status-"]');
+            if (badgeEl) {
+                if (T === 0) {
+                    badgeEl.textContent = "RETURN SAFE (2026)";
+                    badgeEl.className = "badge-status-blue";
+                } else {
+                    badgeEl.textContent = `PREDICTED ${2026 + T}`;
+                }
+            }
+        }
 
         document.getElementById("desktop-feed-2035-p1").textContent = `"${sim1}"`;
         document.getElementById("desktop-feed-2035-p2").textContent = sim2;
         
         document.getElementById("desktop-feed-2029-content").textContent = `"어릴 적 발을 담그던 ${address}의 개울가에 다시 은어들이 돌아왔습니다. AI 정화 필터가 설치된 지 3년 만에 하천의 자정 능력이 완전히 회복되었습니다."`;
 
-        document.getElementById("mobile-feed-2035-content").textContent = `"${sim1}"`;
-        document.getElementById("mobile-feed-2029-content").textContent = `"어릴 적 발을 담그던 ${address}의 개울가에 다시 은어들이 돌아왔습니다. 정화 노드 유량 포화도 100% 달성 및 자정 능력이 성공적으로 완비되었습니다."`;
+        // --- Mobile Timeline Card updates ---
+        const mobTimeline = document.getElementById("mobile-timeline-flow");
+        if (mobTimeline) {
+            const mobCards = mobTimeline.querySelectorAll(".mobile-timeline-node");
+            if (mobCards.length >= 3) {
+                // Card 1
+                const mobCard1Date = mobCards[0].querySelector(".date");
+                if (mobCard1Date) mobCard1Date.textContent = `${2026 + T}년 04월 12일`;
+                mobCards[0].querySelector(".card-quote").textContent = `"${sim1}"`;
 
+                // Card 2
+                const mobCard2Date = mobCards[1].querySelector(".date");
+                if (mobCard2Date) {
+                    const midYear = T >= 4 ? 2030 : 2026;
+                    mobCard2Date.textContent = `${midYear}년 10월 05일`;
+                }
+                mobCards[1].querySelector(".card-quote").textContent = `"어릴 적 발을 담그던 ${address}의 개울가에 다시 은어들이 돌아왔습니다. 정화 노드 유량 포화도 100% 달성 및 자정 능력이 성공적으로 완비되었습니다."`;
+
+                // Card 3
+                const mobCard3Date = mobCards[2].querySelector(".date");
+                if (mobCard3Date) mobCard3Date.textContent = "2026년 03월 20일";
+            }
+        }
+
+        lucide.createIcons();
         alert(`'${address}' 주소에 적합한 AI 고향의 봄 시뮬레이션 타임라인이 피드에 로드되었습니다!`);
     }
 
