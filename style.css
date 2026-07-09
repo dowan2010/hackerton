@@ -3441,10 +3441,18 @@ body.dark-theme .mobile-card,
 body.dark-theme .profile-main-card,
 body.dark-theme .auth-modal-card,
 body.dark-theme .mobile-header,
+body.dark-theme .timeline-search-section,
+body.dark-theme .timeline-feed-card,
 body.dark-theme .mobile-nav-bar {
     background-color: #1E293B !important;
     color: #F1F5F9 !important;
     border-color: #334155 !important;
+}
+
+/* Secure badge high-contrast theme overrides */
+body.dark-theme .badge-secure {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #34D399 !important;
 }
 
 /* Specific text color fixes for dark mode */
