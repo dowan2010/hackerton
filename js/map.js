@@ -516,7 +516,11 @@ export function resetNavigator() {
     navPoints = [];
     navMarkers.forEach(m => desktopMap.removeLayer(m));
     navMarkers = [];
-    if (navRouteLine) { desktopMap.removeLayer(navRouteLine); navRouteLine = null; }
+    if (navRouteLine) {
+        if (navRouteLine._outline) desktopMap.removeLayer(navRouteLine._outline);
+        desktopMap.removeLayer(navRouteLine);
+        navRouteLine = null;
+    }
     
     const setNavStatusText = window.setNavStatusText || console.log;
     setNavStatusText("지도를 클릭해 출발지를 선택하세요.");
@@ -626,7 +630,29 @@ export function findSafeRoute(start, end, blockedRings) {
     }
 
     if (!foundPath) return [start, end];
-    return foundPath.map(([r, c]) => toLatLng(r, c));
+    const raw = foundPath.map(([r, c]) => toLatLng(r, c));
+    // Ramer-Douglas-Peucker simplification to remove grid staircase noise
+    return rdpSimplify(raw, 0.003);
+}
+
+function rdpSimplify(points, epsilon) {
+    if (points.length < 3) return points;
+    let maxDist = 0, maxIdx = 0;
+    const [lat1, lng1] = points[0];
+    const [lat2, lng2] = points[points.length - 1];
+    const denom = Math.sqrt((lat2 - lat1) ** 2 + (lng2 - lng1) ** 2);
+    for (let i = 1; i < points.length - 1; i++) {
+        const [lat, lng] = points[i];
+        const dist = denom === 0 ? Math.sqrt((lat - lat1) ** 2 + (lng - lng1) ** 2)
+            : Math.abs((lat2 - lat1) * (lng1 - lng) - (lat1 - lat) * (lng2 - lng1)) / denom;
+        if (dist > maxDist) { maxDist = dist; maxIdx = i; }
+    }
+    if (maxDist > epsilon) {
+        const left = rdpSimplify(points.slice(0, maxIdx + 1), epsilon);
+        const right = rdpSimplify(points.slice(maxIdx), epsilon);
+        return [...left.slice(0, -1), ...right];
+    }
+    return [points[0], points[points.length - 1]];
 }
 
 export async function drawSafeRoute(start, end) {
@@ -718,15 +744,23 @@ export async function drawSafeRoute(start, end) {
         etaText = `${Math.round(distanceSim * 1.5)}분`;
     }
 
-    if (navRouteLine) desktopMap.removeLayer(navRouteLine);
-    
-    // Smooth custom polyline for premium visualization
-    navRouteLine = L.polyline(routeLatLngs, { 
-        color: needsBypass ? "#EA580C" : "#2563EB", 
-        weight: 3.5, 
-        opacity: 0.9, 
-        dashArray: needsBypass ? "10 5" : "none" 
+    if (navRouteLine) {
+        if (navRouteLine._outline) desktopMap.removeLayer(navRouteLine._outline);
+        desktopMap.removeLayer(navRouteLine);
+        navRouteLine = null;
+    }
+    // 외곽선 레이어 (흰 테두리) + 메인 라인 두 겹으로 선명하게
+    const routeOutline = L.polyline(routeLatLngs, {
+        color: "#ffffff",
+        weight: 4,
+        opacity: 0.6
     }).addTo(desktopMap);
+    navRouteLine = L.polyline(routeLatLngs, {
+        color: needsBypass ? "#EA580C" : "#2563EB",
+        weight: 2,
+        opacity: 0.95
+    }).addTo(desktopMap);
+    navRouteLine._outline = routeOutline;
     
     desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [40, 40] });
 
