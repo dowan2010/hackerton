@@ -785,7 +785,7 @@ body {
     position: relative;
     background-color: #F1F5F9;
     overflow: hidden;
-    height: 100%;
+    min-height: 0;
 }
 
 .map-grid-overlay {
