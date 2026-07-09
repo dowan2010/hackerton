@@ -626,15 +626,16 @@ export async function drawSafeRoute(start, end) {
     let route = await osrmRoute([start, end]);
     let bypassed = false;
 
-    // 직통 경로가 봉쇄 구역 통과 → 우회
+    // 직통 경로가 봉쇄 구역 통과 → 우회 시도
     if (route && routePassesBlocked(route.coords, rings)) {
         const via = findBypassVia(start, end, rings);
-        if (via) {
-            const alt = await osrmRoute([start, via, end]);
-            if (alt && !routePassesBlocked(alt.coords, rings)) {
-                route = alt;
-                bypassed = true;
-            }
+        const alt = via ? await osrmRoute([start, via, end]) : null;
+        if (alt && !routePassesBlocked(alt.coords, rings)) {
+            route = alt;
+            bypassed = true;
+        } else {
+            // 우회도 실패 → 직선 fallback
+            route = null;
         }
     }
 
