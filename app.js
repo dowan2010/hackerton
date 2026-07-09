@@ -459,11 +459,50 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // --- 11-B. SUBTAB VIEW TRANSITION CONTROLLER (RootMap Subtabs) ---
+    function initRootMapSubtabs() {
+        const subtabButtons = document.querySelectorAll("#header-nav-rootmap .nav-tab");
+        const subtabContents = document.querySelectorAll(".subtab-content");
+        const subtabIds = ["subtab-realtime", "subtab-prediction", "subtab-policy"];
+
+        subtabButtons.forEach((btn, idx) => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                
+                // Active button class transition
+                subtabButtons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                // Tab panel hidden/active class transition
+                subtabContents.forEach(panel => {
+                    panel.classList.add("hidden");
+                    panel.classList.remove("active");
+                });
+
+                const targetId = subtabIds[idx];
+                const targetPanel = document.getElementById(targetId);
+                if (targetPanel) {
+                    targetPanel.classList.remove("hidden");
+                    targetPanel.classList.add("active");
+                }
+
+                // If switching back to realtime map, force Leaflet to resize correctly
+                if (targetId === "subtab-realtime") {
+                    setTimeout(() => {
+                        if (desktopMap) desktopMap.invalidateSize();
+                        if (mobileMap) mobileMap.invalidateSize();
+                    }, 50);
+                }
+            });
+        });
+    }
+
     // Set Default Tab
     window.syncActiveTab("rootmap", "desktop");
 
     // --- 12. RUNTIME SYSTEM BOOTSTRAPPER ---
     initAuthSystem();
+    initRootMapSubtabs();
     initDignitySystem();
     initNationalPolicyGenerator();
 
