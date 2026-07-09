@@ -1030,6 +1030,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (prefix === "35" || prefix === "36") return 18; // 전북·전남
             if (prefix === "37" || prefix === "38") return -15; // 경북·경남
             if (prefix === "31") return -15; // 경기
+            if (prefix === "32") return -20; // 강원 (휴전선 접경·고지대라 정화 인프라 접근이 가장 어려움)
             if (["11", "21", "22", "23", "24", "25", "26", "29"].includes(prefix)) return -15; // 서울·7대광역시·세종
             return 0;
         }
