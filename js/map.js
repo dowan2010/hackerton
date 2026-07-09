@@ -261,14 +261,25 @@ export function renderGeoJSONLayers() {
 
             layer.on({
                 mouseover: (e) => {
+                    if (navigatorModeActive) {
+                        layer.closeTooltip();
+                        return;
+                    }
                     const lyr = e.target;
                     lyr.setStyle({ fillOpacity: 0.55, weight: 2, color: '#3B82F6' });
                 },
                 mouseout: (e) => {
+                    if (navigatorModeActive) return;
                     const lyr = e.target;
                     dGeoLayer.resetStyle(lyr);
                 },
                 click: (e) => {
+                    if (navigatorModeActive) {
+                        // 네비게이션 모드 작동 시, 지리 경계면 클릭 간섭을 완전 차단하고 길찾기 기능으로 이벤트를 깨끗하게 중계
+                        L.DomEvent.stopPropagation(e);
+                        handleNavigatorClick(e.latlng);
+                        return;
+                    }
                     const properties = feature.properties;
                     const code = properties.code;
                     const name = properties.name;
