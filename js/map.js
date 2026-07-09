@@ -749,18 +749,11 @@ export async function drawSafeRoute(start, end) {
         desktopMap.removeLayer(navRouteLine);
         navRouteLine = null;
     }
-    // 외곽선 레이어 (흰 테두리) + 메인 라인 두 겹으로 선명하게
-    const routeOutline = L.polyline(routeLatLngs, {
-        color: "#ffffff",
-        weight: 4,
-        opacity: 0.6
-    }).addTo(desktopMap);
     navRouteLine = L.polyline(routeLatLngs, {
         color: needsBypass ? "#EA580C" : "#2563EB",
-        weight: 2,
-        opacity: 0.95
+        weight: 2.5,
+        opacity: 0.9
     }).addTo(desktopMap);
-    navRouteLine._outline = routeOutline;
     
     desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [40, 40] });
 
