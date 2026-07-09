@@ -2324,6 +2324,44 @@ document.addEventListener("DOMContentLoaded", () => {
                     statNums[2].textContent = "-";
                 }
             }
+
+            // --- SYNC HOMETOWN & RESIDENCE LABELS ---
+            let hometown = "";
+            let residence = "";
+
+            if (session) {
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const user = users.find(u => u.email === session.email);
+                if (user) {
+                    hometown = user.hometown || "";
+                    residence = user.residence || "";
+                }
+            } else {
+                const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
+                hometown = guestSettings.hometown || "";
+                residence = guestSettings.residence || "";
+            }
+
+            const sidebarMeta = document.getElementById("sidebar-profile-meta");
+            const sidebarHomeSpan = document.getElementById("sidebar-meta-hometown");
+            const sidebarResSpan = document.getElementById("sidebar-meta-residence");
+
+            const mobileMeta = document.getElementById("mobile-profile-meta");
+            const mobileHomeSpan = document.getElementById("mobile-meta-hometown");
+            const mobileResSpan = document.getElementById("mobile-meta-residence");
+
+            if (hometown || residence) {
+                if (sidebarMeta) sidebarMeta.classList.remove("hidden");
+                if (sidebarHomeSpan) sidebarHomeSpan.textContent = hometown || "미지정";
+                if (sidebarResSpan) sidebarResSpan.textContent = residence || "미지정";
+
+                if (mobileMeta) mobileMeta.classList.remove("hidden");
+                if (mobileHomeSpan) mobileHomeSpan.textContent = hometown || "미지정";
+                if (mobileResSpan) mobileResSpan.textContent = residence || "미지정";
+            } else {
+                if (sidebarMeta) sidebarMeta.classList.add("hidden");
+                if (mobileMeta) mobileMeta.classList.add("hidden");
+            }
             
             if (typeof lucide !== "undefined") {
                 lucide.createIcons();
@@ -2332,6 +2370,135 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Run UI sync at start
         updateAuthStateUI();
+
+        // --- SETTINGS SYSTEM INTEGRATION ---
+        const settingsModal = document.getElementById("settings-modal");
+        const settingsCloseBtn = document.getElementById("settings-close-btn");
+        const settingsForm = document.getElementById("settings-form");
+        const settingsHometown = document.getElementById("settings-hometown");
+        const settingsResidence = document.getElementById("settings-residence");
+
+        function openSettings() {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            let hometownVal = "";
+            let residenceVal = "";
+
+            if (session) {
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const user = users.find(u => u.email === session.email);
+                if (user) {
+                    hometownVal = user.hometown || "";
+                    residenceVal = user.residence || "";
+                }
+            } else {
+                const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
+                hometownVal = guestSettings.hometown || "";
+                residenceVal = guestSettings.residence || "";
+            }
+
+            if (settingsHometown) settingsHometown.value = hometownVal;
+            if (settingsResidence) settingsResidence.value = residenceVal;
+
+            if (settingsModal) settingsModal.classList.remove("hidden");
+        }
+
+        function closeSettings() {
+            if (settingsModal) settingsModal.classList.add("hidden");
+        }
+
+        if (settingsCloseBtn) {
+            settingsCloseBtn.addEventListener("click", closeSettings);
+        }
+
+        if (settingsModal) {
+            settingsModal.addEventListener("click", (e) => {
+                if (e.target === settingsModal) closeSettings();
+            });
+        }
+
+        // Bind Settings Triggers
+        const sidebarSettingsLink = document.getElementById("sidebar-settings-link");
+        if (sidebarSettingsLink) {
+            sidebarSettingsLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                openSettings();
+            });
+        }
+
+        const headerSettingsBtn = document.querySelector(".header-icon-btn i[data-lucide='settings']");
+        if (headerSettingsBtn) {
+            const btnParent = headerSettingsBtn.closest(".header-icon-btn");
+            if (btnParent) {
+                btnParent.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    openSettings();
+                });
+            }
+        }
+
+        const mobSettingsRowHometown = document.getElementById("mobile-settings-row-hometown");
+        if (mobSettingsRowHometown) {
+            mobSettingsRowHometown.addEventListener("click", (e) => {
+                e.preventDefault();
+                openSettings();
+            });
+        }
+
+        // Settings Form Submission
+        if (settingsForm) {
+            settingsForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const hometown = settingsHometown.value.trim();
+                const residence = settingsResidence.value.trim();
+
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (session) {
+                    const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                    const userIndex = users.findIndex(u => u.email === session.email);
+                    if (userIndex !== -1) {
+                        users[userIndex].hometown = hometown;
+                        users[userIndex].residence = residence;
+                        localStorage.setItem("roothome_users", JSON.stringify(users));
+                    }
+                } else {
+                    const guestSettings = { hometown, residence };
+                    localStorage.setItem("roothome_guest_settings", JSON.stringify(guestSettings));
+                }
+
+                updateAuthStateUI();
+                autoPrefillTimelineAddresses();
+                closeSettings();
+                alert("설정이 성공적으로 저장되었습니다!");
+            });
+        }
+
+        // AI Timeline Prepopulation Utility
+        function autoPrefillTimelineAddresses() {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            let hometown = "";
+            if (session) {
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const user = users.find(u => u.email === session.email);
+                if (user) hometown = user.hometown || "";
+            } else {
+                const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
+                hometown = guestSettings.hometown || "";
+            }
+
+            if (hometown) {
+                const desktopInput = document.getElementById("desktop-address-input");
+                const mobileInput = document.getElementById("mobile-address-input");
+                if (desktopInput && !desktopInput.value) {
+                    desktopInput.value = hometown;
+                }
+                if (mobileInput && !mobileInput.value) {
+                    mobileInput.value = hometown;
+                }
+            }
+        }
+
+        // Prefill Timeline Input Box on load
+        autoPrefillTimelineAddresses();
     }
 
     // --- 8. STARTUP INITIALIZATION ---

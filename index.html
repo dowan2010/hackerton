@@ -52,7 +52,7 @@
                     <span>긴급 지원</span>
                 </button>
                 <div class="sidebar-links">
-                    <a href="#" class="footer-link"><i data-lucide="settings"></i> 설정</a>
+                    <a href="#" class="footer-link" id="sidebar-settings-link"><i data-lucide="settings"></i> 설정</a>
                     <a href="#" class="footer-link"><i data-lucide="help-circle"></i> 지원</a>
                 </div>
                 <div class="sidebar-profile" style="cursor: pointer;">
@@ -60,6 +60,10 @@
                     <div class="profile-info">
                         <span class="profile-name">실향민 로그인</span>
                         <span class="profile-role">정착 서비스 대기 중</span>
+                        <div class="profile-meta-sub hidden" id="sidebar-profile-meta" style="font-size: 11px; color: var(--color-text-muted); margin-top: 4px; border-top: 1px dashed rgba(15,23,42,0.1); padding-top: 4px;">
+                            <div>고향: <span id="sidebar-meta-hometown">-</span></div>
+                            <div>거주지: <span id="sidebar-meta-residence">-</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -997,6 +1001,11 @@
                     <i data-lucide="user-circle" style="width: 64px; height: 64px; color: var(--color-primary); margin: 0 auto 12px auto;"></i>
                     <h3 class="profile-user-name">실향민 로그인</h3>
                     <p class="profile-user-role">고향 귀향 서비스를 위한 안심 로그인</p>
+                    <div class="profile-meta-sub hidden" id="mobile-profile-meta" style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px; display: flex; justify-content: center; gap: 12px;">
+                        <span>고향: <strong id="mobile-meta-hometown">-</strong></span>
+                        <span>|</span>
+                        <span>거주지: <strong id="mobile-meta-residence">-</strong></span>
+                    </div>
                     
                     <div class="profile-stats-grid mt-20">
                         <div class="stat-box">
@@ -1017,6 +1026,7 @@
                 <div class="mobile-card">
                     <h4 class="mobile-card-subtitle font-bold mb-12">계정 및 보안 설정</h4>
                     <div class="profile-settings-list">
+                        <div class="settings-row" id="mobile-settings-row-hometown"><span>사용자 고향 및 거주지 설정</span> <i data-lucide="chevron-right"></i></div>
                         <div class="settings-row"><span>생체 정보 연동 관리</span> <i data-lucide="chevron-right"></i></div>
                         <div class="settings-row"><span>개인 데이터 영구 삭제 (AES-256 파기)</span> <i data-lucide="chevron-right"></i></div>
                         <div class="settings-row"><span>블록체인 지갑 주소 연결</span> <i data-lucide="chevron-right"></i></div>
@@ -1102,6 +1112,40 @@
                     </div>
                 </div>
                 <button type="submit" class="btn-auth-submit">회원가입 완료</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL OVERLAY (GLASSMORPHISM) -->
+    <div class="auth-modal-overlay hidden" id="settings-modal">
+        <div class="auth-modal-card">
+            <button class="auth-modal-close" id="settings-close-btn">
+                <i data-lucide="x"></i>
+            </button>
+            <div style="margin-bottom: 24px; text-align: center;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: #0F172A; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="settings" style="color: var(--color-primary); width: 22px; height: 22px;"></i>
+                    사용자 정보 및 고향 설정
+                </h3>
+                <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 6px;">정착 지원 순위 산정과 AI 타임라인 생성을 위한 정보입니다.</p>
+            </div>
+            
+            <form class="auth-form" id="settings-form">
+                <div class="auth-input-group">
+                    <label class="auth-label">그리운 내 고향 (Hometown)</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="map-pin" class="auth-input-icon"></i>
+                        <input type="text" id="settings-hometown" class="auth-input" placeholder="예: 함경남도 함흥시 또는 강원도 고성군" required>
+                    </div>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">현재 살고 있는 곳 (Current Residence)</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="home" class="auth-input-icon"></i>
+                        <input type="text" id="settings-residence" class="auth-input" placeholder="예: 서울특별시 마포구" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-auth-submit">설정 저장 완료</button>
             </form>
         </div>
     </div>
