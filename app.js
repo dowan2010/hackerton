@@ -709,8 +709,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const centerPoint = [36.3000, 127.8000]; // Center of South Korea
         const baseZoom = 7; // Nation-wide zoom
 
-        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        const attribution = '&copy; OpenStreetMap contributors';
+        const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        const attribution = '&copy; OpenStreetMap &copy; CartoDB';
 
         // Limit bounding box to South Korea
         const southKoreaBounds = L.latLngBounds(
