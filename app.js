@@ -1612,7 +1612,9 @@ document.addEventListener("DOMContentLoaded", () => {
         mobStatusBox.classList.remove("hidden");
 
         const formData = new FormData();
-        formData.append("user_id", `RT-${Math.floor(1000 + Math.random() * 9000)}-****`);
+        const activeSession = JSON.parse(localStorage.getItem("roothome_session"));
+        const userId = activeSession ? activeSession.email : `RT-${Math.floor(1000 + Math.random() * 9000)}-****`;
+        formData.append("user_id", userId);
         formData.append("file", file);
 
         const startTime = Date.now();
@@ -2039,6 +2041,200 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- 7.6 PREMIUM GLASSMORPHISM AUTHENTICATION SUB-SYSTEM ---
+    function initAuthSystem() {
+        const authModal = document.getElementById("auth-modal");
+        const authCloseBtn = document.getElementById("auth-close-btn");
+        const tabLoginBtn = document.getElementById("tab-login-btn");
+        const tabSignupBtn = document.getElementById("tab-signup-btn");
+        const loginForm = document.getElementById("login-form");
+        const signupForm = document.getElementById("signup-form");
+
+        if (!authModal || !authCloseBtn || !tabLoginBtn || !tabSignupBtn || !loginForm || !signupForm) {
+            console.warn("[Auth System] Auth elements not found in DOM");
+            return;
+        }
+
+        // Prepopulate users and session
+        if (!localStorage.getItem("roothome_users")) {
+            localStorage.setItem("roothome_users", JSON.stringify([
+                { email: "test@roothome.org", name: "강유진", password: "password123" }
+            ]));
+        }
+
+        // Open/Close Modal
+        function openAuth() {
+            authModal.classList.remove("hidden");
+            switchTab("login");
+        }
+        function closeAuth() {
+            authModal.classList.add("hidden");
+        }
+
+        authCloseBtn.addEventListener("click", closeAuth);
+
+        // Click outside to close
+        authModal.addEventListener("click", (e) => {
+            if (e.target === authModal) closeAuth();
+        });
+
+        // Switch Tabs
+        function switchTab(tab) {
+            if (tab === "login") {
+                tabLoginBtn.classList.add("active");
+                tabSignupBtn.classList.remove("active");
+                loginForm.classList.remove("hidden");
+                signupForm.classList.add("hidden");
+            } else {
+                tabLoginBtn.classList.remove("active");
+                tabSignupBtn.classList.add("active");
+                loginForm.classList.add("hidden");
+                signupForm.classList.remove("hidden");
+            }
+        }
+
+        tabLoginBtn.addEventListener("click", () => switchTab("login"));
+        tabSignupBtn.addEventListener("click", () => switchTab("signup"));
+
+        // Login Handler
+        loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value;
+
+            const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                localStorage.setItem("roothome_session", JSON.stringify({ email: user.email, name: user.name }));
+                updateAuthStateUI();
+                closeAuth();
+                alert(`반갑고 안온한 복귀입니다, ${user.name} 님!`);
+            } else {
+                alert("이메일 주소 또는 비밀번호가 일치하지 않습니다.");
+            }
+        });
+
+        // Signup Handler
+        signupForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("signup-name").value.trim();
+            const email = document.getElementById("signup-email").value.trim();
+            const password = document.getElementById("signup-password").value;
+
+            if (password.length < 6) {
+                alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+            if (users.some(u => u.email === email)) {
+                alert("이미 등록된 이메일 주소입니다.");
+                return;
+            }
+
+            users.push({ email, name, password });
+            localStorage.setItem("roothome_users", JSON.stringify(users));
+            alert("회원가입이 성공적으로 완료되었습니다! 로그인 해 주세요.");
+            switchTab("login");
+        });
+
+        // Toggle state triggers
+        const sidebarProfile = document.querySelector(".sidebar-profile");
+        const headerLoginBtn = document.querySelector(".header-login-btn-wrapper");
+        const mobHeaderRight = document.querySelector(".mobile-header-right");
+        const mobProfileCard = document.querySelector(".profile-main-card");
+
+        function handleProfileTriggerClick(e) {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            if (session) {
+                if (confirm("로그아웃 하시겠습니까?")) {
+                    localStorage.removeItem("roothome_session");
+                    updateAuthStateUI();
+                    alert("성공적으로 로그아웃되었습니다.");
+                }
+            } else {
+                openAuth();
+            }
+        }
+
+        if (sidebarProfile) sidebarProfile.addEventListener("click", handleProfileTriggerClick);
+        if (headerLoginBtn) headerLoginBtn.addEventListener("click", handleProfileTriggerClick);
+        if (mobHeaderRight) {
+            mobHeaderRight.addEventListener("click", (e) => {
+                if (e.target.closest(".mobile-icon-btn")) return;
+                handleProfileTriggerClick();
+            });
+        }
+        if (mobProfileCard) mobProfileCard.addEventListener("click", handleProfileTriggerClick);
+
+        // Update UI state based on session
+        function updateAuthStateUI() {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            const profileName = document.querySelector(".profile-name");
+            const profileRole = document.querySelector(".profile-role");
+            const mobProfName = document.querySelector(".profile-user-name");
+            const mobProfRole = document.querySelector(".profile-user-role");
+            const headerLoginBtnSpan = headerLoginBtn ? headerLoginBtn.querySelector("span") : null;
+            const headerLoginBtnIcon = headerLoginBtn ? headerLoginBtn.querySelector("i") : null;
+            const mobHeaderRightSpan = mobHeaderRight ? mobHeaderRight.querySelector("span") : null;
+
+            const statNums = document.querySelectorAll(".profile-main-card .stat-box .num");
+
+            if (session) {
+                // Logged In UI
+                if (profileName) profileName.textContent = `${session.name} 님`;
+                if (profileRole) profileRole.textContent = "정착 권한 인증 완료";
+
+                if (headerLoginBtnSpan) headerLoginBtnSpan.textContent = "로그아웃";
+                if (headerLoginBtnIcon) {
+                    headerLoginBtnIcon.setAttribute("data-lucide", "log-out");
+                    headerLoginBtnIcon.style.color = "var(--color-primary)";
+                }
+
+                if (mobHeaderRightSpan) mobHeaderRightSpan.textContent = "로그아웃";
+
+                if (mobProfName) mobProfName.textContent = session.name;
+                if (mobProfRole) mobProfRole.textContent = session.email;
+
+                if (statNums.length >= 3) {
+                    statNums[0].textContent = "68세";
+                    statNums[1].textContent = "A등급";
+                    statNums[2].textContent = "45년";
+                }
+            } else {
+                // Logged Out UI
+                if (profileName) profileName.textContent = "실향민 로그인";
+                if (profileRole) profileRole.textContent = "정착 서비스 대기 중";
+
+                if (headerLoginBtnSpan) headerLoginBtnSpan.textContent = "실향민 안심 로그인";
+                if (headerLoginBtnIcon) {
+                    headerLoginBtnIcon.setAttribute("data-lucide", "log-in");
+                    headerLoginBtnIcon.style.color = "var(--color-text-muted)";
+                }
+
+                if (mobHeaderRightSpan) mobHeaderRightSpan.textContent = "실향민 로그인";
+
+                if (mobProfName) mobProfName.textContent = "실향민 로그인";
+                if (mobProfRole) mobProfRole.textContent = "고향 귀향 서비스를 위한 안심 로그인";
+
+                if (statNums.length >= 3) {
+                    statNums[0].textContent = "-";
+                    statNums[1].textContent = "-";
+                    statNums[2].textContent = "-";
+                }
+            }
+            
+            if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+            }
+        }
+
+        // Run UI sync at start
+        updateAuthStateUI();
+    }
+
     // --- 8. STARTUP INITIALIZATION ---
+    initAuthSystem();
     loadZonesData(); // Fetch from backend and initialize maps
 });
