@@ -414,6 +414,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    padding: 24px;
 }
 
 @keyframes fadeIn {
