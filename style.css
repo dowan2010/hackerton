@@ -1805,18 +1805,32 @@ path.leaflet-interactive:focus {
 }
 
 .timeline-feed-flow::before {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 20px;
-    bottom: 20px;
-    width: 2px;
-    background-color: var(--color-sidebar-border);
+    display: none;
 }
 
 .timeline-card-wrapper {
     position: relative;
     margin-bottom: 24px;
+}
+
+.timeline-card-wrapper::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 24px;
+    bottom: -24px; /* Extends to next card */
+    width: 2px;
+    background-color: var(--color-sidebar-border);
+    z-index: 1;
+}
+
+.timeline-card-wrapper.future::before,
+.timeline-card-wrapper.mid-term::before {
+    display: none;
+}
+
+.timeline-card-wrapper:last-child::before {
+    display: none;
 }
 
 .timeline-marker {
@@ -1832,10 +1846,6 @@ path.leaflet-interactive:focus {
     border: 2px solid var(--color-primary);
     border-radius: 50%;
     z-index: 2;
-}
-
-.timeline-card-wrapper.future .marker-circle {
-    background-color: var(--color-primary);
 }
 
 .timeline-feed-card {
@@ -2908,13 +2918,7 @@ path.leaflet-interactive:focus {
     }
 
     .mobile-timeline-flow::before {
-        content: '';
-        position: absolute;
-        left: 4px;
-        top: 20px;
-        bottom: 20px;
-        width: 1.5px;
-        background-color: var(--color-sidebar-border);
+        display: none;
     }
 
     .mobile-timeline-node {
@@ -2922,10 +2926,30 @@ path.leaflet-interactive:focus {
         margin-bottom: 16px;
     }
 
+    .mobile-timeline-node::before {
+        content: '';
+        position: absolute;
+        left: -12px; /* Centers under the circle which is offset at left: -16px */
+        top: 20px;
+        bottom: -16px; /* Extends to next node's marker */
+        width: 1.5px;
+        background-color: var(--color-sidebar-border);
+        z-index: 1;
+    }
+
+    .mobile-timeline-node.future::before {
+        display: none;
+    }
+
+    .mobile-timeline-node:last-child::before {
+        display: none;
+    }
+
     .mobile-timeline-node .node-marker {
         position: absolute;
         left: -16px;
         top: 20px;
+        z-index: 2;
     }
 
     .mobile-timeline-node .node-marker .circle {
@@ -2933,6 +2957,13 @@ path.leaflet-interactive:focus {
         height: 8px;
         background-color: var(--color-primary);
         border-radius: 50%;
+    }
+
+    .mobile-timeline-node.future .node-marker .circle {
+        background-color: var(--color-bg-app);
+        border: 1.5px solid var(--color-primary);
+        width: 5px;
+        height: 5px;
     }
 
     .mobile-timeline-card {

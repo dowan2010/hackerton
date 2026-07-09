@@ -788,7 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (card.type === "future" || card.type === "mid") {
             const isLocked = card.badge === "LOCKED FUTURE";
             return `
-                <div class="mobile-timeline-node" style="${isLocked ? 'filter: grayscale(80%); opacity: 0.8;' : ''}">
+                <div class="mobile-timeline-node future" style="${isLocked ? 'filter: grayscale(80%); opacity: 0.8;' : ''}">
                     <div class="node-marker"><div class="circle"></div></div>
                     <div class="mobile-timeline-card">
                         <div class="card-top-row">
