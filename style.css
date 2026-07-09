@@ -1814,22 +1814,6 @@ path.leaflet-interactive:focus {
 }
 
 .timeline-card-wrapper::before {
-    content: '';
-    position: absolute;
-    left: -16px;
-    top: 24px;
-    bottom: -24px; /* Extends to next card */
-    width: 2px;
-    background-color: var(--color-sidebar-border);
-    z-index: 1;
-}
-
-.timeline-card-wrapper.future::before,
-.timeline-card-wrapper.mid-term::before {
-    display: none;
-}
-
-.timeline-card-wrapper:last-child::before {
     display: none;
 }
 
@@ -2927,21 +2911,6 @@ path.leaflet-interactive:focus {
     }
 
     .mobile-timeline-node::before {
-        content: '';
-        position: absolute;
-        left: -12px; /* Centers under the circle which is offset at left: -16px */
-        top: 20px;
-        bottom: -16px; /* Extends to next node's marker */
-        width: 1.5px;
-        background-color: var(--color-sidebar-border);
-        z-index: 1;
-    }
-
-    .mobile-timeline-node.future::before {
-        display: none;
-    }
-
-    .mobile-timeline-node:last-child::before {
         display: none;
     }
 
