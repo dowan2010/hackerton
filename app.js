@@ -214,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function toggleNavigatorMode() {
         const btn = document.getElementById("btn-toggle-navigator");
+        const btnLabel = btn ? btn.querySelector("span") : null;
         const panel = document.getElementById("desktop-navigator-status-panel");
         if (!btn || !panel) return;
 
@@ -221,21 +222,26 @@ document.addEventListener("DOMContentLoaded", () => {
         setNavigatorModeActive(isActivating);
 
         if (isActivating) {
+            window.syncActiveTab("rootmap", "desktop");
             btn.classList.add("active");
-            btn.innerHTML = '<i data-lucide="navigation-off" style="width: 16px; height: 16px;"></i> 내비게이터 종료';
+            if (btnLabel) btnLabel.textContent = "내비게이터 종료";
             panel.classList.remove("hidden");
             window.setNavStatusText("지도를 클릭해 출발지를 선택하세요.");
         } else {
             btn.classList.remove("active");
-            btn.innerHTML = '<i data-lucide="navigation" style="width: 16px; height: 16px;"></i> 기후피난 안전경로 찾기';
+            if (btnLabel) btnLabel.textContent = "기후피난 안전경로 찾기";
             panel.classList.add("hidden");
             resetNavigator();
         }
-        lucide.createIcons();
     }
 
     const btnNav = document.getElementById("btn-toggle-navigator");
-    if (btnNav) btnNav.addEventListener("click", toggleNavigatorMode);
+    if (btnNav) {
+        btnNav.addEventListener("click", (e) => {
+            e.preventDefault();
+            toggleNavigatorMode();
+        });
+    }
 
     // --- 7. ADDRESS SEARCH TIMELINE GENERATOR ---
     const deskGenerateBtn = document.getElementById("desktop-btn-generate");
@@ -380,38 +386,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 11. TAB & DEVICE NAVIGATION VIEW SYSTEM ---
-    const deskTabs = document.querySelectorAll(".desktop-sidebar-nav li");
+    const deskTabs = document.querySelectorAll(".sidebar-menu .menu-item");
     const mobTabs = document.querySelectorAll(".mobile-nav-item");
 
-    window.syncActiveTab = function(tabName) {
-        activeTab = tabName;
+    // 데스크톱 탭 이름(rootmap/dignity/timeline)과 모바일 탭 이름(home/matrix/timeline/profile)이 서로 달라
+    // 두 방향 매핑이 필요하다.
+    const deskToMobTab = { rootmap: "home", dignity: "matrix", timeline: "timeline" };
+    const mobToDeskTab = { home: "rootmap", matrix: "dignity", timeline: "timeline", profile: "timeline" };
+
+    window.syncActiveTab = function(tabName, source) {
+        const deskTab = source === "mobile" ? (mobToDeskTab[tabName] || tabName) : tabName;
+        const mobTab = source === "mobile" ? tabName : (deskToMobTab[deskTab] || deskTab);
+        activeTab = deskTab;
 
         // Synchronize Desktop View Panels
-        document.querySelectorAll(".tab-panel").forEach(panel => {
+        document.querySelectorAll(".tab-content").forEach(panel => {
             panel.classList.add("hidden");
+            panel.classList.remove("active");
         });
-        const dTarget = document.getElementById(`tab-${tabName}`);
-        if (dTarget) dTarget.classList.remove("hidden");
+        const dTarget = document.getElementById(`tab-${deskTab}`);
+        if (dTarget) { dTarget.classList.remove("hidden"); dTarget.classList.add("active"); }
 
-        deskTabs.forEach(li => {
-            li.classList.remove("active");
-            if (li.dataset.tab === tabName) li.classList.add("active");
+        deskTabs.forEach(item => {
+            if (!item.dataset.tab) return; // 안전경로 버튼처럼 탭이 아닌 메뉴 항목은 건드리지 않는다.
+            item.classList.remove("active");
+            if (item.dataset.tab === deskTab) item.classList.add("active");
         });
 
         // Synchronize Mobile View Panels
-        document.querySelectorAll(".mobile-view-panel").forEach(panel => {
+        document.querySelectorAll(".mobile-tab-content").forEach(panel => {
             panel.classList.add("hidden");
+            panel.classList.remove("active");
         });
-        const mTarget = document.getElementById(`mobile-tab-${tabName}`);
-        if (mTarget) mTarget.classList.remove("hidden");
+        const mTarget = document.getElementById(`mobtab-${mobTab}`);
+        if (mTarget) { mTarget.classList.remove("hidden"); mTarget.classList.add("active"); }
 
         mobTabs.forEach(item => {
             item.classList.remove("active");
-            if (item.dataset.tab === tabName) item.classList.add("active");
+            if (item.dataset.mobtab === mobTab) item.classList.add("active");
         });
 
         // Map dimensions sync trigger on Leaflet
-        if (tabName === "rootmap") {
+        if (deskTab === "rootmap") {
             setTimeout(() => {
                 if (desktopMap) desktopMap.invalidateSize();
                 if (mobileMap) mobileMap.invalidateSize();
@@ -420,23 +436,24 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Bind tab clicks (Desktop)
-    deskTabs.forEach(li => {
-        li.addEventListener("click", () => {
-            const tab = li.dataset.tab;
-            if (tab) window.syncActiveTab(tab);
+    deskTabs.forEach(item => {
+        item.addEventListener("click", (e) => {
+            e.preventDefault();
+            const tab = item.dataset.tab;
+            if (tab) window.syncActiveTab(tab, "desktop");
         });
     });
 
     // Bind tab clicks (Mobile)
     mobTabs.forEach(item => {
         item.addEventListener("click", () => {
-            const tab = item.dataset.tab;
-            if (tab) window.syncActiveTab(tab);
+            const tab = item.dataset.mobtab;
+            if (tab) window.syncActiveTab(tab, "mobile");
         });
     });
 
     // Set Default Tab
-    window.syncActiveTab("rootmap");
+    window.syncActiveTab("rootmap", "desktop");
 
     // --- 12. RUNTIME SYSTEM BOOTSTRAPPER ---
     initAuthSystem();
