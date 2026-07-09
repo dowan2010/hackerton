@@ -44,10 +44,6 @@
                     <i data-lucide="activity"></i>
                     <span>스프링 타임라인</span>
                 </a>
-                <a href="#" class="menu-item" data-tab="navigator">
-                    <i data-lucide="navigation"></i>
-                    <span>안전 경로 · 온난화 시뮬레이터</span>
-                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -125,13 +121,18 @@
                                     <span class="selector-line"></span>
                                     <span class="selector-label font-bold">MAP 실시간 제어</span>
                                 </div>
+                                <button class="btn-popup-action" id="btn-toggle-navigator" style="width: auto; padding: 6px 16px; display: flex; align-items: center; gap: 6px; margin-left: auto;">
+                                    <i data-lucide="navigation" style="width: 16px; height: 16px;"></i> 기후피난 안전경로 찾기
+                                </button>
                             </div>
 
                             <div class="map-viewport">
                                 <!-- Real Map instance replacing grid -->
                                 <div id="desktop-map" class="map-instance"></div>
 
-                                <div class="hidden" id="nav-mode-banner" style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--color-primary); color: #fff; padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-md); pointer-events: none;">🧭 안전 경로 탐색 모드 — 지도를 클릭해 출발지를 선택하세요.</div>
+                                <div class="hidden" id="desktop-navigator-status-panel" style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--color-primary); color: #fff; padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-md); pointer-events: none;">
+                                    🧭 <span id="desktop-navigator-status">지도를 클릭해 출발지를 선택하세요.</span>
+                                </div>
 
                                 <div class="map-legend-card" id="map-legend-card">
                                     <div class="legend-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -679,30 +680,6 @@
                     </div>
                 </section>
 
-                <!-- TAB 4: SAFE NAVIGATOR & WARMING SIMULATOR (로그인 필요) -->
-                <section class="tab-content hidden" id="tab-navigator" style="padding: 24px; overflow-y: auto;">
-                    <div class="dignity-card" style="margin-bottom: 24px;">
-                        <h2 class="panel-section-title" style="margin-bottom: 4px;">🌡️ 지구 온도 상승 시뮬레이터</h2>
-                        <p class="panel-section-subtitle" style="margin-bottom: 16px;">"만약 지구 평균 기온이 N도 더 오른다면?" — 전국 시군구 복구율에 실시간 반영합니다.</p>
-                        <input type="range" id="warming-slider" min="0" max="5" step="0.5" value="0" style="width: 100%;">
-                        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 13px; color: var(--color-text-muted);">
-                            <span>현재 +<span id="warming-value">0</span>°C</span>
-                            <span>전국 봉쇄 비율: <strong id="warming-blocked-ratio">-</strong></span>
-                        </div>
-                    </div>
-
-                    <div class="dignity-card">
-                        <h2 class="panel-section-title" style="margin-bottom: 4px;">🧭 안전 경로 탐색</h2>
-                        <p class="panel-section-subtitle" style="margin-bottom: 16px;">루트맵의 지도에서 바로 출발지·도착지를 찍어 봉쇄 구역을 피한 경로를 찾습니다.</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span id="nav-status-text" style="font-size: 13px; color: var(--color-text-muted);">아래 버튼을 눌러 탐색 모드를 켜세요.</span>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn-popup-action" id="nav-mode-toggle-btn" style="width: auto; padding: 6px 16px;">안전 경로 탐색 모드 켜기</button>
-                                <button class="btn-popup-action" id="nav-reset-btn" style="width: auto; padding: 6px 16px; background: var(--color-text-muted);">경로 초기화</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </div>
         </main>
 
@@ -1277,6 +1254,6 @@
 
     <!-- Leaflet JS Map API -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script type="module" src="app.js?v=20260710-debug4"></script>
+    <script type="module" src="app.js?v=20260710-1"></script>
 </body>
 </html>
