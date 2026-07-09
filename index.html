@@ -1210,11 +1210,30 @@
                         <input type="email" id="settings-email" class="auth-input" placeholder="로그인 후 변경 가능">
                     </div>
                 </div>
-                <div class="auth-input-group" style="margin-bottom: 18px;">
-                    <label class="auth-label">새 비밀번호 (Password)</label>
-                    <div class="auth-input-wrapper">
-                        <i data-lucide="lock" class="auth-input-icon"></i>
-                        <input type="password" id="settings-password" class="auth-input" placeholder="로그인 후 변경 가능">
+                <div class="auth-input-group" id="settings-password-container" style="margin-bottom: 18px;">
+                    <label class="auth-label">비밀번호 설정</label>
+                    <button type="button" id="btn-settings-change-password" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; padding: 10px; border-radius: 8px; border: 1px solid var(--color-sidebar-border); background: var(--color-bg-app); color: var(--color-text-main); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+                        <i data-lucide="key" style="width: 15px; height: 16px;"></i>
+                        <span id="btn-settings-password-text">비밀번호 변경하기</span>
+                    </button>
+                    <!-- Hidden double input fields for password modification -->
+                    <div id="settings-password-fields" class="hidden" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="key" class="auth-input-icon"></i>
+                            <input type="password" id="settings-password-current" class="auth-input" placeholder="현재 비밀번호 입력">
+                        </div>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="lock" class="auth-input-icon"></i>
+                            <input type="password" id="settings-password" class="auth-input" placeholder="새 비밀번호 입력">
+                        </div>
+                        <div class="auth-input-wrapper">
+                            <i data-lucide="shield-check" class="auth-input-icon"></i>
+                            <input type="password" id="settings-password-confirm" class="auth-input" placeholder="새 비밀번호 확인">
+                        </div>
+                        <button type="button" id="btn-settings-password-submit" style="width: 100%; padding: 8px; border-radius: 6px; border: none; background: var(--color-primary); color: #FFFFFF; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 2px;">
+                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                            비밀번호 변경 적용
+                        </button>
                     </div>
                 </div>
 

@@ -2581,7 +2581,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const settingsName = document.getElementById("settings-name");
         const settingsEmail = document.getElementById("settings-email");
+        const settingsPasswordCurrent = document.getElementById("settings-password-current");
         const settingsPassword = document.getElementById("settings-password");
+        const settingsPasswordConfirm = document.getElementById("settings-password-confirm");
+        const settingsPasswordFields = document.getElementById("settings-password-fields");
+        const btnSettingsChangePassword = document.getElementById("btn-settings-change-password");
+        const btnSettingsPasswordText = document.getElementById("btn-settings-password-text");
+        const btnSettingsPasswordSubmit = document.getElementById("btn-settings-password-submit");
 
         const themeLightBtn = document.getElementById("theme-light-btn");
         const themeDarkBtn = document.getElementById("theme-dark-btn");
@@ -2598,9 +2604,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const session = JSON.parse(localStorage.getItem("roothome_session"));
             let nameVal = "";
             let emailVal = "";
-            let passwordVal = "";
             let hometownVal = "";
             let residenceVal = "";
+
+            // Hide password fields and reset on fresh modal open
+            if (settingsPasswordFields) settingsPasswordFields.classList.add("hidden");
+            if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+            if (settingsPassword) settingsPassword.value = "";
+            if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
 
             if (session) {
                 const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
@@ -2608,14 +2619,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (user) {
                     nameVal = user.name || "";
                     emailVal = user.email || "";
-                    passwordVal = user.password || "";
                     hometownVal = user.hometown || "";
                     residenceVal = user.residence || "";
                 }
                 
                 if (settingsName) { settingsName.value = nameVal; settingsName.disabled = false; settingsName.placeholder = "이름을 입력하세요"; }
                 if (settingsEmail) { settingsEmail.value = emailVal; settingsEmail.disabled = false; settingsEmail.placeholder = "이메일을 입력하세요"; }
-                if (settingsPassword) { settingsPassword.value = passwordVal; settingsPassword.disabled = false; settingsPassword.placeholder = "비밀번호를 입력하세요"; }
+                
+                if (btnSettingsChangePassword) {
+                    btnSettingsChangePassword.disabled = false;
+                    btnSettingsChangePassword.style.opacity = "1";
+                    btnSettingsChangePassword.style.cursor = "pointer";
+                }
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
             } else {
                 const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
                 hometownVal = guestSettings.hometown || "";
@@ -2623,7 +2639,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (settingsName) { settingsName.value = ""; settingsName.disabled = true; settingsName.placeholder = "로그인 시 활성화됩니다"; }
                 if (settingsEmail) { settingsEmail.value = ""; settingsEmail.disabled = true; settingsEmail.placeholder = "로그인 시 활성화됩니다"; }
-                if (settingsPassword) { settingsPassword.value = ""; settingsPassword.disabled = true; settingsPassword.placeholder = "로그인 시 활성화됩니다"; }
+                
+                if (btnSettingsChangePassword) {
+                    btnSettingsChangePassword.disabled = true;
+                    btnSettingsChangePassword.style.opacity = "0.5";
+                    btnSettingsChangePassword.style.cursor = "not-allowed";
+                }
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "로그인 시 변경 가능";
             }
 
             if (settingsHometown) settingsHometown.value = hometownVal;
@@ -2683,6 +2705,26 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        // Secure password expand-on-click trigger
+        if (btnSettingsChangePassword) {
+            btnSettingsChangePassword.addEventListener("click", () => {
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (!session) return; // ignore guest clicks
+
+                const isHidden = settingsPasswordFields.classList.contains("hidden");
+                if (isHidden) {
+                    settingsPasswordFields.classList.remove("hidden");
+                    if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "변경 취소하기";
+                } else {
+                    settingsPasswordFields.classList.add("hidden");
+                    if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+                    if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+                    if (settingsPassword) settingsPassword.value = "";
+                    if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
+                }
+            });
+        }
+
         // Real-time Live Theme Preview Toggles
         if (themeLightBtn) {
             themeLightBtn.addEventListener("click", () => {
@@ -2702,6 +2744,55 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        // Secure separate Password Submit click event
+        if (btnSettingsPasswordSubmit) {
+            btnSettingsPasswordSubmit.addEventListener("click", () => {
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (!session) return; // ignore guest clicks
+
+                const currentVal = settingsPasswordCurrent.value;
+                const passVal = settingsPassword.value;
+                const confVal = settingsPasswordConfirm.value;
+
+                if (!currentVal || !passVal || !confVal) {
+                    alert("현재 비밀번호, 새 비밀번호, 확인 입력창을 모두 채워주세요.");
+                    return;
+                }
+
+                // Verify typed current password matches account password in DB
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const userIndex = users.findIndex(u => u.email === session.email);
+                if (userIndex === -1 || users[userIndex].password !== currentVal) {
+                    alert("입력하신 현재 비밀번호가 일치하지 않습니다.");
+                    return;
+                }
+
+                if (passVal !== confVal) {
+                    alert("입력하신 새 비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
+                    return;
+                }
+
+                if (passVal.length < 6) {
+                    alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+                    return;
+                }
+
+                // Update Database entry
+                users[userIndex].password = passVal;
+                localStorage.setItem("roothome_users", JSON.stringify(users));
+
+                // Clean fields and fold drawer
+                if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+                if (settingsPassword) settingsPassword.value = "";
+                if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
+                if (settingsPasswordFields) settingsPasswordFields.classList.add("hidden");
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+
+                alert("비밀번호가 성공적으로 변경되었습니다!");
+                // Note: No closeSettings() here! Modal remains wide open exactly as requested!
+            });
+        }
+
         // Settings Form Submission
         if (settingsForm) {
             settingsForm.addEventListener("submit", (e) => {
@@ -2713,10 +2804,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (session) {
                     const name = settingsName.value.trim();
                     const email = settingsEmail.value.trim();
-                    const password = settingsPassword.value.trim();
 
-                    if (!name || !email || !password) {
-                        alert("이름, 이메일, 비밀번호는 필수 입력 사항입니다.");
+                    if (!name || !email) {
+                        alert("이름과 이메일은 필수 입력 사항입니다.");
                         return;
                     }
 
@@ -2735,7 +2825,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Update Database entry
                         users[userIndex].name = name;
                         users[userIndex].email = email;
-                        users[userIndex].password = password;
                         users[userIndex].hometown = hometown;
                         users[userIndex].residence = residence;
                         localStorage.setItem("roothome_users", JSON.stringify(users));
