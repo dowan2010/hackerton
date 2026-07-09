@@ -326,15 +326,22 @@ document.addEventListener("DOMContentLoaded", () => {
             window.warmingDegrees = parseFloat(warmSlider.value);
             if (warmValue) warmValue.textContent = window.warmingDegrees.toFixed(1);
 
-            // Re-render and recolor geoJSON layers
-            allMunicipalityLayers.forEach(item => {
-                const data = getMunicipalityData(item.code, item.name);
-                const color = getStatusColor(data.status);
-                item.layer.setStyle({
-                    fillColor: color,
-                    weight: data.isKeyZone ? 1.8 : 0.6,
-                    fillOpacity: data.isKeyZone ? 0.58 : 0.32
-                });
+            // Re-render and recolor geoJSON layers correctly using Leaflet's eachLayer API
+            allMunicipalityLayers.forEach(geoJsonLayer => {
+                if (typeof geoJsonLayer.eachLayer === "function") {
+                    geoJsonLayer.eachLayer(layer => {
+                        const feat = layer.feature;
+                        if (feat && feat.properties) {
+                            const data = getMunicipalityData(feat.properties.code, feat.properties.name);
+                            const color = getStatusColor(data.status);
+                            layer.setStyle({
+                                fillColor: color,
+                                weight: data.isKeyZone ? 1.8 : 0.6,
+                                fillOpacity: data.isKeyZone ? 0.58 : 0.32
+                            });
+                        }
+                    });
+                }
             });
         });
     }

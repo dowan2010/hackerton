@@ -137,10 +137,12 @@ function findZoneByCode(code) {
 function getRegionFoodBias(code) {
     const prefix = code.slice(0, 2);
     if (prefix === "35" || prefix === "36") return 18; // 전북·전남
-    if (prefix === "37" || prefix === "38") return -15; // 경북·경남
     
-    // 경기도 차단 비율 소폭 감소 조정 (기존 -15 -> -3)
-    if (prefix === "31") return -3; // 경기
+    // 경상북도·경상남도 안전 지대 대폭 확장 배점 (+18 가산 보정)
+    if (prefix === "37" || prefix === "38") return 18; // 경북·경남
+    
+    // 경기도 안전 지대 대폭 추가 배점 (+20 가산 보정)
+    if (prefix === "31") return 20; // 경기
     
     if (prefix === "32") return 10; // 강원
     if (["11", "21", "22", "23", "24", "25", "26", "29"].includes(prefix)) return -15; // 광역시/특별시
