@@ -10,6 +10,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. STATE & MAP VARIABLES ---
     let activeTab = "rootmap"; // 'rootmap' / 'dignity' / 'timeline'
     let selectedZoneId = "KR-GW-03"; // Default: 아야진리
+    let timelinePercentage = 0.5; // 안전 귀향 슬라이더 위치(0~1). 카운트다운 계산과 공유되는 단일 소스.
+
+    // 안전 귀향 카운트다운 = 선택된 zone의 총 소요일수(time_to_safe_years*365) 중
+    // 슬라이더가 가리키는 시점 이후 남은 일수. selectZone과 슬라이더 드래그 둘 다 이 함수로만 갱신해
+    // 서로 다른 스케일로 값을 덮어쓰던 문제를 없앤다.
+    function updateCountdownDisplay() {
+        const zone = zonesData.find(z => z.zone_id === selectedZoneId);
+        const el = document.getElementById("countdown-days");
+        if (!zone || !el) return;
+        const totalDays = Math.round(zone.time_to_safe_years * 365);
+        el.textContent = Math.max(0, Math.round((1 - timelinePercentage) * totalDays));
+    }
     
     let desktopMap = null;
     let mobileMap = null;
@@ -1439,7 +1451,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("selected-zone-status").textContent = zone.status === "귀향시작" ? "🟢 안전함" :
                                                                        zone.status === "예약가능" ? "🟡 예약가능" : "🔴 차단됨";
-        document.getElementById("countdown-days").textContent = Math.round(zone.time_to_safe_years * 365);
+        updateCountdownDisplay();
         lucide.createIcons();
     }
 
@@ -2063,7 +2075,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const track = document.querySelector(".timeline-progress-track");
         const fill = document.querySelector(".timeline-progress-fill");
         const handle = document.querySelector(".timeline-handle");
-        const countdownDays = document.getElementById("countdown-days");
         const marks = document.querySelectorAll(".slider-marks .mark-item");
 
         if (!track || !fill || !handle) return;
@@ -2081,9 +2092,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const step = Math.round(percentage * 20);
             const targetYear = 2016 + step;
 
-            // 남은 일수 디그라데이션 연산 (2016: 142일 -> 2036: 0일)
-            const daysRemaining = Math.max(0, Math.round((1 - (step / 20)) * 142));
-            if (countdownDays) countdownDays.textContent = daysRemaining;
+            timelinePercentage = percentage;
+            updateCountdownDisplay();
 
             // 라벨 active 인덱싱 교정
             marks.forEach((mark, index) => {
