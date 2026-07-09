@@ -276,6 +276,9 @@ export function renderGeoJSONLayers() {
                 click: (e) => {
                     if (navigatorModeActive) {
                         // 네비게이션 모드 작동 시, 지리 경계면 클릭 간섭을 완전 차단하고 길찾기 기능으로 이벤트를 깨끗하게 중계
+                        if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") {
+                            e.originalEvent.stopPropagation();
+                        }
                         L.DomEvent.stopPropagation(e);
                         handleNavigatorClick(e.latlng);
                         return;

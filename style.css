@@ -772,6 +772,19 @@ body {
     background-color: #E5E7EB;
 }
 
+/* Leaflet container & SVG Vector focus ring outline resets (Eradicates ghost rectangles upon clicks) */
+.leaflet-container:focus,
+.leaflet-container *,
+.map-instance:focus,
+#desktop-map:focus,
+#mobile-map:focus,
+.leaflet-interactive:focus,
+.leaflet-marker-icon:focus,
+path.leaflet-interactive:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 
 
 /* Selected region info banner inside Spring Timeline */
