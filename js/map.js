@@ -268,12 +268,24 @@ export function renderGeoJSONLayers() {
         }
     }
 
-    function selectMetro(bounds) {
+    function selectMetro(cityCollection, bounds) {
         clearMetroSelection();
-        selectedMetroOutline = L.rectangle(bounds, {
-            color: '#2563EB',
-            weight: 3.5,
-            fill: false,
+        let outlineGeoJson = cityCollection;
+
+        try {
+            if (window.turf && cityCollection.features.length > 1) {
+                let merged = cityCollection.features[0];
+                for (let i = 1; i < cityCollection.features.length; i++) {
+                    merged = window.turf.union(merged, cityCollection.features[i]);
+                }
+                outlineGeoJson = merged;
+            }
+        } catch (e) {
+            console.warn("[Metro Outline] turf union 실패, 개별 경계로 폴백:", e);
+        }
+
+        selectedMetroOutline = L.geoJSON(outlineGeoJson, {
+            style: { color: '#2563EB', weight: 3.5, fill: false },
             interactive: false
         }).addTo(desktopMap);
     }
@@ -405,7 +417,7 @@ export function renderGeoJSONLayers() {
                     handleNavigatorClick(e.latlng);
                     return;
                 }
-                selectMetro(metroLayer.getBounds());
+                selectMetro(cityCollection, metroLayer.getBounds());
 
                 const fakeZoneId = `METRO-${prefix}`;
                 if (window.zonesData && !window.zonesData.find(z => z.zone_id === fakeZoneId)) {
