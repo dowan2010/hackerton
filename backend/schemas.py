@@ -56,3 +56,32 @@ class ZonePredictionResponse(BaseModel):
     zone_id: str = Field(description="구역 고유 식별 코드 (예: KR-GW-01)")
     zone_name: str = Field(description="구역 지명")
     predictions: List[YearlyPrediction] = Field(description="2년 단위, 총 50년치 (26개 포인트) 예보 데이터 리스트")
+
+class SignupRequest(BaseModel):
+    """회원가입 요청 스키마"""
+    email: str = Field(description="로그인용 이메일 주소")
+    name: str = Field(description="사용자 실명 또는 닉네임")
+    password: str = Field(min_length=6, description="비밀번호 (최소 6자리)")
+
+class LoginRequest(BaseModel):
+    """로그인 요청 스키마"""
+    email: str = Field(description="로그인용 이메일 주소")
+    password: str = Field(description="비밀번호")
+
+class UserResponse(BaseModel):
+    """인증 성공 시 반환되는 사용자 정보 스키마 (비밀번호 제외)"""
+    email: str
+    name: str
+
+class LawCreateRequest(BaseModel):
+    """등록할 법안 요청 스키마"""
+    user_id: str = Field(description="법안을 등록하는 사용자 이메일")
+    badge: str = Field(description="법안 고시 번호/배지 텍스트")
+    title: str = Field(description="법안 제목")
+
+class LawResponse(BaseModel):
+    """등록된 법안 응답 스키마"""
+    id: str
+    user_id: str
+    badge: str
+    title: str

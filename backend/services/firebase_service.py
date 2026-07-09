@@ -83,6 +83,10 @@ class FirebaseService:
         # 데모용 유저 신청자 메모리 적재소
         self.mock_applicants = []
 
+        # 데모용 회원 계정 및 등록 법안 메모리 적재소
+        self.mock_users = {}
+        self.mock_laws = []
+
         cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "serviceAccountKey.json")
         project_id = os.getenv("FIREBASE_PROJECT_ID")
 
@@ -221,3 +225,91 @@ class FirebaseService:
             return match
         # 없을 경우 대안 폴백 구역 반환
         return self.mock_zones[0]
+
+    # --- 회원 인증 (users 컬렉션) ---
+
+    def get_user_by_email(self, email: str) -> dict | None:
+        """이메일로 사용자 계정을 조회합니다 (비밀번호 해시 포함 원본 dict 반환)."""
+        if self.demo_mode:
+            return self.mock_users.get(email)
+
+        try:
+            doc = self.db.collection('users').document(email).get()
+            return doc.to_dict() if doc.exists else None
+        except Exception as e:
+            print(f"[Firestore Error] 사용자 조회 실패: {str(e)}")
+            return self.mock_users.get(email)
+
+    def create_user(self, email: str, name: str, password_hash: str) -> None:
+        """새 사용자 계정을 저장합니다."""
+        user_doc = {"email": email, "name": name, "password_hash": password_hash}
+
+        if self.demo_mode:
+            self.mock_users[email] = user_doc
+            return
+
+        try:
+            self.db.collection('users').document(email).set({
+                **user_doc,
+                "created_at": firestore.SERVER_TIMESTAMP
+            })
+        except Exception as e:
+            print(f"[Firestore Error] 사용자 생성 실패: {str(e)}")
+            self.mock_users[email] = user_doc
+
+    # --- 등록 법안 (laws 컬렉션) ---
+
+    def get_laws_for_user(self, user_id: str) -> list[dict]:
+        """특정 사용자가 등록한 법안 목록을 최신순으로 가져옵니다."""
+        if self.demo_mode:
+            return [l for l in self.mock_laws if l["user_id"] == user_id][::-1]
+
+        try:
+            docs = self.db.collection('laws').where('user_id', '==', user_id).order_by(
+                'created_at', direction=firestore.Query.DESCENDING
+            ).stream()
+            return [{**doc.to_dict(), "id": doc.id} for doc in docs]
+        except Exception as e:
+            print(f"[Firestore Error] 법안 목록 조회 실패: {str(e)}")
+            return [l for l in self.mock_laws if l["user_id"] == user_id][::-1]
+
+    def create_law(self, user_id: str, badge: str, title: str) -> dict:
+        """법안을 등록합니다."""
+        law_id = uuid.uuid4().hex
+
+        if self.demo_mode:
+            law = {"id": law_id, "user_id": user_id, "badge": badge, "title": title}
+            self.mock_laws.append(law)
+            return law
+
+        try:
+            self.db.collection('laws').document(law_id).set({
+                "user_id": user_id,
+                "badge": badge,
+                "title": title,
+                "created_at": firestore.SERVER_TIMESTAMP
+            })
+            return {"id": law_id, "user_id": user_id, "badge": badge, "title": title}
+        except Exception as e:
+            print(f"[Firestore Error] 법안 등록 실패: {str(e)}")
+            law = {"id": law_id, "user_id": user_id, "badge": badge, "title": title}
+            self.mock_laws.append(law)
+            return law
+
+    def delete_law(self, user_id: str, law_id: str) -> bool:
+        """법안을 삭제합니다. 본인 소유 법안만 삭제 가능합니다."""
+        if self.demo_mode:
+            before = len(self.mock_laws)
+            self.mock_laws = [l for l in self.mock_laws if not (l["id"] == law_id and l["user_id"] == user_id)]
+            return len(self.mock_laws) < before
+
+        try:
+            doc_ref = self.db.collection('laws').document(law_id)
+            doc = doc_ref.get()
+            if not doc.exists or doc.to_dict().get("user_id") != user_id:
+                return False
+            doc_ref.delete()
+            return True
+        except Exception as e:
+            print(f"[Firestore Error] 법안 삭제 실패: {str(e)}")
+            return False

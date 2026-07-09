@@ -1,4 +1,5 @@
 import os
+import bcrypt
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -7,7 +8,10 @@ from dotenv import load_dotenv
 env_path = os.path.join(os.path.dirname(__file__), ".env")
 load_dotenv(dotenv_path=env_path)
 
-from schemas import ZoneRecoveryData, PriorityScoreResponse, TimelineFeedRequest, ZonePredictionResponse
+from schemas import (
+    ZoneRecoveryData, PriorityScoreResponse, TimelineFeedRequest, ZonePredictionResponse,
+    SignupRequest, LoginRequest, UserResponse, LawCreateRequest, LawResponse
+)
 from services.gemini_service import GeminiService
 from services.firebase_service import FirebaseService
 
@@ -153,6 +157,69 @@ async def generate_timeline_diary(payload: TimelineFeedRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"AI 고향 복구 일기 생성 실패: {str(e)}"
         )
+
+@app.post("/api/auth/signup", response_model=UserResponse)
+async def signup(payload: SignupRequest):
+    """
+    5. 회원가입 API
+    이메일 중복을 확인하고, 비밀번호를 bcrypt로 해싱하여 Firestore users 컬렉션에 저장합니다.
+    """
+    existing = firebase_service.get_user_by_email(payload.email)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="이미 등록된 이메일 주소입니다."
+        )
+
+    password_hash = bcrypt.hashpw(payload.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    firebase_service.create_user(payload.email, payload.name, password_hash)
+    return UserResponse(email=payload.email, name=payload.name)
+
+@app.post("/api/auth/login", response_model=UserResponse)
+async def login(payload: LoginRequest):
+    """
+    6. 로그인 API
+    이메일로 사용자를 조회하고 bcrypt로 비밀번호를 검증합니다.
+    """
+    user = firebase_service.get_user_by_email(payload.email)
+    if not user or not bcrypt.checkpw(payload.password.encode("utf-8"), user["password_hash"].encode("utf-8")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="이메일 주소 또는 비밀번호가 일치하지 않습니다."
+        )
+    return UserResponse(email=user["email"], name=user["name"])
+
+@app.get("/api/laws", response_model=list[LawResponse])
+async def get_laws(user_id: str):
+    """
+    7. 등록 법안 목록 조회 API
+    특정 사용자가 등록한 법안 목록을 최신순으로 반환합니다.
+    """
+    laws = firebase_service.get_laws_for_user(user_id)
+    return laws
+
+@app.post("/api/laws", response_model=LawResponse)
+async def create_law(payload: LawCreateRequest):
+    """
+    8. 법안 등록 API
+    Gemini AI가 제정한 법령안 중 마음에 드는 것을 사용자 계정에 등록합니다.
+    """
+    law = firebase_service.create_law(payload.user_id, payload.badge, payload.title)
+    return law
+
+@app.delete("/api/laws/{law_id}")
+async def delete_law(law_id: str, user_id: str):
+    """
+    9. 법안 삭제 API
+    본인이 등록한 법안만 삭제할 수 있습니다.
+    """
+    deleted = firebase_service.delete_law(user_id, law_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="해당 법안을 찾을 수 없거나 삭제 권한이 없습니다."
+        )
+    return {"status": "deleted", "law_id": law_id}
 
 if __name__ == "__main__":
     import uvicorn
