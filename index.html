@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="style.css?v=20260709-1">
+    <link rel="stylesheet" href="style.css?v=20260709-2">
 </head>
 <body>
     <div class="app-container">
@@ -244,15 +244,15 @@
                                     <div class="slider-marks">
                                         <div class="mark-item">
                                             <span class="mark-label">예보 초기 단계</span>
-                                            <span class="mark-date">2026. 03</span>
+                                            <span class="mark-date">2016. 03</span>
                                         </div>
                                         <div class="mark-item active">
                                             <span class="mark-label">부분 안정화 예측</span>
-                                            <span class="mark-date font-blue">2050. 03</span>
+                                            <span class="mark-date font-blue">2026. 03</span>
                                         </div>
                                         <div class="mark-item">
                                             <span class="mark-label">전면 자유귀향 예보</span>
-                                            <span class="mark-date">2076. 03</span>
+                                            <span class="mark-date">2036. 03</span>
                                         </div>
                                     </div>
                                     <div class="timeline-progress-track">
@@ -270,17 +270,17 @@
                         </div>
                     </div> <!-- subtab-realtime END -->
 
-                    <!-- Subtab 2: 예측 분석 (50개년 AI 머신러닝 기후 예측 시뮬레이션 상세 리포트) -->
+                    <!-- Subtab 2: 예측 분석 (20개년 AI 머신러닝 기후 예측 시뮬레이션 상세 리포트) -->
                     <div class="subtab-content hidden" id="subtab-prediction">
                         <div class="prediction-dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px;">
                             
                             <!-- Left Column: Regression Trends -->
                             <div class="dignity-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px;">
                                 <h3 style="font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                    <i data-lucide="line-chart" style="color: var(--color-primary); width: 22px; height: 22px;"></i> 50개년 자정 감쇄 회귀 예측
+                                    <i data-lucide="line-chart" style="color: var(--color-primary); width: 22px; height: 22px;"></i> 20개년 자정 감쇄 회귀 예측
                                 </h3>
                                 <p style="font-size: 14px; color: var(--color-text-light); line-height: 1.6; margin-bottom: 20px;">
-                                    루트홈 기후 예측 AI는 2026년부터 2076년까지 2년 단위로 전체 구역의 안전도 및 환경 정화 지수를 동적 수학 모델링으로 추적합니다. 지수 감쇄 회귀 공식에 의해 오염도는 연간 평균 4.5%씩 자정 감소하며, 계절 미세 기후 요동 사인파(sin) 파동이 미세 가미됩니다.
+                                    루트홈 기후 예측 AI는 2016년부터 2036년까지 1년 단위로 전체 구역의 안전도 및 환경 정화 지수를 동적 수학 모델링으로 추적합니다. 지수 감쇄 회귀 공식에 의해 오염도는 연간 평균 4.5%씩 자정 감소하며, 계절 미세 기후 요동 사인파(sin) 파동이 미세 가미됩니다.
                                 </p>
                                 
                                 <div class="prediction-formula-card" style="background: rgba(37,99,235,0.05); border: 1px solid rgba(37,99,235,0.15); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
@@ -332,7 +332,7 @@
                                         </div>
                                         <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center;">
                                             <span style="font-size: 11px; color: var(--color-text-light); text-transform: uppercase;">완전 자유귀향 시점</span>
-                                            <div style="font-size: 32px; font-weight: 800; color: #10b981; margin-top: 4px;" id="predict-target-year">2076년</div>
+                                            <div style="font-size: 32px; font-weight: 800; color: #10b981; margin-top: 4px;" id="predict-target-year">2036년</div>
                                         </div>
                                     </div>
 
@@ -345,7 +345,7 @@
                                 </div>
 
                                 <div style="display: flex; gap: 12px; margin-top: 24px;">
-                                    <button class="btn-popup-action" style="flex: 1;" onclick="alert('전 구역 50개년 시계열 원시 데이터셋(.csv) 다운로드가 완료되었습니다.')"><i data-lucide="download"></i> 예측 Raw 데이터 다운로드</button>
+                                    <button class="btn-popup-action" style="flex: 1;" onclick="alert('전 구역 20개년 시계열 원시 데이터셋(.csv) 다운로드가 완료되었습니다.')"><i data-lucide="download"></i> 예측 Raw 데이터 다운로드</button>
                                 </div>
                             </div>
                         </div>
@@ -1040,6 +1040,6 @@
 
     <!-- Leaflet JS Map API -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="app.js?v=20260709-1"></script>
+    <script src="app.js?v=20260709-2"></script>
 </body>
 </html>
