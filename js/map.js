@@ -138,7 +138,10 @@ function getRegionFoodBias(code) {
     const prefix = code.slice(0, 2);
     if (prefix === "35" || prefix === "36") return 18; // 전북·전남
     if (prefix === "37" || prefix === "38") return -15; // 경북·경남
-    if (prefix === "31") return -15; // 경기
+    
+    // 경기도 차단 비율 소폭 감소 조정 (기존 -15 -> -3)
+    if (prefix === "31") return -3; // 경기
+    
     if (prefix === "32") return 10; // 강원
     if (["11", "21", "22", "23", "24", "25", "26", "29"].includes(prefix)) return -15; // 광역시/특별시
     return 0;
@@ -178,235 +181,232 @@ const METRO_PREFIX = {
     "24": "광주광역시", "25": "대전광역시", "26": "울산광역시", "29": "세종특별자치시"
 };
 
-function renderMunicipalities(geoData, map, mapCircles, isDesktop) {
-    const weight = isDesktop ? 1.8 : 1.2;
-    const lightWeight = isDesktop ? 0.6 : 0.5;
-    const zoomOnClick = isDesktop ? 10 : 9;
-
-    const plainFeatures = [];
-    const metroGroups = {};
-    geoData.features.forEach(feature => {
-        const prefix = (feature.properties.code || "").slice(0, 2);
-        if (METRO_PREFIX[prefix]) {
-            (metroGroups[prefix] = metroGroups[prefix] || []).push(feature);
-        } else {
-            plainFeatures.push(feature);
-        }
-    });
-
-    const metroState = { expandedPrefix: null, entries: {} };
-
-    function collapseExpandedMetro() {
-        const prefix = metroState.expandedPrefix;
-        if (!prefix) return;
-        const entry = metroState.entries[prefix];
-        if (map.hasLayer(entry.districtLayer)) map.removeLayer(entry.districtLayer);
-        if (map.hasLayer(entry.frameLayer)) map.removeLayer(entry.frameLayer);
-        entry.metroLayer.addTo(map);
-        metroState.expandedPrefix = null;
-    }
-
-    function expandMetro(prefix) {
-        if (metroState.expandedPrefix && metroState.expandedPrefix !== prefix) {
-            collapseExpandedMetro();
-        }
-        const entry = metroState.entries[prefix];
-        if (map.hasLayer(entry.metroLayer)) map.removeLayer(entry.metroLayer);
-        entry.districtLayer.addTo(map);
-        entry.frameLayer.addTo(map);
-        map.fitBounds(entry.bounds, { padding: [20, 20] });
-        metroState.expandedPrefix = prefix;
-    }
-
-    function districtStyle(feature) {
-        const data = getMunicipalityData(feature.properties.code, feature.properties.name);
-        return {
-            color: "#ffffff",
-            weight: data.isKeyZone ? weight : lightWeight,
-            fillColor: getStatusColor(data.status),
-            fillOpacity: data.isKeyZone ? 0.58 : 0.32
-        };
-    }
-
-    function bindDistrictFeature(metroPrefix) {
-        return function(feature, layer) {
-            const data = getMunicipalityData(feature.properties.code, feature.properties.name);
-            const pollution = Math.round((100 - data.recovery_rate) * 10) / 10;
-            layer.bindPopup(`<strong>📍 ${data.name}</strong><br>오염도: ${pollution}%<br>복구율: ${data.recovery_rate}%<br>통제 상태: <strong>${data.status}</strong>`);
-            if (data.zone) mapCircles[data.zone.zone_id] = layer;
-            if (isDesktop) allMunicipalityLayers.push({ layer, code: feature.properties.code, name: feature.properties.name, isKeyZone: data.isKeyZone });
-            layer.on("click", (e) => {
-                if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
-                if (isDesktop && navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
-                if (!metroPrefix) collapseExpandedMetro();
-                map.setView(layer.getBounds().getCenter(), zoomOnClick, { animate: true });
-                if (data.zone && window.selectZone) window.selectZone(data.zone.zone_id);
-            });
-            if (isDesktop) {
-                layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.72, weight: 2 }));
-                layer.on("mouseout", () => layer.setStyle({
-                    fillOpacity: data.isKeyZone ? 0.58 : 0.32,
-                    weight: data.isKeyZone ? weight : lightWeight
-                }));
-            }
-        };
-    }
-
-    L.geoJSON({ type: "FeatureCollection", features: plainFeatures }, {
-        style: districtStyle,
-        onEachFeature: bindDistrictFeature(null)
-    }).addTo(map);
-
-    Object.keys(metroGroups).forEach(prefix => {
-        const features = metroGroups[prefix];
-        const cityName = METRO_PREFIX[prefix];
-        const districtData = features.map(f => getMunicipalityData(f.properties.code, f.properties.name));
-        const avgRecovery = Math.round((districtData.reduce((s, d) => s + d.recovery_rate, 0) / districtData.length) * 10) / 10;
-        const avgStatus = avgRecovery >= 82 ? "귀향시작" : avgRecovery >= 55 ? "예약가능" : "봉쇄";
-        const avgPollution = Math.round((100 - avgRecovery) * 10) / 10;
-        const cityCollection = { type: "FeatureCollection", features };
-
-        const districtLayer = L.geoJSON(cityCollection, {
-            style: districtStyle,
-            onEachFeature: bindDistrictFeature(prefix)
-        });
-
-        const frameLayer = L.geoJSON(cityCollection, {
-            style: () => ({ fill: false, color: "#1e293b", weight: isDesktop ? 3 : 2, opacity: 0.85, dashArray: "6 4" }),
-            interactive: false
-        });
-
-        const metroLayer = L.geoJSON(cityCollection, {
-            style: () => ({ color: getStatusColor(avgStatus), weight: 0, fillColor: getStatusColor(avgStatus), fillOpacity: 0.5 }),
-            onEachFeature: (feature, layer) => {
-                layer.bindPopup(`<strong>📍 ${cityName}</strong><br>평균 오염도: ${avgPollution}%<br>평균 복구율: ${avgRecovery}%<br>통제 상태: <strong>${avgStatus}</strong><br><span style="font-size:11px;color:#64748B;">클릭하면 구·군별 상세 보기</span>`);
-                layer.on("click", (e) => {
-                    if (isDesktop && navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
-                    expandMetro(prefix);
-                });
-                if (isDesktop) {
-                    layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.68 }));
-                    layer.on("mouseout", () => layer.setStyle({ fillOpacity: 0.5 }));
-                }
-            }
-        }).addTo(map);
-
-        metroState.entries[prefix] = { metroLayer, districtLayer, frameLayer, bounds: metroLayer.getBounds() };
-    });
-}
-
+// 2) Census GeoJSON Dynamic loading & mapping
 async function loadMunicipalitiesGeoJSON(generateDistrictPolygon) {
+    console.log("Requesting Census GeoJSON Outline database...");
+    const mapSpinner = document.getElementById("map-loading-spinner");
+    
     try {
-        console.log("[GeoJSON] Loading South Korea simple boundaries...");
-        const res = await fetch("./skorea_municipalities_simple.json");
-        if (!res.ok) throw new Error("Local GeoJSON load fail");
-        const geoData = await res.json();
-        cachedGeoData = geoData;
-
-        renderMunicipalities(geoData, desktopMap, desktopMapCircles, true);
-        renderMunicipalities(geoData, mobileMap, mobileMapCircles, false);
-
-        // Global + Newly Added Exception nodes rendering
-        const targetZones = window.zonesData || mockZones;
-        const DUPLICATE_COUNTY_ZONES = ["KR-GW-01", "KR-GW-02"];
-        targetZones.forEach(zone => {
-            if (DUPLICATE_COUNTY_ZONES.includes(zone.zone_id)) return;
-            if (zone.zone_id.startsWith("GL-") || !desktopMapCircles[zone.zone_id]) {
-                const color = getStatusColor(zone.status);
-                const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
-
-                const deskPoly = L.polygon(polygonCoords, {
-                    color: color,
-                    fillColor: color,
-                    fillOpacity: 0.50,
-                    weight: 2.5
-                }).addTo(desktopMap);
-                desktopMapCircles[zone.zone_id] = deskPoly;
-
-                const mobPoly = L.polygon(polygonCoords, {
-                    color: color,
-                    fillColor: color,
-                    fillOpacity: 0.50,
-                    weight: 1.8
-                }).addTo(mobileMap);
-                mobileMapCircles[zone.zone_id] = mobPoly;
-
-                const cleanName = zone.zone_name.includes(" - ") ? zone.zone_name.split(" - ")[1] : zone.zone_name;
-                const popupContent = `<strong>📍 기후 구역: ${cleanName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
-                deskPoly.bindPopup(popupContent);
-                mobPoly.bindPopup(`<strong>📍 ${cleanName}</strong><br>복구율: ${zone.recovery_rate}%`);
-
-                deskPoly.on("click", (e) => {
-                    if (navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
-                    desktopMap.setView([zone.lat, zone.lng], 9, { animate: true });
-                    if (window.selectZone) window.selectZone(zone.zone_id);
-                });
-                mobPoly.on("click", () => {
-                    mobileMap.setView([zone.lat, zone.lng], 8, { animate: true });
-                    if (window.selectZone) window.selectZone(zone.zone_id);
-                });
-            }
-        });
-
-        console.log("[GeoJSON Modular SUCCESS] South Korea municipalities boundaries merged perfectly.");
+        const response = await fetch('skorea_municipalities_simple.json');
+        if (!response.ok) throw new Error("CORS file read limit");
+        const data = await response.json();
+        cachedGeoData = data;
+        if (mapSpinner) mapSpinner.classList.add("hidden");
+        renderGeoJSONLayers();
     } catch (err) {
-        console.warn("[WARN] GeoJSON load fail, drawing backup polygons:", err);
-        drawBackupPolygons(generateDistrictPolygon);
+        console.warn("Local fetch skorea_municipalities_simple.json CORS blocking active. Trying static mockup.");
+        if (mapSpinner) mapSpinner.classList.add("hidden");
+        
+        // Backup mock loading
+        const backupGeo = {
+            type: "FeatureCollection",
+            features: mockZones.map((z, idx) => {
+                const center = z.zone_center;
+                const mockCode = "990" + idx;
+                return {
+                    type: "Feature",
+                    properties: { code: mockCode, name: z.zone_name },
+                    geometry: {
+                        type: "Polygon",
+                        coordinates: [generateDistrictPolygon(z.zone_id, center[0], center[1])]
+                    }
+                };
+            })
+        };
+        cachedGeoData = backupGeo;
+        renderGeoJSONLayers();
     }
 }
 
-function drawBackupPolygons(generateDistrictPolygon) {
-    const targetZones = window.zonesData || mockZones;
-    targetZones.forEach(zone => {
-        const color = getStatusColor(zone.status);
-        const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+export function renderGeoJSONLayers() {
+    if (!cachedGeoData) return;
 
-        const deskCircle = L.polygon(polygonCoords, {
-            color: color,
+    allMunicipalityLayers.forEach(l => {
+        desktopMap.removeLayer(l);
+        mobileMap.removeLayer(l);
+    });
+    allMunicipalityLayers = [];
+
+    // Clear previous circles
+    Object.values(desktopMapCircles).forEach(c => desktopMap.removeLayer(c));
+    Object.values(mobileMapCircles).forEach(c => mobileMap.removeLayer(c));
+    desktopMapCircles = {};
+    mobileMapCircles = {};
+
+    // 1) Outlines
+    const dGeoLayer = L.geoJSON(cachedGeoData, {
+        style: (feature) => {
+            const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+            const fillColor = getStatusColor(data.status);
+            return {
+                fillColor: fillColor,
+                weight: 1.2,
+                opacity: 0.85,
+                color: 'rgba(255, 255, 255, 0.45)',
+                fillOpacity: 0.35
+            };
+        },
+        onEachFeature: (feature, layer) => {
+            const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+            const tooltipContent = `
+                <div class="map-tooltip">
+                    <strong>${data.name}</strong><br/>
+                    복구율: <span class="badge-accent">${data.recovery_rate}%</span><br/>
+                    상태: <span class="status-badge status-${data.status === "봉쇄" ? "red" : (data.status === "예약가능" ? "orange" : "green")}">${data.status}</span>
+                </div>
+            `;
+            layer.bindTooltip(tooltipContent, { sticky: true, opacity: 0.95 });
+
+            layer.on({
+                mouseover: (e) => {
+                    const lyr = e.target;
+                    lyr.setStyle({ fillOpacity: 0.55, weight: 2, color: '#3B82F6' });
+                },
+                mouseout: (e) => {
+                    const lyr = e.target;
+                    dGeoLayer.resetStyle(lyr);
+                },
+                click: (e) => {
+                    const properties = feature.properties;
+                    const code = properties.code;
+                    const name = properties.name;
+                    const districtData = getMunicipalityData(code, name);
+                    if (districtData.zone) {
+                        window.selectZone(districtData.zone.zone_id);
+                    } else {
+                        // Dynamically update legend card for generic regions
+                        const cardRegionTitle = document.getElementById("legend-region-title");
+                        const cardRegionRecovery = document.getElementById("legend-region-recovery");
+                        const cardRegionStatus = document.getElementById("legend-region-status");
+                        const cardEnvRating = document.getElementById("legend-env-rating");
+                        const cardDiaryBody = document.getElementById("legend-diary-body");
+
+                        if (cardRegionTitle) cardRegionTitle.textContent = `${districtData.name} 복원 지구`;
+                        if (cardRegionRecovery) cardRegionRecovery.textContent = `${districtData.recovery_rate}%`;
+                        if (cardRegionStatus) {
+                            cardRegionStatus.textContent = districtData.status;
+                            cardRegionStatus.className = `status-pill ${districtData.status === "봉쇄" ? "pill-danger" : (districtData.status === "예약가능" ? "pill-warning" : "pill-success")}`;
+                        }
+                        if (cardEnvRating) cardEnvRating.textContent = districtData.recovery_rate >= 80 ? "안심 (A)" : (districtData.recovery_rate >= 55 ? "주의 (B)" : "위험 (C)");
+                        if (cardDiaryBody) {
+                            cardDiaryBody.innerHTML = `
+                                <strong>안내:</strong> 본 구역은 대한민국 기후대피정부 250개 정화 구역 중 하나입니다.<br/>
+                                <strong>복원 지표:</strong> 토양 PPM 및 수자원 복구 진척율 ${districtData.recovery_rate}% 수준에 도달하여 현재 <strong>[${districtData.status}]</strong> 등급으로 관제 분류되어 보존 관리 중입니다.
+                            `;
+                        }
+                    }
+                }
+            });
+        }
+    }).addTo(desktopMap);
+    allMunicipalityLayers.push(dGeoLayer);
+
+    const mGeoLayer = L.geoJSON(cachedGeoData, {
+        style: (feature) => {
+            const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+            const fillColor = getStatusColor(data.status);
+            return {
+                fillColor: fillColor,
+                weight: 1.0,
+                opacity: 0.8,
+                color: 'rgba(255, 255, 255, 0.4)',
+                fillOpacity: 0.3
+            };
+        }
+    }).addTo(mobileMap);
+    allMunicipalityLayers.push(mGeoLayer);
+
+    // 2) Main Circles for key zones
+    const activeZones = window.zonesData || mockZones;
+    activeZones.forEach(z => {
+        const center = z.zone_center;
+        const color = getStatusColor(z.status);
+
+        const dCircle = L.circleMarker(center, {
+            radius: 8,
             fillColor: color,
-            fillOpacity: 0.50,
-            weight: 2.5
+            color: '#FFFFFF',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9,
+            zIndexOffset: 1000
         }).addTo(desktopMap);
-        desktopMapCircles[zone.zone_id] = deskCircle;
 
-        const mobCircle = L.polygon(polygonCoords, {
-            color: color,
+        dCircle.on("click", () => {
+            window.selectZone(z.zone_id);
+        });
+        desktopMapCircles[z.zone_id] = dCircle;
+
+        const mCircle = L.circleMarker(center, {
+            radius: 6,
             fillColor: color,
-            fillOpacity: 0.50,
-            weight: 2.5
+            color: '#FFFFFF',
+            weight: 1.5,
+            opacity: 1,
+            fillOpacity: 0.9
         }).addTo(mobileMap);
-        mobileMapCircles[zone.zone_id] = mobCircle;
-
-        const popupContent = `<strong>${zone.zone_id}</strong><br>${zone.zone_name.split(" - ")[1] || zone.zone_name}<br>회복률: ${zone.recovery_rate}%`;
-        deskCircle.bindPopup(popupContent);
-        mobCircle.bindPopup(popupContent);
-
-        const handleCircleClick = () => {
-            desktopMap.setView([zone.lat, zone.lng], 8, { animate: true });
-            mobileMap.setView([zone.lat, zone.lng], 7, { animate: true });
-            if (window.selectZone) window.selectZone(zone.zone_id);
-        };
-
-        deskCircle.on("click", handleCircleClick);
-        mobCircle.on("click", handleCircleClick);
+        mobileMapCircles[z.zone_id] = mCircle;
     });
 }
 
-// 2) Navigation & Wayfinder Engine
-export function handleNavigatorClick(latlng) {
-    if (navPoints.length >= 2) resetNavigator();
+// 3) Safe Path Finder Logic (REAL ROAD OSRM Routing + Blocked Zone Bypassing)
 
-    navPoints.push([latlng.lat, latlng.lng]);
-    const color = navPoints.length === 1 ? "#2563EB" : "#ef4444";
-    const marker = L.circleMarker(latlng, { radius: 7, color, fillColor: color, fillOpacity: 1 }).addTo(desktopMap);
-    navMarkers.push(marker);
+export function toggleNavigationMode() {
+    const btnToggleNav = document.getElementById("btn-toggle-navigator");
+    const navStatusPanel = document.getElementById("desktop-navigator-status-panel");
+    const navStatusText = document.getElementById("desktop-navigator-status");
 
+    navigatorModeActive = !navigatorModeActive;
+
+    if (navigatorModeActive) {
+        resetNavigator();
+        if (btnToggleNav) {
+            btnToggleNav.classList.add("active");
+            btnToggleNav.innerHTML = '<i data-lucide="x" style="width: 16px; height: 16px;"></i> 탐색 모드 끄기';
+        }
+        if (navStatusPanel) navStatusPanel.classList.remove("hidden");
+        if (navStatusText) navStatusText.textContent = "지도를 클릭해 출발지를 선택하세요.";
+        desktopMap.getContainer().style.cursor = "crosshair";
+    } else {
+        if (btnToggleNav) {
+            btnToggleNav.classList.remove("active");
+            btnToggleNav.innerHTML = '<i data-lucide="navigation" style="width: 16px; height: 16px;"></i> 기후피난 안전경로 찾기';
+        }
+        if (navStatusPanel) navStatusPanel.classList.add("hidden");
+        resetNavigator();
+        desktopMap.getContainer().style.cursor = "";
+    }
+    lucide.createIcons();
+}
+
+function handleNavigatorClick(latlng) {
     const setNavStatusText = window.setNavStatusText || console.log;
+    const point = [latlng.lat, latlng.lng];
 
-    if (navPoints.length === 1) {
-        setNavStatusText("도착지를 클릭하세요.");
-    } else if (navPoints.length === 2) {
-        setNavStatusText("봉쇄 구역을 피해 경로를 계산 중...");
+    if (navPoints.length === 0) {
+        navPoints.push(point);
+        const marker = L.marker(point, { 
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:#2563EB; width:12px; height:12px; border:2px solid white; border-radius:50%; box-shadow:0 0 6px rgba(0,0,0,0.4);'></div>",
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            }) 
+        }).addTo(desktopMap);
+        navMarkers.push(marker);
+        setNavStatusText("출발지가 등록되었습니다. 지도를 터치해 목적지를 선택하세요.");
+    } else if (navPoints.length === 1) {
+        navPoints.push(point);
+        const marker = L.marker(point, { 
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:#DC2626; width:12px; height:12px; border:2px solid white; border-radius:50%; box-shadow:0 0 6px rgba(0,0,0,0.4);'></div>",
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            }) 
+        }).addTo(desktopMap);
+        navMarkers.push(marker);
+        
         drawSafeRoute(navPoints[0], navPoints[1]);
     }
 }
@@ -419,6 +419,10 @@ export function resetNavigator() {
     
     const setNavStatusText = window.setNavStatusText || console.log;
     setNavStatusText("지도를 클릭해 출발지를 선택하세요.");
+
+    // Remove route widget from legend card if it exists
+    const widget = document.getElementById("nav-route-eta-widget");
+    if (widget) widget.remove();
 }
 
 function pointInPolygonRing(lat, lng, ring) {
@@ -450,6 +454,29 @@ function isLatLngBlocked(lat, lng, blockedRings) {
         if (pointInPolygonRing(lat, lng, ring)) return true;
     }
     return false;
+}
+
+// OSRM API Route Downloader Helper
+async function fetchOSRMRoute(waypoints) {
+    const coordsStr = waypoints.map(wp => `${wp[1]},${wp[0]}`).join(";");
+    const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+    try {
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.routes && data.routes.length > 0) {
+                const route = data.routes[0];
+                return {
+                    coordinates: route.geometry.coordinates.map(c => [c[1], c[0]]), // OSRM [lng, lat] -> Leaflet [lat, lng]
+                    distance: route.distance, // meters
+                    duration: route.duration // seconds
+                };
+            }
+        }
+    } catch (e) {
+        console.error("OSRM Route fetching failed, fallback to direct line.", e);
+    }
+    return null;
 }
 
 export function findSafeRoute(start, end, blockedRings) {
@@ -501,14 +528,152 @@ export function findSafeRoute(start, end, blockedRings) {
     return foundPath.map(([r, c]) => toLatLng(r, c));
 }
 
-export function drawSafeRoute(start, end) {
+export async function drawSafeRoute(start, end) {
     const blockedRings = getBlockedPolygons();
-    const routeLatLngs = findSafeRoute(start, end, blockedRings);
+    const setNavStatusText = window.setNavStatusText || console.log;
+    
+    setNavStatusText("🛣️ 실제 도로망 분석 및 기후 안심 우회 경로 탐색 가동 중...");
+
+    // 1) Direct road search first
+    let routeData = await fetchOSRMRoute([start, end]);
+    let needsBypass = false;
+
+    if (routeData) {
+        for (const pt of routeData.coordinates) {
+            if (isLatLngBlocked(pt[0], pt[1], blockedRings)) {
+                needsBypass = true;
+                break;
+            }
+        }
+    } else {
+        needsBypass = true;
+    }
+
+    // 2) If the route penetrates blocked zone, calculate best bypass waypoints
+    if (needsBypass && routeData) {
+        console.log("[NAV] 차단 장벽 감지! 안전 우회 경유 노드 연산 중...");
+        const midLat = (start[0] + end[0]) / 2;
+        const midLng = (start[1] + end[1]) / 2;
+
+        // Try bypass offsets around the center (Approx 10~15km deviations)
+        const offsets = [
+            [0.10, 0.10],   // NE
+            [-0.10, 0.10],  // SE
+            [0.10, -0.10],  // NW
+            [-0.10, -0.10], // SW
+            [0.0, 0.15],    // E
+            [0.0, -0.15],   // W
+            [0.15, 0.0],    // N
+            [-0.15, 0.0]    // S
+        ];
+
+        let bestVia = null;
+        for (const [oLat, oLng] of offsets) {
+            const candidateVia = [midLat + oLat, midLng + oLng];
+            if (!isLatLngBlocked(candidateVia[0], candidateVia[1], blockedRings)) {
+                bestVia = candidateVia;
+                break;
+            }
+        }
+
+        if (bestVia) {
+            const bypassRoute = await fetchOSRMRoute([start, bestVia, end]);
+            if (bypassRoute) {
+                let secondCheckPassed = true;
+                for (const pt of bypassRoute.coordinates) {
+                    if (isLatLngBlocked(pt[0], pt[1], blockedRings)) {
+                        secondCheckPassed = false;
+                        break;
+                    }
+                }
+                if (secondCheckPassed) {
+                    routeData = bypassRoute;
+                    console.log("[NAV] 실제 도로 우회 안전 경로 획득 완료.");
+                }
+            }
+        }
+    }
+
+    // 3) Format distance, duration, rendering
+    let routeLatLngs;
+    let distanceText = "계산 불가";
+    let etaText = "계산 불가";
+    let isBypassedLabel = needsBypass ? "⚠️ 안전 우회 통과" : "🟢 직통 안전 개방";
+
+    if (routeData) {
+        routeLatLngs = routeData.coordinates;
+        const distKm = (routeData.distance / 1000).toFixed(1);
+        distanceText = `${distKm} km`;
+        
+        const totalSec = routeData.duration;
+        const hours = Math.floor(totalSec / 3600);
+        const mins = Math.round((totalSec % 3600) / 60);
+        etaText = hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`;
+    } else {
+        // Fallback to BFS grid path
+        routeLatLngs = findSafeRoute(start, end, blockedRings);
+        const distanceSim = (start[0] !== end[0]) ? (Math.abs(start[0] - end[0]) * 111).toFixed(1) : "5.4";
+        distanceText = `${distanceSim} km (격자)`;
+        etaText = `${Math.round(distanceSim * 1.5)}분`;
+    }
 
     if (navRouteLine) desktopMap.removeLayer(navRouteLine);
-    navRouteLine = L.polyline(routeLatLngs, { color: "#2563EB", weight: 4, opacity: 0.85, dashArray: "8 4" }).addTo(desktopMap);
-    desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [30, 30] });
+    
+    // Smooth custom polyline for premium visualization
+    navRouteLine = L.polyline(routeLatLngs, { 
+        color: needsBypass ? "#EA580C" : "#2563EB", 
+        weight: 6, 
+        opacity: 0.9, 
+        dashArray: needsBypass ? "10 5" : "none" 
+    }).addTo(desktopMap);
+    
+    desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [40, 40] });
 
-    const setNavStatusText = window.setNavStatusText || console.log;
-    setNavStatusText(`경로 탐색 완료 — 우회 대상 봉쇄 구역 ${blockedRings.length}곳.`);
+    // Store in global window for cross-tab sharing
+    window.lastCalculatedRoute = {
+        distance: distanceText,
+        eta: etaText,
+        status: isBypassedLabel
+    };
+
+    setNavStatusText(`🧭 실제 도로 안전우회 경로 탐색 완료 — 예상 시간: [ ${etaText} ] | 실주행 거리: [ ${distanceText} ] (${isBypassedLabel})`);
+
+    // Injects highly-aesthetic ETA widgets inside the legend env card
+    updateRouteWidgetUI(distanceText, etaText, isBypassedLabel);
+}
+
+function updateRouteWidgetUI(dist, eta, status) {
+    const legendCard = document.getElementById("map-legend-card");
+    if (!legendCard) return;
+
+    let widget = document.getElementById("nav-route-eta-widget");
+    if (!widget) {
+        widget = document.createElement("div");
+        widget.id = "nav-route-eta-widget";
+        widget.style.marginTop = "12px";
+        widget.style.padding = "12px";
+        widget.style.background = "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)";
+        widget.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+        widget.style.borderRadius = "10px";
+        widget.style.animation = "slideUpFadeIn 0.4s ease";
+        legendCard.appendChild(widget);
+    }
+
+    widget.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 700; color: #94A3B8; letter-spacing: 0.5px;">기후피난 안전경로 안내</span>
+            <span style="font-size: 10px; font-weight: 800; background: ${status.includes("우회") ? "rgba(234, 88, 12, 0.2)" : "rgba(37, 99, 235, 0.2)"}; color: ${status.includes("우회") ? "#FB923C" : "#60A5FA"}; padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.05);">${status}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div>
+                <span style="font-size: 10px; color: #64748B; display: block;">예상 소요 시간</span>
+                <span style="font-size: 16px; font-weight: 800; color: #F8FAFC;">${eta}</span>
+            </div>
+            <div style="width: 1px; height: 24px; background: rgba(255,255,255,0.1);"></div>
+            <div>
+                <span style="font-size: 10px; color: #64748B; display: block;">실주행 거리</span>
+                <span style="font-size: 16px; font-weight: 800; color: #F8FAFC;">${dist}</span>
+            </div>
+        </div>
+    `;
 }
