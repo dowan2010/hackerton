@@ -709,8 +709,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const centerPoint = [36.3000, 127.8000]; // Center of South Korea
         const baseZoom = 7; // Nation-wide zoom
 
-        const tileUrl = 'https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png';
-        const attribution = '&copy; Ministry of Land, Infrastructure and Transport Vworld API';
+        const tileUrl = 'https://mt1.google.com/vt/lyrs=m&hl=ko&gl=kr&x={x}&y={y}&z={z}';
+        const attribution = '&copy; Google Maps';
 
         // Limit bounding box to South Korea
         const southKoreaBounds = L.latLngBounds(
