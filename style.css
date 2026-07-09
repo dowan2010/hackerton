@@ -419,8 +419,14 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 24px;
+    padding: 0;
     height: calc(100vh - 70px);
+}
+
+/* 지도 탭 제외한 나머지 탭에 패딩 적용 */
+#tab-timeline,
+#tab-dignity {
+    padding: 24px;
 }
 
 /* Base Tab Animation */
@@ -488,11 +494,10 @@ body {
     grid-template-columns: 1fr;
 }
 
-/* Make subtab-realtime (Map Tab) cover 100% of screen edge-to-edge by counteracting content-body padding */
 #subtab-realtime {
-    margin: -24px;
-    height: calc(100% + 48px);
-    width: calc(100% + 48px);
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
