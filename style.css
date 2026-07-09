@@ -712,6 +712,11 @@ body {
     background-color: #E5E7EB;
 }
 
+/* Make Leaflet map tiles clean and desaturated so data overlays pop out */
+.leaflet-tile-container {
+    filter: grayscale(70%) brightness(102%) contrast(95%);
+}
+
 /* Selected region info banner inside Spring Timeline */
 .selected-region-info-banner {
     display: flex;

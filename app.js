@@ -712,10 +712,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         const attribution = '&copy; OpenStreetMap contributors';
 
+        // Limit bounding box to South Korea
+        const southKoreaBounds = L.latLngBounds(
+            L.latLng([32.5, 123.5]), // Southwest
+            L.latLng([38.7, 132.2])  // Northeast
+        );
+
         // 1) Desktop Map
         desktopMap = L.map('desktop-map', {
             center: centerPoint,
             zoom: baseZoom,
+            minZoom: 6,
+            maxZoom: 12,
+            maxBounds: southKoreaBounds,
+            maxBoundsViscosity: 1.0,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
@@ -724,6 +734,10 @@ document.addEventListener("DOMContentLoaded", () => {
         mobileMap = L.map('mobile-map', {
             center: centerPoint,
             zoom: baseZoom - 1, // slightly smaller zoom for mobile
+            minZoom: 5,
+            maxZoom: 11,
+            maxBounds: southKoreaBounds,
+            maxBoundsViscosity: 1.0,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(mobileMap);
@@ -755,9 +769,9 @@ document.addEventListener("DOMContentLoaded", () => {
         function generateDistrictPolygon(zoneId, lat, lng) {
             const rand = seedRandom(zoneId);
             const points = [];
-            let radiusKm = 9;
-            if (zoneId === "KR-DK-01") radiusKm = 2.5; // Dokdo is very small
-            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 14; // Large mountains
+            let radiusKm = 12; // Increased from 9 to 12
+            if (zoneId === "KR-DK-01") radiusKm = 4.0; // Increased from 2.5 to 4.0
+            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 18; // Increased from 14 to 18
             
             const latOffsetDegree = radiusKm / 110.574;
             const lngOffsetDegree = radiusKm / (111.320 * Math.cos(lat * Math.PI / 180));
@@ -782,8 +796,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const deskCircle = L.polygon(polygonCoords, {
                 color: color,
                 fillColor: color,
-                fillOpacity: 0.35,
-                weight: 2
+                fillOpacity: 0.50,
+                weight: 2.5
             }).addTo(desktopMap);
 
             desktopMapCircles[zone.zone_id] = deskCircle;
@@ -791,8 +805,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const mobCircle = L.polygon(polygonCoords, {
                 color: color,
                 fillColor: color,
-                fillOpacity: 0.35,
-                weight: 2
+                fillOpacity: 0.50,
+                weight: 2.5
             }).addTo(mobileMap);
 
             mobileMapCircles[zone.zone_id] = mobCircle;
