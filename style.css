@@ -415,7 +415,7 @@ body {
 /* --- TAB 1: ROOTMAP SPECIFIC LAYOUT --- */
 .rootmap-grid-layout {
     display: grid;
-    grid-template-columns: 360px 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
     height: 100%;
 }

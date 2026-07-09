@@ -696,6 +696,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // --- RootMap Sub-tabs (Realtime vs Predictive Analysis) ---
+    const btnRealtime = document.getElementById("btn-realtime-env");
+    const btnAnalysis = document.getElementById("btn-predictive-analysis");
+    const viewRealtime = document.getElementById("rootmap-realtime-view");
+    const viewAnalysis = document.getElementById("rootmap-analysis-view");
+
+    if (btnRealtime && btnAnalysis && viewRealtime && viewAnalysis) {
+        btnRealtime.addEventListener("click", () => {
+            btnRealtime.classList.add("active");
+            btnAnalysis.classList.remove("active");
+            viewRealtime.classList.remove("hidden");
+            viewAnalysis.classList.add("hidden");
+            setTimeout(() => {
+                if (desktopMap) desktopMap.invalidateSize();
+            }, 100);
+        });
+        btnAnalysis.addEventListener("click", () => {
+            btnAnalysis.classList.add("active");
+            btnRealtime.classList.remove("active");
+            viewAnalysis.classList.remove("hidden");
+            viewRealtime.classList.add("hidden");
+        });
+    }
+
     // --- 4. MAP API INTEGRATION (Leaflet.js) ---
     function getStatusColor(status) {
         if (status === "귀향시작") return "var(--color-success)";
@@ -729,6 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
+        desktopMap.fitBounds(southKoreaBounds);
 
         // 2) Mobile Map (locked to South Korea scale)
         mobileMap = L.map('mobile-map', {
@@ -741,6 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(mobileMap);
+        mobileMap.fitBounds(southKoreaBounds);
 
 
 
@@ -909,13 +935,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const waterCaption = document.getElementById("water-caption");
         const waterTrend = document.getElementById("water-trend");
         if (zone.recovery_rate > 90) {
-            waterCaption.textContent = "수질 환경 기준 충족: 정수 자립 상태 진입";
+            waterCaption.textContent = "생활 용수 기준 충족: 정수 자립 상태 진입";
             waterTrend.innerHTML = `<i data-lucide="trending-up"></i> +12.4%`;
         } else if (zone.recovery_rate > 70) {
-            waterCaption.textContent = "담수 구역 정화 가속화 단계 진입";
+            waterCaption.textContent = "거주용 용수 공급망 안정화 가속";
             waterTrend.innerHTML = `<i data-lucide="trending-up"></i> +8.2%`;
         } else {
-            waterCaption.textContent = "수중 오염 물질 여과 장치 가동 중";
+            waterCaption.textContent = "생활 용수 1차 여과 시설 가동 중";
             waterTrend.innerHTML = `<i data-lucide="trending-up"></i> +4.5%`;
         }
 
@@ -926,15 +952,40 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("carbon-percent").textContent = `${carbonVal}%`;
         document.getElementById("carbon-fill").style.width = `${carbonVal}%`;
 
+        // Update Predictive Analysis panel
+        const analysisTitle = document.getElementById("analysis-panel-title");
+        if (analysisTitle) {
+            analysisTitle.textContent = `[${zone.zone_name}] 에코-회복 10년 예측 분석`;
+        }
+        const reportPart1 = document.getElementById("analysis-report-part1");
+        const reportPart2 = document.getElementById("analysis-report-part2");
+        const biodiversityCard = document.getElementById("biodiversity-sim-card");
+
+        if (reportPart1 && reportPart2) {
+            if (zone.recovery_rate > 80 || zone.status === "귀향시작") {
+                reportPart1.textContent = `해당 구역(${zone.zone_name})의 토양 및 수질 정화 인프라가 안정적으로 가동 중이며, 오염 물질 분해 속도가 기존 대비 45% 향상되어 매우 빠른 생태계 복원이 예측됩니다.`;
+                reportPart2.textContent = `자생 생태계가 외부 개입 없이도 독립적으로 순환할 수 있는 자립 임계점(Stability Threshold 9.0)을 조기 돌파할 가능성이 높습니다. 실향민의 영구적 재정착 준비를 시작해도 좋은 수준입니다. 이미 자연 생태계가 안정을 되찾았으므로, 별도의 인위적인 생물 다양성 회복 시뮬레이션은 불필요합니다.`;
+                if (biodiversityCard) biodiversityCard.style.display = "none";
+            } else if (zone.recovery_rate > 50) {
+                reportPart1.textContent = `해당 구역(${zone.zone_name})은 점진적인 회복세를 보이고 있습니다. 미세 플라스틱 및 오염 물질 분해 속도가 35% 증가하며, 하천 수질이 2등급 이상으로 안정화 단계에 진입합니다.`;
+                reportPart2.textContent = `기후 조절 능력이 일부 회복되어 극한 기상 현상의 국지적 피해가 20% 감소합니다. 10년 후에는 자립 임계점에 도달할 것으로 전망되어 지속적인 모니터링이 필요합니다.`;
+                if (biodiversityCard) biodiversityCard.style.display = "block";
+            } else {
+                reportPart1.textContent = `해당 구역(${zone.zone_name})은 현재 오염 심화 상태로 초기 정화 작업이 집중적으로 요구됩니다. 토양 회복율을 높이기 위한 추가적인 생태 공학적 개입이 필요합니다.`;
+                reportPart2.textContent = `정화 설비 확충을 통해 향후 5년 내 수질 개선을 1차 목표로 합니다. 자생 생태계 회복까지는 예상보다 긴 시간이 소요될 수 있으며, 실향민 재정착은 아직 권장되지 않습니다.`;
+                if (biodiversityCard) biodiversityCard.style.display = "block";
+            }
+        }
+
         const stability = ((zone.recovery_rate * 0.08) + (zone.air_quality * 0.02)).toFixed(1);
         document.getElementById("stability-score").textContent = stability;
         const stabilityDesc = document.getElementById("stability-desc");
         if (stability >= 9.0) {
-            stabilityDesc.textContent = "대기, 수질 및 식생 인덱스가 모두 최적치에 도달하여 생태계 자립적 안전 거주가 완전 보장됩니다.";
+            stabilityDesc.textContent = "대기, 수자원 및 주거 인프라 지수가 최적치에 도달하여 영구적이고 안전한 거주가 보장됩니다.";
         } else if (stability >= 7.5) {
-            stabilityDesc.textContent = "현재 탄소 고정율과 수질 개선 추세를 바탕으로 생태계 자립도가 안전 임계치를 넘어섰습니다.";
+            stabilityDesc.textContent = "현재 지반 안정성과 생활 용수 개선 추세를 바탕으로 거주 적합도가 안전 임계치를 넘어섰습니다.";
         } else {
-            stabilityDesc.textContent = "식생지수와 대기질 회복 속도에 비해 수자원 안정화 지연으로 보완 모니터링이 수행 중입니다.";
+            stabilityDesc.textContent = "지반 안정화 및 대기질 회복 속도에 비해 생활 용수 공급 지연으로 보완 작업이 진행 중입니다.";
         }
 
         document.getElementById("selected-zone-id").textContent = `그리드 ID: ${zone.zone_id}`;
