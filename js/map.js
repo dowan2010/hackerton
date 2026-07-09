@@ -255,7 +255,7 @@ export function renderGeoJSONLayers() {
         }
     });
 
-    function districtStyle(feature) {
+function districtStyle(feature) {
         const data = getMunicipalityData(feature.properties.code, feature.properties.name);
         return {
             fillColor: getStatusColor(data.status),
