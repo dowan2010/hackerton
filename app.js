@@ -1698,6 +1698,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (desktopMap) desktopMap.invalidateSize();
                         if (mobileMap) mobileMap.invalidateSize();
                     }, 50);
+                } else if (targetId === "subtab-prediction") {
+                    if (typeof window.updateCityAnalysis === "function") {
+                        window.updateCityAnalysis(window.selectedZoneId || "KR-SL-01");
+                    }
                 }
             });
         });
@@ -1735,6 +1739,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     pred.classList.remove("hidden");
                     pred.classList.add("active");
                 }
+                if (typeof window.updateCityAnalysis === "function") {
+                    window.updateCityAnalysis(window.selectedZoneId || "KR-SL-01");
+                }
             } else if (index === 2) {
                 const pol = document.getElementById("subtab-policy");
                 if (pol) {
@@ -1750,6 +1757,11 @@ document.addEventListener("DOMContentLoaded", () => {
     initRootMapSubtabs();
     initDignitySystem();
     initNationalPolicyGenerator();
+
+    // Trigger initial rendering of the City Analysis panel with default selected zone
+    if (typeof window.updateCityAnalysis === "function") {
+        window.updateCityAnalysis(window.selectedZoneId || "KR-SL-01");
+    }
 
     // Load Live zones and trigger maps booting
     (async function bootSystem() {
