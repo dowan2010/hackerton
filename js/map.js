@@ -683,17 +683,25 @@ export async function drawSafeRoute(start, end) {
         }
     }
 
-    // OSRM 실패 fallback: 직선
-    const coords = route ? route.coords : [start, end];
-    const distKm = route ? (route.distance / 1000).toFixed(1) : (haversineDist(start, end)).toFixed(1);
-    const totalSec = route ? route.duration : null;
-    const etaText = totalSec != null
-        ? (totalSec >= 3600 ? `${Math.floor(totalSec / 3600)}시간 ${Math.round((totalSec % 3600) / 60)}분` : `${Math.round(totalSec / 60)}분`)
-        : "알 수 없음";
+    if (navRouteLine) {
+        if (navRouteLine._outline) desktopMap.removeLayer(navRouteLine._outline);
+        desktopMap.removeLayer(navRouteLine);
+        navRouteLine = null;
+    }
+
+    // OSRM 경로를 찾지 못함 → 도달 불가 지역으로 표시 (직선 fallback 없음)
+    if (!route) {
+        status("🚫 실제 도로 경로를 찾을 수 없습니다 — 접근 불가 지역입니다.");
+        updateRouteWidget("-", "-", false, true);
+        return;
+    }
+
+    const coords = route.coords;
+    const distKm = (route.distance / 1000).toFixed(1);
+    const totalSec = route.duration;
+    const etaText = totalSec >= 3600 ? `${Math.floor(totalSec / 3600)}시간 ${Math.round((totalSec % 3600) / 60)}분` : `${Math.round(totalSec / 60)}분`;
     const distText = `${distKm} km`;
     const statusLabel = bypassed ? "⚠️ 안전 우회" : "🟢 직통";
-
-    if (navRouteLine) { desktopMap.removeLayer(navRouteLine); navRouteLine = null; }
 
     navRouteLine = L.polyline(coords, {
         color: bypassed ? "#EA580C" : "#2563EB",
@@ -716,7 +724,7 @@ function haversineDist([lat1, lng1], [lat2, lng2]) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function updateRouteWidget(dist, eta, bypassed) {
+function updateRouteWidget(dist, eta, bypassed, unreachable) {
     const widget = document.getElementById("map-route-widget");
     if (!widget) return;
     const etaEl = document.getElementById("route-eta-val");
@@ -725,8 +733,13 @@ function updateRouteWidget(dist, eta, bypassed) {
     if (etaEl) etaEl.textContent = eta;
     if (distEl) distEl.textContent = dist;
     if (statusEl) {
-        statusEl.textContent = bypassed ? "🟠 안전 우회로 작동중" : "🟢 안전 경로 작동중";
-        statusEl.style.color = bypassed ? "#EA580C" : "#16A34A";
+        if (unreachable) {
+            statusEl.textContent = "🚫 도달 불가 지역";
+            statusEl.style.color = "#DC2626";
+        } else {
+            statusEl.textContent = bypassed ? "🟠 안전 우회로 작동중" : "🟢 안전 경로 작동중";
+            statusEl.style.color = bypassed ? "#EA580C" : "#16A34A";
+        }
     }
     widget.classList.remove("hidden");
 }
