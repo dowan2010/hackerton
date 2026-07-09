@@ -175,27 +175,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const data = cityAnalysisData[activeZoneId];
 
-        // Generate the 7 City Selector Buttons with Premium System Icons
+        // Generate the 7 City Selector Buttons
         const citySelectorHtml = Object.keys(cityAnalysisData).map(cid => {
             const city = cityAnalysisData[cid];
             const isActive = cid === activeZoneId;
             const activeClass = isActive ? "active-city-tab" : "";
-            
-            let iconName = "shield-check";
-            let iconColor = "#10B981"; // Safe (Green)
-            
-            if (city.statusClass === "blocked") {
-                iconName = "lock";
-                iconColor = "#EF4444"; // Blocked (Red)
-            } else if (city.statusClass === "reserve") {
-                iconName = "calendar-days";
-                iconColor = "#F59E0B"; // Reservable (Orange/Yellow)
-            }
+            let statusBadge = "🟢";
+            if (city.statusClass === "blocked") statusBadge = "🔴";
             
             return `
                 <button class="city-selector-btn ${activeClass}" onclick="window.selectCityAnalysis('${cid}')" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s ease; border: 1px solid var(--color-sidebar-border);">
-                    <i data-lucide="${iconName}" style="width: 15px; height: 15px; color: ${iconColor}; display: inline-block;"></i>
-                    <span>${city.name}</span>
+                    <span>${statusBadge} ${city.name}</span>
                 </button>
             `;
         }).join('');

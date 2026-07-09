@@ -717,7 +717,7 @@ export async function drawSafeRoute(start, end) {
     const totalSec = route.duration;
     const etaText = totalSec >= 3600 ? `${Math.floor(totalSec / 3600)}시간 ${Math.round((totalSec % 3600) / 60)}분` : `${Math.round(totalSec / 60)}분`;
     const distText = `${distKm} km`;
-    const statusLabel = bypassed ? "안전 우회" : "직통 경로";
+    const statusLabel = bypassed ? "⚠️ 안전 우회" : "🟢 직통";
 
     navRouteLine = L.polyline(coords, {
         color: bypassed ? "#EA580C" : "#2563EB",
@@ -728,7 +728,7 @@ export async function drawSafeRoute(start, end) {
     }).addTo(desktopMap);
 
     desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [48, 48], animate: true });
-    status(`탐색 완료 — ${statusLabel} | ${etaText} | ${distText}`);
+    status(`🧭 탐색 완료 — ${statusLabel} | ${etaText} | ${distText}`);
     updateRouteWidget(distText, etaText, bypassed);
 }
 
@@ -750,17 +750,11 @@ function updateRouteWidget(dist, eta, bypassed, unreachable) {
     if (distEl) distEl.textContent = dist;
     if (statusEl) {
         if (unreachable) {
-            statusEl.innerHTML = `<i data-lucide="ban" style="width: 13px; height: 13px; color: #DC2626; display: inline-block; vertical-align: middle;"></i> 도달 불가 지역`;
+            statusEl.textContent = "🚫 도달 불가 지역";
             statusEl.style.color = "#DC2626";
         } else {
-            const iconName = bypassed ? "navigation" : "shield-check";
-            const iconColor = bypassed ? "#EA580C" : "#16A34A";
-            const statusText = bypassed ? "안전 우회로 작동중" : "안전 경로 작동중";
-            statusEl.innerHTML = `<i data-lucide="${iconName}" style="width: 13px; height: 13px; color: ${iconColor}; display: inline-block; vertical-align: middle;"></i> ${statusText}`;
-            statusEl.style.color = iconColor;
-        }
-        if (window.lucide) {
-            window.lucide.createIcons();
+            statusEl.textContent = bypassed ? "🟠 안전 우회로 작동중" : "🟢 안전 경로 작동중";
+            statusEl.style.color = bypassed ? "#EA580C" : "#16A34A";
         }
     }
     widget.classList.remove("hidden");
