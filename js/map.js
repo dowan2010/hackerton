@@ -444,6 +444,7 @@ export function renderGeoJSONLayers() {
     const activeZones = window.zonesData || mockZones;
     activeZones.forEach(z => {
         const center = z.zone_center;
+        if (!center || center[0] == null || center[1] == null) return;
         const color = getStatusColor(z.status);
 
         const dCircle = L.circleMarker(center, {
