@@ -100,9 +100,59 @@ class GeminiService:
         # 3) 거주 기간 산정
         residence_score = min(analysis.residence_duration_years * 2.0, 20.0)
 
-        # 총점 합산
-        total_score = age_score + health_score + residence_score
+        # 4) 대구광역시 공공데이터 (사회재난 및 안전사고 취약성 수준) 동적 Lookup 가산
+        vulnerability_score = self.get_vulnerability_gains(analysis.age)
+
+        # 총점 합산 (최대 100점 캡)
+        total_score = min(age_score + health_score + residence_score + vulnerability_score, 100.0)
         return round(total_score, 2)
+
+    def get_vulnerability_gains(self, age: int) -> float:
+        """
+        로컬에 적재된 공공데이터(사회재난/안전사고 취약성 수준)를 파싱하여,
+        연령층에 최적화된 통계적 추가 위험 지수를 동적으로 리턴합니다. (해커톤 특수 알고리즘)
+        """
+        import csv
+        import os
+
+        extra_score = 0.0
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        social_csv = os.path.join(current_dir, "..", "data", "social_disaster.csv")
+        safety_csv = os.path.join(current_dir, "..", "data", "safety_accident.csv")
+
+        # 연령별 타겟 그룹 지정
+        target_group = "13~64세"
+        if age >= 65:
+            target_group = "65세이상(노인)"
+        elif age < 13:
+            target_group = "13세미만(어린이)"
+
+        try:
+            # 1. 사회재난 감염병 취약 비율 (social_disaster.csv) 가산
+            if os.path.exists(social_csv):
+                with open(social_csv, mode="r", encoding="utf-8-sig") as f:
+                    reader = csv.reader(f)
+                    next(reader)
+                    next(reader)
+                    for row in reader:
+                        if len(row) > 13 and row[1] == target_group:
+                            # 감염병 취약성(13번째 컬럼) 반영 (10% 가중)
+                            extra_score += float(row[13]) * 0.1
+
+            # 2. 안전사고 낙상 및 생활안전 취약 비율 (safety_accident.csv) 가산
+            if os.path.exists(safety_csv):
+                with open(safety_csv, mode="r", encoding="utf-8-sig") as f:
+                    reader = csv.reader(f)
+                    next(reader)
+                    next(reader)
+                    for row in reader:
+                        if len(row) > 8 and row[1] == target_group:
+                            # 추락(낙상)(4번째 컬럼) 및 기타 생활안전(8번째 컬럼)의 평균값 반영
+                            extra_score += (float(row[4]) + float(row[8])) * 0.1
+        except Exception as e:
+            print(f"[CSV Warning] 공공데이터 취약성 파싱 실패: {str(e)}")
+
+        return round(extra_score, 2)
 
     async def generate_hometown_diary(self, address: str, zone_data: ZoneRecoveryData) -> str:
         """
