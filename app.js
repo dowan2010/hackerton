@@ -23,7 +23,7 @@ import { initDignitySystem, initNationalPolicyGenerator } from './js/dignity.js?
 document.addEventListener("DOMContentLoaded", () => {
     // --- 1. GLOBAL STATE & COORDINATION VARIABLES ---
     let activeTab = "rootmap"; // 'rootmap' / 'dignity' / 'timeline'
-    let timelinePercentage = 0.5; // Default slider position (0~1)
+    let timelinePercentage = 0; // Default slider position (0~1) — 예보 초기 단계(2050. 03)에서 시작
     let predictionsData = null; // Predictive Machine Learning 50-year dataset cache
 
     // Bind state to window so other modules can dynamically read/write
@@ -884,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setupDrag(dHandle, dTrack);
         setupDrag(mHandle, mTrack);
-        syncTimelinePos(0.5); // Start at midpoint
+        syncTimelinePos(0); // Start at 예보 초기 단계 (2050. 03)
     }
 
     // --- 6. NAVIGATION ENGINE TRIGGER BRIDGE ---

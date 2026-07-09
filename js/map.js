@@ -155,7 +155,9 @@ function getRegionFoodBias(code) {
 export function getMunicipalityData(code, name) {
     // timelinePercentage: 0=예보 초기 단계(2050), 0.5=부분 안정화(2070), 1=전면 자유귀향(2090)
     const t = window.timelinePercentage != null ? window.timelinePercentage : 0.5;
-    const timelineBonus = (t - 0.5) * 60; // -30 ~ +30
+    // 완만한 회복 곡선: 초반엔 천천히, 후반으로 갈수록 안전 지역이 빠르게 늘어남
+    const curved = Math.pow(t, 1.6);
+    const timelineBonus = (curved - 0.5) * 60; // -30 ~ +30
     const isEarlyStage = t <= 0.08; // 예보 초기 단계: 안정화 구역 없음, 예약가능도 극소수
 
     const zone = findZoneByCode(code);
