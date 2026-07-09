@@ -178,15 +178,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="dignity-card" style="background: var(--color-sidebar-bg); border: 1px solid var(--color-sidebar-border); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
                     <div class="panel-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <div class="panel-title-group" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                            <h2 class="panel-section-title" style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: var(--color-text-main); margin: 0;">\${data.name} 종합 도시 분석</h2>
-                            <span class="status-badge-premium status-\${data.statusClass}">
-                                \${data.status}
+                            <h2 class="panel-section-title" style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: var(--color-text-main); margin: 0;">${data.name} 종합 도시 분석</h2>
+                            <span class="status-badge-premium status-${data.statusClass}">
+                                ${data.status}
                             </span>
                         </div>
                         <span class="badge-live"><span class="dot"></span> 정밀 모델링 연동</span>
                     </div>
                     <p style="font-size: 14px; color: var(--color-text-main); line-height: 1.6; margin-top: 12px; margin-bottom: 0; opacity: 0.9;">
-                        \${data.summary}
+                        ${data.summary}
                     </p>
                 </div>
 
@@ -200,10 +200,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <i data-lucide="shield-alert" style="color: var(--color-primary-dark);"></i> 등급 및 환경 상태 판정 근거
                             </h3>
                             <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 18px;">
-                                \${data.reasons.map(reason => `
+                                ${data.reasons.map(reason => `
                                     <li style="font-size: 14px; color: var(--color-text-main); line-height: 1.6; display: flex; gap: 12px; align-items: flex-start;">
                                         <i data-lucide="info" style="color: var(--color-primary-dark); width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i>
-                                        <span>\${reason}</span>
+                                        <span>${reason}</span>
                                     </li>
                                 `).join('')}
                             </ul>
@@ -221,14 +221,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div style="margin-bottom: 20px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                     <span style="font-size: 14px; font-weight: 600; color: var(--color-text-main);">대기질 품질 지수 (AQI)</span>
-                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">\${data.metrics.air.val}</span>
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">${data.metrics.air.val}</span>
                                 </div>
                                 <div class="progress-bar-bg" style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 10px; width: 100%; overflow: hidden;">
-                                    <div class="progress-bar-fill" style="width: \${data.metrics.air.pct}%; background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%;"></div>
+                                    <div class="progress-bar-fill" style="width: ${data.metrics.air.pct}%; background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%;"></div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: 0.8; color: var(--color-text-main);">
-                                    <span>\${data.metrics.air.label}</span>
-                                    <span>\${data.metrics.air.desc}</span>
+                                    <span>${data.metrics.air.label}</span>
+                                    <span>${data.metrics.air.desc}</span>
                                 </div>
                             </div>
 
@@ -236,14 +236,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div style="margin-bottom: 20px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                     <span style="font-size: 14px; font-weight: 600; color: var(--color-text-main);">토양 복구 및 자정력</span>
-                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">\${data.metrics.soil.val}</span>
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">${data.metrics.soil.val}</span>
                                 </div>
                                 <div class="progress-bar-bg" style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 10px; width: 100%; overflow: hidden;">
-                                    <div class="progress-bar-fill" style="width: \${data.metrics.soil.pct}%; background: linear-gradient(90deg, #10b981, #34d399); height: 100%;"></div>
+                                    <div class="progress-bar-fill" style="width: ${data.metrics.soil.pct}%; background: linear-gradient(90deg, #10b981, #34d399); height: 100%;"></div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: 0.8; color: var(--color-text-main);">
-                                    <span>\${data.metrics.soil.label}</span>
-                                    <span>\${data.metrics.soil.desc}</span>
+                                    <span>${data.metrics.soil.label}</span>
+                                    <span>${data.metrics.soil.desc}</span>
                                 </div>
                             </div>
 
@@ -251,14 +251,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div style="margin-bottom: 8px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                     <span style="font-size: 14px; font-weight: 600; color: var(--color-text-main);">인공 식생림 밀집도 (NDVI)</span>
-                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">\${data.metrics.veg.val}</span>
+                                    <span style="font-size: 14px; font-weight: 700; color: var(--color-text-main);">${data.metrics.veg.val}</span>
                                 </div>
                                 <div class="progress-bar-bg" style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 10px; width: 100%; overflow: hidden;">
-                                    <div class="progress-bar-fill" style="width: \${data.metrics.veg.pct}%; background: linear-gradient(90deg, #eab308, #fbbf24); height: 100%;"></div>
+                                    <div class="progress-bar-fill" style="width: ${data.metrics.veg.pct}%; background: linear-gradient(90deg, #eab308, #fbbf24); height: 100%;"></div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; opacity: 0.8; color: var(--color-text-main);">
-                                    <span>\${data.metrics.veg.label}</span>
-                                    <span>\${data.metrics.veg.desc}</span>
+                                    <span>${data.metrics.veg.label}</span>
+                                    <span>${data.metrics.veg.desc}</span>
                                 </div>
                             </div>
 
@@ -273,8 +273,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 let statusBadge = "🟢";
                 if (city.statusClass === "blocked") statusBadge = "🔴";
                 return `
-                    <button class="city-quick-btn" onclick="window.selectZone('\${cid}')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--color-sidebar-border); color: var(--color-text-main); font-weight: 600; padding: 10px 16px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: all 0.2s ease;">
-                        <span>\${statusBadge} \${city.name}</span>
+                    <button class="city-quick-btn" onclick="window.selectZone('${cid}')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--color-sidebar-border); color: var(--color-text-main); font-weight: 600; padding: 10px 16px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: all 0.2s ease;">
+                        <span>${statusBadge} ${city.name}</span>
                         <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
                     </button>
                 `;
@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ⚠️ 아직 지원하지 않는 도시입니다
                     </h2>
                     <p style="font-size: 14px; color: var(--color-text-main); opacity: 0.8; max-width: 520px; line-height: 1.6; margin: 0 0 32px 0;">
-                        현재 선택된 <strong>[\${zone.zone_name.split(" - ")[1] || zone.zone_name}]</strong> 지역은 실시간 정밀 복구 분석 및 기후 귀향 정보 지원 대상이 아닙니다.
+                        현재 선택된 <strong>[${zone.zone_name.split(" - ")[1] || zone.zone_name}]</strong> 지역은 실시간 정밀 복구 분석 및 기후 귀향 정보 지원 대상이 아닙니다.
                         루트홈 환경 시스템은 국가 핵심 7대 정착 도시만을 대상으로 정화 타임라인 및 거주 안정성 보고서를 독점 제공하고 있습니다.
                     </p>
                     
@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             핵심 7대 정착 도시 바로가기
                         </h4>
                         <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                            \${supportedCityButtons}
+                            ${supportedCityButtons}
                         </div>
                     </div>
                 </div>
