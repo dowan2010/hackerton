@@ -3,6 +3,8 @@
 backend/.env
 serviceAccountKey.json
 backend/serviceAccountKey.json
+firebase-deploy-ci-key.json
+.firebase/
 
 # Local virtual environments
 backend/venv/
