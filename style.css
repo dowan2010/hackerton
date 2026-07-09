@@ -1126,7 +1126,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 0 30px;
+    padding: 0 65px 0 20px;
 }
 
 .slider-marks {
