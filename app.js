@@ -940,6 +940,22 @@ document.addEventListener("DOMContentLoaded", () => {
             if (item.dataset.mobtab === mobTab) item.classList.add("active");
         });
 
+        // Auto-scroll timeline to 2026 card
+        if (deskTab === "timeline" || mobTab === "timeline") {
+            setTimeout(() => {
+                const dFlow = document.getElementById("desktop-timeline-flow");
+                const dCard = document.getElementById("desktop-timeline-card-2026");
+                if (dFlow && dCard) {
+                    dFlow.scrollTop = dCard.offsetTop - 12; // subtract 12px padding for beautiful alignment
+                }
+                const mFlow = document.getElementById("mobile-timeline-flow");
+                const mCard = document.getElementById("mobile-timeline-card-2026");
+                if (mFlow && mCard) {
+                    mFlow.scrollTop = mCard.offsetTop - 8; // subtract 8px padding for beautiful alignment
+                }
+            }, 100);
+        }
+
         // Map dimensions sync trigger on Leaflet
         if (deskTab === "rootmap") {
             setTimeout(() => {
