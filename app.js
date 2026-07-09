@@ -911,6 +911,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const btnResetNavPoints = document.getElementById("btn-reset-navigator-points");
+    if (btnResetNavPoints) {
+        btnResetNavPoints.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            resetNavigator();
+            window.setNavStatusText("지도를 클릭해 출발지를 선택하세요.");
+        });
+    }
+
     // --- 7. ADDRESS SEARCH TIMELINE GENERATOR ---
     const deskGenerateBtn = document.getElementById("desktop-btn-generate");
     const deskAddressInput = document.getElementById("desktop-address-input");

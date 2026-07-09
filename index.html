@@ -124,8 +124,11 @@
                                 <!-- Real Map instance replacing grid -->
                                 <div id="desktop-map" class="map-instance"></div>
 
-                                <div class="hidden" id="desktop-navigator-status-panel" style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--color-primary); color: #fff; padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-md); pointer-events: none;">
-                                    🧭 <span id="desktop-navigator-status">지도를 클릭해 출발지를 선택하세요.</span>
+                                <div class="hidden" id="desktop-navigator-status-panel" style="position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1000; background: var(--color-primary); color: #fff; padding: 8px 12px 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 10px;">
+                                    <span>🧭 <span id="desktop-navigator-status">지도를 클릭해 출발지를 선택하세요.</span></span>
+                                    <button id="btn-reset-navigator-points" title="다시 찍기" style="background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 999px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                                    </button>
                                 </div>
 
                                 <div class="map-legend-card" id="map-legend-card">
