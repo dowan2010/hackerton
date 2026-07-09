@@ -158,7 +158,7 @@ export function initDignitySystem() {
     }
 }
 
-// 2) Gemini National Policy Simulator
+// 2) Gemini National Policy Simulator (Parser & Luxury Cards Generator)
 export function initNationalPolicyGenerator() {
     const btnPolicy = document.getElementById("btn-generate-national-policy");
     const resultBox = document.getElementById("national-policy-result-box");
@@ -190,7 +190,7 @@ export function initNationalPolicyGenerator() {
 ■ 제3조 (피난 세대 존엄성 귀향 등급 가점 보강제)
 피난 주민들의 원 주거지 복귀 가속화를 위해 가구주 연령, 기후 대피 경과 일수, 가족 생계 가중치를 정밀 산출하는 'AI 존엄성 알고리즘 검증 점수'를 국정 입법 청약 청원에 필수 배점 가점으로 편입 승인한다.
 
-■ 제4조 (접접선 비무장대 및 도서 영해 에코 관측 휴양소 보존법)
+■ 제4조 (접경선 비무장대 및 도서 영해 에코 관측 휴양소 보존법)
 파주 임진강, 철원 평야, 울진 봉쇄림, 독도 영해 등 특수 노휴먼스랜드 구역의 자연 천연 자생을 보존하기 위해 민간인 개발을 향후 15년간 유예하며, 오직 실시간 기후 데이터 관측 목적으로만 환경 드론 상시 주둔을 허가한다.`,
 
         `[제2035-24호] 국토교통부·환경부 공동 기후 안착 정주 인프라 구축 특별법령
@@ -208,33 +208,96 @@ export function initNationalPolicyGenerator() {
 기후 대기 재난 지구로부터 수용 이주된 실향 1세대 원주민들의 자립 복원 가용 생계를 지원하기 위해 가구원 수에 비례하여 최대 분기별 180만원의 기후 생활 기본 소득을 보장한다.`
     ];
 
-    function typeWriter(text, element) {
-        element.innerHTML = "";
-        element.style.textAlign = "left";
-        element.style.whiteSpace = "pre-wrap";
-        element.style.lineHeight = "1.8";
-        element.style.fontSize = "13px";
-        element.style.color = "#334155";
-        element.style.border = "1px solid var(--color-primary-light)";
-        element.style.background = "#F8FAFC";
-        element.style.padding = "20px";
-        element.style.borderRadius = "12px";
-        element.style.maxHeight = "400px";
-        element.style.overflowY = "auto";
+    // Helper: Parser for policy strings into luxury JS objects
+    function parsePolicyText(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const result = {
+            badge: "대한민국 기후대피정부 특별법안",
+            title: "기후 피난민 대안착 및 국가 대자연 정제 조치",
+            articles: []
+        };
 
-        let i = 0;
-        const timer = setInterval(() => {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                element.scrollTop = element.scrollHeight;
-                i++;
+        let currentArticle = null;
+
+        lines.forEach(line => {
+            if (line.startsWith("[제")) {
+                const match = line.match(/\[(.*?)\]\s*(.*)/);
+                if (match) {
+                    result.badge = match[1];
+                    result.title = match[2];
+                } else {
+                    result.title = line;
+                }
+            } else if (line.startsWith("■ 제")) {
+                if (currentArticle) {
+                    result.articles.push(currentArticle);
+                }
+                currentArticle = {
+                    title: line.replace("■", "").trim(),
+                    content: ""
+                };
             } else {
-                clearInterval(timer);
-                btnPolicy.disabled = false;
-                btnPolicy.innerHTML = '<i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> ⚡ 국정 특별 조치 법령안 제정';
-                lucide.createIcons();
+                if (currentArticle) {
+                    currentArticle.content += (currentArticle.content ? "\n" : "") + line;
+                }
             }
-        }, 6);
+        });
+
+        if (currentArticle) {
+            result.articles.push(currentArticle);
+        }
+
+        return result;
+    }
+
+    // Helper: Renderer for premium responsive card components
+    function renderPolicyCards(parsed, element) {
+        const getIconForArticle = (title) => {
+            if (title.includes("목적") || title.includes("의무") || title.includes("지정")) return "info";
+            if (title.includes("장벽") || title.includes("해제") || title.includes("통제") || title.includes("보장")) return "shield-alert";
+            if (title.includes("재정") || title.includes("예산") || title.includes("기금") || title.includes("지급") || title.includes("조항")) return "coins";
+            if (title.includes("일자리") || title.includes("고용") || title.includes("조건")) return "briefcase";
+            return "scroll";
+        };
+
+        let articlesHtml = "";
+        parsed.articles.forEach((art, index) => {
+            const iconName = getIconForArticle(art.title);
+            articlesHtml += `
+                <div class="policy-article-card" style="animation-delay: ${index * 150}ms;">
+                    <div class="policy-article-card-header">
+                        <h5 class="policy-article-title">
+                            <i data-lucide="${iconName}" style="width: 16px; height: 16px;"></i>
+                            ${art.title}
+                        </h5>
+                        <div class="policy-article-icon">
+                            <i data-lucide="${iconName}" style="width: 14px; height: 14px;"></i>
+                        </div>
+                    </div>
+                    <p class="policy-article-content">${art.content.replace(/\n/g, '<br>')}</p>
+                </div>
+            `;
+        });
+
+        element.innerHTML = `
+            <div class="policy-card-container">
+                <div class="policy-header-banner">
+                    <div class="policy-seal">
+                        <i data-lucide="landmark" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <div class="policy-header-meta">
+                        <span class="policy-banner-badge">${parsed.badge}</span>
+                        <h4 class="policy-banner-title">${parsed.title}</h4>
+                    </div>
+                </div>
+                
+                <div class="policy-articles-grid">
+                    ${articlesHtml}
+                </div>
+            </div>
+        `;
+
+        lucide.createIcons();
     }
 
     btnPolicy.addEventListener("click", function() {
@@ -266,7 +329,12 @@ export function initNationalPolicyGenerator() {
 
         setTimeout(() => {
             const randomPolicy = policies[Math.floor(Math.random() * policies.length)];
-            typeWriter(randomPolicy, resultBox);
+            const parsed = parsePolicyText(randomPolicy);
+            renderPolicyCards(parsed, resultBox);
+
+            btnPolicy.disabled = false;
+            btnPolicy.innerHTML = '<i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> ⚡ 국정 특별 조치 법령안 제정';
+            lucide.createIcons();
         }, 2400);
     });
 }
