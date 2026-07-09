@@ -578,7 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "KR-DK-01": {
             title: "노휴먼스랜드 독도 영해 기후관측선",
             p1: "해양성 기후 급변과 방사능 잔류 위험을 감시하기 위해 인간 영구 상주가 엄격히 제한된 독도 노휴먼스랜드입니다. 공기는 극히 맑으나 기상 이변 파고 위험으로 봉쇄 상태가 유지됩니다.",
-            p2: "해수 온도 급상승과 해조류 백화 현상을 완화하기 위해 AI 해양 관측 드론이 부근 영해를 순찰하며 실시간 해류 및 수치 안정성 보고서를 RootHome 본부로 송출하고 있습니다."
+            p2: "해수 온도 급상승과 해조류 백화 현상을 완화하기 위해 AI 해양 관측 드론이 부근 영해를 순찰하며 실시간 해류 및 수치 안정성 보고서를 roothome 본부로 송출하고 있습니다."
         }
     };
 
@@ -1863,10 +1863,11 @@ document.addEventListener("DOMContentLoaded", () => {
             predictionsData = zonesData.map(zone => {
                 const basePollution = 100 - zone.recovery_rate;
                 const predictions = [];
-                for (let t = 0; t <= 50; t += 2) {
-                    const year = 2026 + t;
-                    const wave = Math.sin(0.4 * t) * 3.5 * Math.exp(-0.02 * t);
-                    const pollution = Math.max(0, Math.min(100, (basePollution * Math.exp(-0.045 * t) + wave)));
+                for (let t = 0; t <= 20; t += 1) {
+                    const year = 2016 + t;
+                    const diffYears = t - 10; // -10 for 2016, 0 for 2026, +10 for 2036
+                    const wave = Math.sin(0.4 * diffYears) * 3.5 * Math.exp(-0.02 * diffYears);
+                    const pollution = Math.max(0, Math.min(100, (basePollution * Math.exp(-0.045 * diffYears) + wave)));
                     const statusText = pollution > 70 ? "강력 봉쇄 (접근 불허)" : pollution > 40 ? "부분 경계 (정화 진행)" : pollution > 20 ? "귀향 가용 (우선 귀향 티켓 발행)" : "전면 정화 (자유 귀향 구역)";
                     predictions.push({
                         year,
@@ -1989,20 +1990,20 @@ document.addEventListener("DOMContentLoaded", () => {
             fill.style.width = `${percentage * 100}%`;
             handle.style.left = `${percentage * 100}%`;
 
-            const step = Math.round(percentage * 25);
-            const targetYear = 2026 + step * 2;
+            const step = Math.round(percentage * 20);
+            const targetYear = 2016 + step;
 
-            // 남은 일수 디그라데이션 연산 (2026: 142일 -> 2076: 0일)
-            const daysRemaining = Math.max(0, Math.round((1 - (step / 25)) * 142));
+            // 남은 일수 디그라데이션 연산 (2016: 142일 -> 2036: 0일)
+            const daysRemaining = Math.max(0, Math.round((1 - (step / 20)) * 142));
             if (countdownDays) countdownDays.textContent = daysRemaining;
 
             // 라벨 active 인덱싱 교정
             marks.forEach((mark, index) => {
-                if (index === 0 && targetYear <= 2040) {
+                if (index === 0 && targetYear <= 2020) {
                     mark.classList.add("active");
-                } else if (index === 1 && targetYear > 2040 && targetYear <= 2060) {
+                } else if (index === 1 && targetYear > 2020 && targetYear <= 2030) {
                     mark.classList.add("active");
-                } else if (index === 2 && targetYear > 2060) {
+                } else if (index === 2 && targetYear > 2030) {
                     mark.classList.add("active");
                 } else {
                     mark.classList.remove("active");
