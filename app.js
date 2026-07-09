@@ -15,10 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let mobileMap = null;
     let desktopMapCircles = {};
     let mobileMapCircles = {};
-    let backendUrl = `http://${window.location.hostname}:8000`;
-    if (window.location.hostname.includes("loca.lt")) {
-        backendUrl = "https://blue-hoops-watch.loca.lt";
+    let backendUrl = `https://roothome-backend-686146847894.asia-northeast3.run.app`;
+    if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
+        backendUrl = "http://127.0.0.1:8000";
     }
+    let predictionsData = null; // 50개년 머신러닝 기후 예측 데이터 캐시
 
     // 15 National climate risk zones mapped from 'No Humans Land' (ocr_all.txt)
     const mockZones = [
@@ -849,6 +850,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         initLeafletMaps();
         selectZone("KR-GW-03"); // Select default (아야진리)
+        
+        // 50개년 머신러닝 기후 예측 API 덤프 기동 및 연도 슬라이더 바인딩 연동
+        fetch50YearPredictions().then(() => {
+            initTimelineDragController();
+        });
     }
 
     // --- 5. ZONE SELECTION & INTERACTIVE STATS & TIMELINE SYNC ---
@@ -1310,6 +1316,202 @@ document.addEventListener("DOMContentLoaded", () => {
         mobGenerateBtn.addEventListener("click", () => {
             const addr = mobAddressInput.value.trim();
             if (addr) runTimelineAPIRequest(addr);
+        });
+    }
+
+    // --- 7.5 50-YEAR PREDICTIONS & TIMELINE DRAG CONTROLLER ---
+    async function fetch50YearPredictions() {
+        try {
+            console.log("[Prediction] Fetching 50-year forecasting data from:", `${backendUrl}/api/zones/prediction`);
+            const res = await fetch(`${backendUrl}/api/zones/prediction`);
+            if (res.ok) {
+                predictionsData = await res.json();
+                console.log("[Prediction SUCCESS] 50개년 기후 오염 예측 데이터 수집 성공!");
+            } else {
+                throw new Error("FastAPI prediction endpoint error");
+            }
+        } catch (err) {
+            console.warn("[Prediction FALLBACK] 원격 API 접속 실패. 로컬 회귀수식 백업 예보 엔진을 구동합니다:", err);
+            // 인터넷 장애나 백엔드 통신 오류 시 가동되는 안전한 백업 예보 발전기
+            predictionsData = zonesData.map(zone => {
+                const basePollution = 100 - zone.recovery_rate;
+                const predictions = [];
+                for (let t = 0; t <= 50; t += 2) {
+                    const year = 2026 + t;
+                    const wave = Math.sin(0.4 * t) * 3.5 * Math.exp(-0.02 * t);
+                    const pollution = Math.max(0, Math.min(100, (basePollution * Math.exp(-0.045 * t) + wave)));
+                    const statusText = pollution > 70 ? "강력 봉쇄 (접근 불허)" : pollution > 40 ? "부분 경계 (정화 진행)" : pollution > 20 ? "귀향 가용 (우선 귀향 티켓 발행)" : "전면 정화 (자유 귀향 구역)";
+                    predictions.push({
+                        year,
+                        pollution_rate: Math.round(pollution * 10) / 10,
+                        status: statusText
+                    });
+                }
+                return {
+                    zone_id: zone.zone_id,
+                    zone_name: zone.zone_name,
+                    predictions
+                };
+            });
+        }
+    }
+
+    function updateMapForYear(year) {
+        if (!predictionsData) return;
+
+        predictionsData.forEach(predGroup => {
+            const zoneId = predGroup.zone_id;
+            const predForYear = predGroup.predictions.find(p => p.year === year);
+            if (!predForYear) return;
+
+            const pollution = predForYear.pollution_rate;
+
+            let color;
+            if (pollution > 70) {
+                color = "#ef4444"; // 강력 봉쇄 (Red)
+            } else if (pollution > 40) {
+                color = "#f97316"; // 부분 경계 (Orange)
+            } else if (pollution > 20) {
+                color = "#eab308"; // 귀향 가용 (Yellow)
+            } else {
+                color = "#10b981"; // 전면 정화 (Green!)
+            }
+
+            // 1) 데스크탑 폴리곤 스타일 및 팝업 갱신
+            const deskPoly = desktopMapCircles[zoneId];
+            if (deskPoly) {
+                deskPoly.setStyle({
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.55
+                });
+                const zoneName = predGroup.zone_name.split(" - ")[1] || predGroup.zone_name;
+                deskPoly.bindPopup(`
+                    <div style="font-family:'Outfit',sans-serif; padding:4px; line-height:1.4;">
+                         <strong style="color:${color}; font-size:14px;">📡 ${year}년 기후/재난 예보</strong><br>
+                         <strong style="font-size:13px; display:block; margin-top:4px;">📍 구역: ${zoneName}</strong>
+                         <span style="font-size:12px; color:#64748b; display:block; margin:2px 0;">오염 점수: <strong>${pollution}%</strong></span>
+                         <span style="font-size:11px; font-weight:bold; background:${color}15; color:${color}; padding:3px 6px; border-radius:4px; display:inline-block; margin-top:2px;">${predForYear.status}</span>
+                    </div>
+                `);
+            }
+
+            // 2) 모바일 폴리곤 스타일 및 팝업 갱신
+            const mobPoly = mobileMapCircles[zoneId];
+            if (mobPoly) {
+                mobPoly.setStyle({
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.55
+                });
+                const zoneName = predGroup.zone_name.split(" - ")[1] || predGroup.zone_name;
+                mobPoly.bindPopup(`
+                    <div style="font-family:sans-serif; line-height:1.4;">
+                         <strong style="color:${color};">${year}년 예보: ${zoneName}</strong><br>
+                         오염 점수: ${pollution}%<br>
+                         통제 상태: <strong>${predForYear.status}</strong>
+                    </div>
+                `);
+            }
+        });
+
+        // 우측 상세 제어 패널 디테일 실시간 스와이핑
+        const currentSelected = zonesData.find(z => z.zone_id === selectedZoneId);
+        if (currentSelected) {
+            const predGroup = predictionsData.find(p => p.zone_id === selectedZoneId);
+            if (predGroup) {
+                const predForYear = predGroup.predictions.find(p => p.year === year);
+                if (predForYear) {
+                    const badge = document.getElementById("selected-zone-status");
+                    if (badge) {
+                        badge.textContent = predForYear.status;
+                        badge.style.color = colorMap(predForYear.pollution_rate);
+                    }
+                    const desc = document.getElementById("selected-zone-desc");
+                    if (desc) {
+                        desc.textContent = `${year}년 기후 시뮬레이션: 기후 난민 재정착 오염도가 ${predForYear.pollution_rate}%로 예측 연산되었습니다. 이에 따라 기후재난 통제 등급은 '${predForYear.status}' 단계로 수립됩니다.`;
+                    }
+                }
+            }
+        }
+    }
+
+    function colorMap(pollution) {
+        if (pollution > 70) return "#ef4444";
+        if (pollution > 40) return "#f97316";
+        if (pollution > 20) return "#eab308";
+        return "#10b981";
+    }
+
+    function initTimelineDragController() {
+        const track = document.querySelector(".timeline-progress-track");
+        const fill = document.querySelector(".timeline-progress-fill");
+        const handle = document.querySelector(".timeline-handle");
+        const countdownDays = document.getElementById("countdown-days");
+        const marks = document.querySelectorAll(".slider-marks .mark-item");
+
+        if (!track || !fill || !handle) return;
+
+        let isDragging = false;
+
+        function updateTimelineByPosition(clientX) {
+            const rect = track.getBoundingClientRect();
+            let percentage = (clientX - rect.left) / rect.width;
+            percentage = Math.max(0, Math.min(1, percentage)); // Clamp 0% ~ 100%
+
+            fill.style.width = `${percentage * 100}%`;
+            handle.style.left = `${percentage * 100}%`;
+
+            const step = Math.round(percentage * 25);
+            const targetYear = 2026 + step * 2;
+
+            // 남은 일수 디그라데이션 연산 (2026: 142일 -> 2076: 0일)
+            const daysRemaining = Math.max(0, Math.round((1 - (step / 25)) * 142));
+            if (countdownDays) countdownDays.textContent = daysRemaining;
+
+            // 라벨 active 인덱싱 교정
+            marks.forEach((mark, index) => {
+                if (index === 0 && targetYear <= 2040) {
+                    mark.classList.add("active");
+                } else if (index === 1 && targetYear > 2040 && targetYear <= 2060) {
+                    mark.classList.add("active");
+                } else if (index === 2 && targetYear > 2060) {
+                    mark.classList.add("active");
+                } else {
+                    mark.classList.remove("active");
+                }
+            });
+
+            updateMapForYear(targetYear);
+        }
+
+        track.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            updateTimelineByPosition(e.clientX);
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            updateTimelineByPosition(e.clientX);
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+
+        // 모바일 터치이벤트 대응
+        track.addEventListener("touchstart", (e) => {
+            isDragging = true;
+            if (e.touches[0]) updateTimelineByPosition(e.touches[0].clientX);
+        });
+
+        window.addEventListener("touchmove", (e) => {
+            if (!isDragging) return;
+            if (e.touches[0]) updateTimelineByPosition(e.touches[0].clientX);
+        });
+
+        window.addEventListener("touchend", () => {
+            isDragging = false;
         });
     }
 
