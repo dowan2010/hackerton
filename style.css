@@ -1184,6 +1184,7 @@ path.leaflet-interactive:focus {
 /* Bottom Timeline Bar */
 .map-bottom-timeline {
     height: 80px;
+    flex-shrink: 0;
     border-top: 1px solid var(--color-sidebar-border);
     display: grid;
     grid-template-columns: 200px 1fr 240px;
