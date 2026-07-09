@@ -299,6 +299,164 @@ document.addEventListener("DOMContentLoaded", () => {
             lat: 37.2427,
             lng: 131.8681,
             description: "기후 급변과 동해 방사능 조류 수치를 관측하기 위해 봉쇄된 해양 노휴먼스랜드입니다. AI 드론 탐사선이 실시간 영해 데이터를 루트홈 본부로 송출합니다."
+        },
+        // 5) Extended National Cities (전국 거점 도시 전격 보강)
+        {
+            zone_id: "KR-SU-01",
+            zone_name: "과거도시 - 경기도 수원시 에코돔 복합단지",
+            status: "귀향시작",
+            recovery_rate: 97.2,
+            time_to_safe_years: 0.0,
+            air_quality: 95.0,
+            soil_contamination: 2.0,
+            vegetation_ndvi: 0.84,
+            lat: 37.2636,
+            lng: 127.0286,
+            description: "경기도 남부 기후 연합 본부로, 에코돔 복합 시스템을 가치 있게 승화시킨 안전 구역입니다. 최고 성능의 자체 순환 수자원 정제 타워가 가동 중입니다."
+        },
+        {
+            zone_id: "KR-PJ-01",
+            zone_name: "노휴먼스랜드 - 경기도 파주시 문산읍 (휴전선 접경대)",
+            status: "봉쇄",
+            recovery_rate: 28.9,
+            time_to_safe_years: 6.5,
+            air_quality: 82.0,
+            soil_contamination: 34.0,
+            vegetation_ndvi: 0.48,
+            lat: 37.8545,
+            lng: 126.7876,
+            description: "임진강 전선 인근의 접경지대로, 군사 및 자연 기류 정화 노드들이 동시에 투입되어 토양 자정 및 복원을 모니터링 중입니다."
+        },
+        {
+            zone_id: "KR-CN-02",
+            zone_name: "그레이시티 - 충청남도 천안시 서북구 난민컨테이너단지",
+            status: "예약가능",
+            recovery_rate: 53.2,
+            time_to_safe_years: 1.8,
+            air_quality: 49.0,
+            soil_contamination: 68.0,
+            vegetation_ndvi: 0.23,
+            lat: 36.8150,
+            lng: 127.1130,
+            description: "충남 최대 규모의 임시 난민 밀집 주거 구역입니다. 탄소 차단 배출기 필터와 수질 대정화 기구가 차례로 도입되고 있습니다."
+        },
+        {
+            zone_id: "KR-CB-02",
+            zone_name: "그레이시티 - 충청북도 청주시 오창 과학캠프",
+            status: "예약가능",
+            recovery_rate: 61.4,
+            time_to_safe_years: 1.2,
+            air_quality: 53.0,
+            soil_contamination: 59.0,
+            vegetation_ndvi: 0.35,
+            lat: 36.6424,
+            lng: 127.4890,
+            description: "중부 내륙 과학 정화 노드의 핵심지로, 대규모 드론 배치가 가능하여 최근 미세 대기질 개선 속도가 비약적으로 증가하고 있습니다."
+        },
+        {
+            zone_id: "KR-JB-02",
+            zone_name: "노휴먼스랜드 - 전라북도 전주시 덕진구 (자연치유숲)",
+            status: "예약가능",
+            recovery_rate: 81.5,
+            time_to_safe_years: 0.5,
+            air_quality: 93.0,
+            soil_contamination: 24.0,
+            vegetation_ndvi: 0.76,
+            lat: 35.8468,
+            lng: 127.1290,
+            description: "전주 천택천 인근의 거목 식재 사업 성공으로 녹지 탄소 흡수량이 가속되어 복구 기준 달성 및 완전 해제가 눈앞에 다가왔습니다."
+        },
+        {
+            zone_id: "KR-GN-03",
+            zone_name: "그레이시티 - 경상남도 창원시 성산구 산소대비공단",
+            status: "예약가능",
+            recovery_rate: 58.0,
+            time_to_safe_years: 1.6,
+            air_quality: 52.0,
+            soil_contamination: 62.0,
+            vegetation_ndvi: 0.31,
+            lat: 35.2280,
+            lng: 128.6810,
+            description: "남해 화학 기지 인근 수용 지구로, 정기적인 산소 수혈 큐브 배포와 숲 조성을 통해 복구율이 차례로 우상향 트렌드를 밟고 있습니다."
+        },
+        // 6) Global Hubs (글로벌 핵심 선진국 허브 수도 도시)
+        {
+            zone_id: "GL-TY-01",
+            zone_name: "글로벌허브 - 일본 도쿄 지요다구 그린돔",
+            status: "귀향시작",
+            recovery_rate: 85.4,
+            time_to_safe_years: 1.0,
+            air_quality: 88.0,
+            soil_contamination: 14.0,
+            vegetation_ndvi: 0.74,
+            lat: 35.6762,
+            lng: 139.6503,
+            description: "일본 도쿄 중심부에 구축된 대규모 수직 정원 및 차세대 에코돔입니다. 정화 로봇 군단이 가동되어 대기질 안정도가 타 글로벌 도시에 비해 조기 달성되었습니다."
+        },
+        {
+            zone_id: "GL-NY-01",
+            zone_name: "글로벌허브 - 미국 뉴욕 맨해튼 아일랜드 복구단지",
+            status: "예약가능",
+            recovery_rate: 72.8,
+            time_to_safe_years: 2.1,
+            air_quality: 76.0,
+            soil_contamination: 22.0,
+            vegetation_ndvi: 0.62,
+            lat: 40.7128,
+            lng: -74.0060,
+            description: "해수면 상승 피해에 대응하여 맨해튼 자유의 여신상 일대에 초강력 인공방조제와 방어막을 거치하고 오염 정화 및 부분 귀향을 유치하는 중입니다."
+        },
+        {
+            zone_id: "GL-LD-01",
+            zone_name: "글로벌허브 - 영국 런던 템스강 기후수용본부",
+            status: "귀향시작",
+            recovery_rate: 91.2,
+            time_to_safe_years: 0.0,
+            air_quality: 92.0,
+            soil_contamination: 8.5,
+            vegetation_ndvi: 0.78,
+            lat: 51.5074,
+            lng: -0.1278,
+            description: "런던 템스강 배리어 시스템을 가속하여 대기 정화를 마친 청정 복귀 캠프입니다. 고에너지 친환경 탄소 포집 타워가 템스 변을 따라 집중 기동 중입니다."
+        },
+        {
+            zone_id: "GL-PR-01",
+            zone_name: "글로벌허브 - 프랑스 파리 센강 기후유산보호구",
+            status: "귀향시작",
+            recovery_rate: 94.1,
+            time_to_safe_years: 0.0,
+            air_quality: 95.0,
+            soil_contamination: 6.0,
+            vegetation_ndvi: 0.82,
+            lat: 48.8566,
+            lng: 2.3522,
+            description: "프랑스 안전유산 재건령에 의거 에펠탑 주변을 에코포레스트 삼림으로 완전 복원하였으며, 실향 시민들의 순차적 도시 복귀가 성공적으로 개시되었습니다."
+        },
+        {
+            zone_id: "GL-BJ-01",
+            zone_name: "글로벌허브 - 중국 베이징 차오양 탄소폐쇄지구",
+            status: "봉쇄",
+            recovery_rate: 41.6,
+            time_to_safe_years: 4.8,
+            air_quality: 38.0,
+            soil_contamination: 82.0,
+            vegetation_ndvi: 0.22,
+            lat: 39.9042,
+            lng: 116.4074,
+            description: "기후 봉쇄 구역으로 오염 황사 제어 필터 및 공중 대규모 흡입 기어가 동적 정화를 진행 중이나, 여전히 수년 동안 완전한 정착을 통제하는 중입니다."
+        },
+        {
+            zone_id: "GL-SD-01",
+            zone_name: "글로벌허브 - 호주 시드니 오페라 생태복원해안",
+            status: "귀향시작",
+            recovery_rate: 96.8,
+            time_to_safe_years: 0.0,
+            air_quality: 97.0,
+            soil_contamination: 2.0,
+            vegetation_ndvi: 0.89,
+            lat: -33.8688,
+            lng: 151.2093,
+            description: "호주 남태평양 자연 기류의 빠른 자정 이점을 적극 수혜받아 오염 정화율이 극에 달했으며, 이미 대다수 원주 시민들의 평화로운 해안 귀향이 완료되었습니다."
         }
     ];
 
@@ -792,6 +950,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const points = [];
             let radiusKm = 8.5; // Compact localized city/municipal scope (8.5km)
             if (zoneId === "KR-DK-01") radiusKm = 3.5;
+            else if (zoneId.startsWith("GL-")) radiusKm = 15.0; // Global Metropolises have grand ecosystem scale (15km)
             else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 11.5;
             
             const latOffsetDegree = radiusKm / 110.574;
@@ -831,6 +990,23 @@ document.addEventListener("DOMContentLoaded", () => {
             if (muniName.includes("울릉")) return zonesData.find(z => z.zone_id === "KR-UL-01") || zonesData[12];
             if (muniName.includes("여수")) return zonesData.find(z => z.zone_id === "KR-JN-01") || zonesData[3];
             if (muniName.includes("제주") || muniName.includes("서귀포")) return zonesData.find(z => z.zone_id === "KR-JJ-01") || zonesData[4];
+
+            // 신규 전국 거점 매핑
+            if (muniName.includes("수원")) return zonesData.find(z => z.zone_id === "KR-SU-01");
+            if (muniName.includes("파주")) return zonesData.find(z => z.zone_id === "KR-PJ-01");
+            if (muniName.includes("천안")) return zonesData.find(z => z.zone_id === "KR-CN-02");
+            if (muniName.includes("청주")) return zonesData.find(z => z.zone_id === "KR-CB-02");
+            if (muniName.includes("전주")) return zonesData.find(z => z.zone_id === "KR-JB-02");
+            if (muniName.includes("창원")) return zonesData.find(z => z.zone_id === "KR-GN-03");
+
+            // 신규 글로벌 허브 매핑
+            if (muniName.includes("Tokyo") || muniName.includes("도쿄")) return zonesData.find(z => z.zone_id === "GL-TY-01");
+            if (muniName.includes("New York") || muniName.includes("뉴욕")) return zonesData.find(z => z.zone_id === "GL-NY-01");
+            if (muniName.includes("London") || muniName.includes("런던")) return zonesData.find(z => z.zone_id === "GL-LD-01");
+            if (muniName.includes("Paris") || muniName.includes("파리")) return zonesData.find(z => z.zone_id === "GL-PR-01");
+            if (muniName.includes("Beijing") || muniName.includes("베이징")) return zonesData.find(z => z.zone_id === "GL-BJ-01");
+            if (muniName.includes("Sydney") || muniName.includes("시드니")) return zonesData.find(z => z.zone_id === "GL-SD-01");
+
             return null; // 우리 관심 재난 영역이 아닌 일반 시군구들은 투명하게 배제하여 도 단위의 혼잡을 영구 도려냄!
         }
 
@@ -915,7 +1091,45 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }).addTo(mobileMap);
 
-                console.log("[GeoJSON SUCCESS] 대한민국 시군구(도시 단위) 공식 경계 맵 융합 대성공!");
+                // 3) Global Nodes & GeoJSON Exception fallbacks (해외 유명 선진 도시 기후 다각형 및 신규 한국 거점 예외 렌더링)
+                zonesData.forEach(zone => {
+                    if (zone.zone_id.startsWith("GL-") || !desktopMapCircles[zone.zone_id]) {
+                        const color = getStatusColor(zone.status);
+                        const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+
+                        const deskPoly = L.polygon(polygonCoords, {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.50,
+                            weight: 2.5
+                        }).addTo(desktopMap);
+                        desktopMapCircles[zone.zone_id] = deskPoly;
+
+                        const mobPoly = L.polygon(polygonCoords, {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.50,
+                            weight: 1.8
+                        }).addTo(mobileMap);
+                        mobileMapCircles[zone.zone_id] = mobPoly;
+
+                        const cleanName = zone.zone_name.includes(" - ") ? zone.zone_name.split(" - ")[1] : zone.zone_name;
+                        const popupContent = `<strong>📍 기후 구역: ${cleanName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
+                        deskPoly.bindPopup(popupContent);
+                        mobPoly.bindPopup(`<strong>📍 ${cleanName}</strong><br>복구율: ${zone.recovery_rate}%`);
+
+                        deskPoly.on("click", () => {
+                            desktopMap.setView([zone.lat, zone.lng], 9, { animate: true });
+                            selectZone(zone.zone_id);
+                        });
+                        mobPoly.on("click", () => {
+                            mobileMap.setView([zone.lat, zone.lng], 8, { animate: true });
+                            selectZone(zone.zone_id);
+                        });
+                    }
+                });
+
+                console.log("[GeoJSON SUCCESS] 대한민국 시군구(도시 단위) 공식 경계 맵 융합 및 글로벌 다국적 허브 렌더링 대성공!");
             } catch (err) {
                 console.warn("[WARN] 도시 단위 GeoJSON 융합 실패. 백업용 다각형으로 가동:", err);
                 drawBackupPolygons();
