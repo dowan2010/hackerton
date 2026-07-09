@@ -22,7 +22,7 @@ export function setNavigatorModeActive(val) {
 
 export function getStatusColor(status) {
     if (status === "귀향시작") return "var(--color-success)";
-    if (status === "예약가능") return "var(--color-warning)";
+    if (status === "정화진행중") return "var(--color-warning)";
     return "var(--color-danger)";
 }
 
@@ -158,7 +158,7 @@ export function getMunicipalityData(code, name) {
     // 완만한 회복 곡선: 초반엔 천천히, 후반으로 갈수록 안전 지역이 빠르게 늘어남
     const curved = Math.pow(t, 1.6);
     const timelineBonus = (curved - 0.5) * 60; // -30 ~ +30
-    const isEarlyStage = t <= 0.08; // 예보 초기 단계: 안정화 구역 없음, 예약가능도 극소수
+    const isEarlyStage = t <= 0.08; // 예보 초기 단계: 안정화 구역 없음, 정화진행중도 극소수
 
     const zone = findZoneByCode(code);
     if (zone) {
@@ -166,9 +166,9 @@ export function getMunicipalityData(code, name) {
         let status;
         if (isEarlyStage) {
             adjusted = Math.min(adjusted, 78); // 귀향시작(82+) 도달 불가
-            status = adjusted >= 74 ? "예약가능" : "봉쇄"; // 최상위 구역만 예약가능
+            status = adjusted >= 74 ? "정화진행중" : "봉쇄"; // 최상위 구역만 정화진행중
         } else {
-            status = adjusted >= 82 ? "귀향시작" : adjusted >= 55 ? "예약가능" : "봉쇄";
+            status = adjusted >= 82 ? "귀향시작" : adjusted >= 55 ? "정화진행중" : "봉쇄";
         }
         return {
             name: zone.zone_name.split(" - ")[1] || zone.zone_name,
@@ -192,10 +192,10 @@ export function getMunicipalityData(code, name) {
     let status;
     if (isEarlyStage) {
         recovery = Math.min(recovery, 78);
-        status = recovery >= 74 ? "예약가능" : "봉쇄";
+        status = recovery >= 74 ? "정화진행중" : "봉쇄";
     } else {
         if (recovery >= 82) status = "귀향시작";
-        else if (recovery >= 55) status = "예약가능";
+        else if (recovery >= 55) status = "정화진행중";
         else status = "봉쇄";
     }
     return { name: name, recovery_rate: recovery, status: status, zone: null, isKeyZone: false };
@@ -325,7 +325,7 @@ export function renderGeoJSONLayers() {
         if (cardRegionRecovery) cardRegionRecovery.textContent = `${districtData.recovery_rate}%`;
         if (cardRegionStatus) {
             cardRegionStatus.textContent = districtData.status;
-            cardRegionStatus.className = `status-pill ${districtData.status === "봉쇄" ? "pill-danger" : (districtData.status === "예약가능" ? "pill-warning" : "pill-success")}`;
+            cardRegionStatus.className = `status-pill ${districtData.status === "봉쇄" ? "pill-danger" : (districtData.status === "정화진행중" ? "pill-warning" : "pill-success")}`;
         }
         if (cardEnvRating) cardEnvRating.textContent = districtData.recovery_rate >= 80 ? "안심 (A)" : (districtData.recovery_rate >= 55 ? "주의 (B)" : "위험 (C)");
         if (cardDiaryBody) {
@@ -344,7 +344,7 @@ export function renderGeoJSONLayers() {
                 <div class="map-tooltip">
                     <strong>${data.name}</strong><br/>
                     복구율: <span class="badge-accent">${data.recovery_rate}%</span><br/>
-                    상태: <span class="status-badge status-${data.status === "봉쇄" ? "red" : (data.status === "예약가능" ? "orange" : "green")}">${data.status}</span>
+                    상태: <span class="status-badge status-${data.status === "봉쇄" ? "red" : (data.status === "정화진행중" ? "orange" : "green")}">${data.status}</span>
                 </div>
             `;
             layer.bindTooltip(tooltipContent, { sticky: true, opacity: 0.95 });
@@ -411,7 +411,7 @@ export function renderGeoJSONLayers() {
         const avgRecovery = Math.round(cityFeatures.reduce((sum, f) => {
             return sum + getMunicipalityData(f.properties.code, f.properties.name).recovery_rate;
         }, 0) / cityFeatures.length);
-        const avgStatus = avgRecovery >= 82 ? "귀향시작" : avgRecovery >= 55 ? "예약가능" : "봉쇄";
+        const avgStatus = avgRecovery >= 82 ? "귀향시작" : avgRecovery >= 55 ? "정화진행중" : "봉쇄";
         const avgColor = getStatusColor(avgStatus);
 
         const metroLayer = L.geoJSON(cityCollection, {

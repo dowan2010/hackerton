@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 barWrapper.className = "prediction-bar-wrapper";
                 
                 const val = pt.recovery_rate;
-                const status = val >= 90 ? "귀향시작" : val >= 50 ? "예약가능" : "봉쇄";
+                const status = val >= 90 ? "귀향시작" : val >= 50 ? "정화진행중" : "봉쇄";
                 const color = getStatusColor(status);
 
                 barWrapper.innerHTML = `
@@ -1783,7 +1783,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (zone.recovery_rate <= 30) {
                             zone.status = "봉쇄";
                         } else if (zone.recovery_rate <= 90) {
-                            zone.status = "예약가능";
+                            zone.status = "정화진행중";
                         } else {
                             zone.status = "귀향시작";
                         }
