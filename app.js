@@ -2581,6 +2581,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const settingsName = document.getElementById("settings-name");
         const settingsEmail = document.getElementById("settings-email");
+        const settingsPasswordCurrent = document.getElementById("settings-password-current");
         const settingsPassword = document.getElementById("settings-password");
         const settingsPasswordConfirm = document.getElementById("settings-password-confirm");
         const settingsPasswordFields = document.getElementById("settings-password-fields");
@@ -2607,6 +2608,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Hide password fields and reset on fresh modal open
             if (settingsPasswordFields) settingsPasswordFields.classList.add("hidden");
+            if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
             if (settingsPassword) settingsPassword.value = "";
             if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
 
@@ -2715,6 +2717,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     settingsPasswordFields.classList.add("hidden");
                     if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+                    if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
                     if (settingsPassword) settingsPassword.value = "";
                     if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
                 }
@@ -2761,11 +2764,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     let updatedPassword = "";
                     const isPasswordChangeActive = !settingsPasswordFields.classList.contains("hidden");
                     if (isPasswordChangeActive) {
+                        const currentVal = settingsPasswordCurrent.value;
                         const passVal = settingsPassword.value;
                         const confVal = settingsPasswordConfirm.value;
 
-                        if (!passVal || !confVal) {
-                            alert("새 비밀번호와 확인 입력창을 모두 채워주세요.");
+                        if (!currentVal || !passVal || !confVal) {
+                            alert("현재 비밀번호, 새 비밀번호, 확인 입력창을 모두 채워주세요.");
+                            return;
+                        }
+
+                        // Verify typed current password matches account password in DB
+                        const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                        const user = users.find(u => u.email === session.email);
+                        if (!user || user.password !== currentVal) {
+                            alert("입력하신 현재 비밀번호가 일치하지 않습니다.");
                             return;
                         }
 
