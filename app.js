@@ -167,15 +167,19 @@ document.addEventListener("DOMContentLoaded", () => {
     function initTimelineDragController() {
         const dHandle = document.getElementById("desktop-timeline-handle");
         const dTrack = document.getElementById("desktop-timeline-track");
-        const mHandle = document.getElementById("mobile-timeline-handle");
-        const mTrack = document.getElementById("mobile-timeline-track");
+        const dFill = document.getElementById("desktop-timeline-fill");
+        const mHandle = document.getElementById("mobile-timeline-track-thumb");
+        const mTrack = document.querySelector(".timeline-track-slider");
+        const mFill = document.getElementById("mobile-timeline-track-fill");
 
         const syncTimelinePos = (pct) => {
             timelinePercentage = Math.max(0, Math.min(1, pct));
             const leftVal = `${timelinePercentage * 100}%`;
-            
+
             if (dHandle) dHandle.style.left = leftVal;
+            if (dFill) dFill.style.width = leftVal;
             if (mHandle) mHandle.style.left = leftVal;
+            if (mFill) mFill.style.width = leftVal;
 
             updateCountdownDisplay();
         };
