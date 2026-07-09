@@ -401,12 +401,12 @@ function handleNavigatorClick(latlng) {
 
     if (navPoints.length === 0) {
         navPoints.push(point);
-        // 사각형 잔상이 생기지 않는 고화질 순수 벡터 서클 마커(CircleMarker) 장착
+        // 사각형 잔상이 생기지 않고 지극히 슬림하고 영롱한 벡터 원형 마커 장착
         const marker = L.circleMarker(point, {
-            radius: 7,
+            radius: 4.5,
             fillColor: '#2563EB', // 피난 출발 블루
             color: '#FFFFFF',
-            weight: 2.5,
+            weight: 1.5,
             opacity: 1,
             fillOpacity: 0.95
         }).addTo(desktopMap);
@@ -415,10 +415,10 @@ function handleNavigatorClick(latlng) {
     } else if (navPoints.length === 1) {
         navPoints.push(point);
         const marker = L.circleMarker(point, {
-            radius: 7,
+            radius: 4.5,
             fillColor: '#DC2626', // 피난 목적 레드
             color: '#FFFFFF',
-            weight: 2.5,
+            weight: 1.5,
             opacity: 1,
             fillOpacity: 0.95
         }).addTo(desktopMap);
@@ -639,7 +639,7 @@ export async function drawSafeRoute(start, end) {
     // Smooth custom polyline for premium visualization
     navRouteLine = L.polyline(routeLatLngs, { 
         color: needsBypass ? "#EA580C" : "#2563EB", 
-        weight: 6, 
+        weight: 3.5, 
         opacity: 0.9, 
         dashArray: needsBypass ? "10 5" : "none" 
     }).addTo(desktopMap);
