@@ -387,25 +387,26 @@ function handleNavigatorClick(latlng) {
 
     if (navPoints.length === 0) {
         navPoints.push(point);
-        const marker = L.marker(point, { 
-            icon: L.divIcon({
-                className: 'custom-div-icon',
-                html: "<div style='background-color:#2563EB; width:12px; height:12px; border:2px solid white; border-radius:50%; box-shadow:0 0 6px rgba(0,0,0,0.4);'></div>",
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
-            }) 
+        // 사각형 잔상이 생기지 않는 고화질 순수 벡터 서클 마커(CircleMarker) 장착
+        const marker = L.circleMarker(point, {
+            radius: 7,
+            fillColor: '#2563EB', // 피난 출발 블루
+            color: '#FFFFFF',
+            weight: 2.5,
+            opacity: 1,
+            fillOpacity: 0.95
         }).addTo(desktopMap);
         navMarkers.push(marker);
         setNavStatusText("출발지가 등록되었습니다. 지도를 터치해 목적지를 선택하세요.");
     } else if (navPoints.length === 1) {
         navPoints.push(point);
-        const marker = L.marker(point, { 
-            icon: L.divIcon({
-                className: 'custom-div-icon',
-                html: "<div style='background-color:#DC2626; width:12px; height:12px; border:2px solid white; border-radius:50%; box-shadow:0 0 6px rgba(0,0,0,0.4);'></div>",
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
-            }) 
+        const marker = L.circleMarker(point, {
+            radius: 7,
+            fillColor: '#DC2626', // 피난 목적 레드
+            color: '#FFFFFF',
+            weight: 2.5,
+            opacity: 1,
+            fillOpacity: 0.95
         }).addTo(desktopMap);
         navMarkers.push(marker);
         
