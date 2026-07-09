@@ -790,9 +790,9 @@ document.addEventListener("DOMContentLoaded", () => {
         function generateDistrictPolygon(zoneId, lat, lng) {
             const rand = seedRandom(zoneId);
             const points = [];
-            let radiusKm = 42; // Upgraded from 12 to province-scale 42km!
-            if (zoneId === "KR-DK-01") radiusKm = 24.0; // Enlarged to 24km
-            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 65; // Massive province coverage 65km!
+            let radiusKm = 8.5; // Compact localized city/municipal scope (8.5km)
+            if (zoneId === "KR-DK-01") radiusKm = 3.5;
+            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 11.5;
             
             const latOffsetDegree = radiusKm / 110.574;
             const lngOffsetDegree = radiusKm / (111.320 * Math.cos(lat * Math.PI / 180));
@@ -837,8 +837,8 @@ document.addEventListener("DOMContentLoaded", () => {
         async function loadMunicipalitiesGeoJSON() {
             try {
                 console.log("[GeoJSON] 대한민국 실제 250개 시군구 도시 행정 경계 정보 로딩 중...");
-                const res = await fetch("https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_municipalities_simple.json");
-                if (!res.ok) throw new Error("Official Si-Gun-Gu GeoJSON server response error");
+                const res = await fetch("./skorea_municipalities_simple.json");
+                if (!res.ok) throw new Error("Local Si-Gun-Gu GeoJSON server response error");
                 const geoData = await res.json();
 
                 // 1) Desktop GeoJSON Layer Injection (시군구 정밀 도시 매핑)
