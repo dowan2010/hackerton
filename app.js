@@ -1477,24 +1477,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (deskCard2) {
             const dateEl = deskCard2.querySelector(".feed-date");
             if (dateEl) {
-                const midYear = T >= 4 ? 2030 : 2026;
-                dateEl.textContent = `${midYear}년 10월 05일`;
+                dateEl.textContent = "2028년 10월 05일";
             }
         }
 
         if (deskCard1) {
             const dateEl = deskCard1.querySelector(".feed-date");
             if (dateEl) {
-                dateEl.textContent = `${2026 + T}년 04월 12일`;
+                dateEl.textContent = "2030년 04월 12일";
             }
             const badgeEl = deskCard1.querySelector(".badge-status-blue") || deskCard1.querySelector('[class^="badge-status-"]');
             if (badgeEl) {
-                if (T === 0) {
-                    badgeEl.textContent = "RETURN SAFE (2026)";
-                    badgeEl.className = "badge-status-blue";
-                } else {
-                    badgeEl.textContent = `PREDICTED ${2026 + T}`;
-                }
+                badgeEl.textContent = "PREDICTED 2030";
             }
         }
 
@@ -1528,7 +1522,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (mobCards.length >= 3) {
                 // Card 1 (Future)
                 const mobCard1Date = mobCards[0].querySelector(".date");
-                if (mobCard1Date) mobCard1Date.textContent = `${2026 + T}년 04월 12일`;
+                if (mobCard1Date) mobCard1Date.textContent = "2030년 04월 12일";
 
                 mobCards[0].querySelector(".card-title-bold").textContent = future ? future.futureTitle : "복원된 참나무 숲";
                 mobCards[0].querySelector(".card-quote").textContent = future ? `"${future.futureP1}"` : `"${diary.p1}"`;
@@ -1537,8 +1531,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Card 2 (Mid-term)
                 const mobCard2Date = mobCards[1].querySelector(".date");
                 if (mobCard2Date) {
-                    const midYear = T >= 4 ? 2030 : 2026;
-                    mobCard2Date.textContent = `${midYear}년 10월 05일`;
+                    mobCard2Date.textContent = "2028년 10월 05일";
                 }
 
                 mobCards[1].querySelector(".card-title-bold").textContent = future ? future.midTitle : "수변 생태계의 귀환";
@@ -1788,24 +1781,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (deskCard2) {
             const dateEl = deskCard2.querySelector(".feed-date");
             if (dateEl) {
-                const midYear = T >= 4 ? 2030 : 2026;
-                dateEl.textContent = `${midYear}년 10월 05일`;
+                dateEl.textContent = "2028년 10월 05일";
             }
         }
 
         if (deskCard1) {
             const dateEl = deskCard1.querySelector(".feed-date");
             if (dateEl) {
-                dateEl.textContent = `${2026 + T}년 04월 12일`;
+                dateEl.textContent = "2030년 04월 12일";
             }
             const badgeEl = deskCard1.querySelector(".badge-status-blue") || deskCard1.querySelector('[class^="badge-status-"]');
             if (badgeEl) {
-                if (T === 0) {
-                    badgeEl.textContent = "RETURN SAFE (2026)";
-                    badgeEl.className = "badge-status-blue";
-                } else {
-                    badgeEl.textContent = `PREDICTED ${2026 + T}`;
-                }
+                badgeEl.textContent = "PREDICTED 2030";
             }
         }
 
@@ -1821,14 +1808,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (mobCards.length >= 3) {
                 // Card 1
                 const mobCard1Date = mobCards[0].querySelector(".date");
-                if (mobCard1Date) mobCard1Date.textContent = `${2026 + T}년 04월 12일`;
+                if (mobCard1Date) mobCard1Date.textContent = "2030년 04월 12일";
                 mobCards[0].querySelector(".card-quote").textContent = `"${sim1}"`;
 
                 // Card 2
                 const mobCard2Date = mobCards[1].querySelector(".date");
                 if (mobCard2Date) {
-                    const midYear = T >= 4 ? 2030 : 2026;
-                    mobCard2Date.textContent = `${midYear}년 10월 05일`;
+                    mobCard2Date.textContent = "2028년 10월 05일";
                 }
                 mobCards[1].querySelector(".card-quote").textContent = `"어릴 적 발을 담그던 ${address}의 개울가에 다시 은어들이 돌아왔습니다. 정화 노드 유량 포화도 100% 달성 및 자정 능력이 성공적으로 완비되었습니다."`;
 
