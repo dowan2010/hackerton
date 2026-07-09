@@ -3,7 +3,7 @@
  * Coordinates and bootstraps specialized JS modules.
  * ------------------------------------------------------------- */
 
-import { mockZones, zoneDiaries, zoneFutureTimelines } from './js/data.js';
+import { mockZones, zoneDiaries, zoneFutureTimelines } from './js/data.js?v=20260710-3';
 import { 
     initLeafletMaps, 
     desktopMap, 
@@ -16,8 +16,8 @@ import {
     getMunicipalityData,
     allMunicipalityLayers,
     cachedGeoData
-} from './js/map.js';
-import { initDignitySystem, initNationalPolicyGenerator } from './js/dignity.js';
+} from './js/map.js?v=20260710-3';
+import { initDignitySystem, initNationalPolicyGenerator } from './js/dignity.js?v=20260710-3';
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- 1. GLOBAL STATE & COORDINATION VARIABLES ---
@@ -364,42 +364,549 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 10. AUTHENTICATION & SESSIONS SYSTEM ---
+    // --- 10. PREMIUM GLASSMORPHISM AUTHENTICATION & SETTINGS SYSTEM ---
     function initAuthSystem() {
-        const deskUserBtn = document.getElementById("desktop-btn-user");
-        const mobUserBtn = document.getElementById("mobile-btn-user");
-        const activeSession = JSON.parse(localStorage.getItem("roothome_session"));
+        const authModal = document.getElementById("auth-modal");
+        const authCloseBtn = document.getElementById("auth-close-btn");
+        const tabLoginBtn = document.getElementById("tab-login-btn");
+        const tabSignupBtn = document.getElementById("tab-signup-btn");
+        const loginForm = document.getElementById("login-form");
+        const signupForm = document.getElementById("signup-form");
 
-        const applyLoggedInUI = (email) => {
-            const userShort = email.split("@")[0].toUpperCase();
-            if (deskUserBtn) {
-                deskUserBtn.innerHTML = `<i data-lucide="user-check"></i> <span>${userShort} 대피대원</span>`;
-                deskUserBtn.style.color = "var(--color-primary)";
-                deskUserBtn.style.borderColor = "var(--color-primary-light)";
-            }
-            if (mobUserBtn) {
-                mobUserBtn.innerHTML = `<i data-lucide="user-check"></i> <span>${userShort} 대원</span>`;
-            }
-            lucide.createIcons();
-        };
-
-        if (activeSession && activeSession.email) {
-            applyLoggedInUI(activeSession.email);
-        } else {
-            const defaultUser = { email: "citizen.pioneer@roothome.org" };
-            localStorage.setItem("roothome_session", JSON.stringify(defaultUser));
-            applyLoggedInUI(defaultUser.email);
+        if (!authModal || !authCloseBtn || !tabLoginBtn || !tabSignupBtn || !loginForm || !signupForm) {
+            console.warn("[Auth System] Auth elements not found in DOM");
+            return;
         }
+
+        // Prepopulate users and session
+        if (!localStorage.getItem("roothome_users")) {
+            localStorage.setItem("roothome_users", JSON.stringify([
+                { email: "test@roothome.org", name: "강유진", password: "password123" }
+            ]));
+        }
+
+        // Open/Close Modal
+        function openAuth() {
+            authModal.classList.remove("hidden");
+            switchTab("login");
+        }
+        function closeAuth() {
+            authModal.classList.add("hidden");
+        }
+
+        authCloseBtn.addEventListener("click", closeAuth);
+
+        // Click outside to close
+        authModal.addEventListener("click", (e) => {
+            if (e.target === authModal) closeAuth();
+        });
+
+        // Switch Tabs
+        function switchTab(tab) {
+            if (tab === "login") {
+                tabLoginBtn.classList.add("active");
+                tabSignupBtn.classList.remove("active");
+                loginForm.classList.remove("hidden");
+                signupForm.classList.add("hidden");
+            } else {
+                tabLoginBtn.classList.remove("active");
+                tabSignupBtn.classList.add("active");
+                loginForm.classList.add("hidden");
+                signupForm.classList.remove("hidden");
+            }
+        }
+
+        tabLoginBtn.addEventListener("click", () => switchTab("login"));
+        tabSignupBtn.addEventListener("click", () => switchTab("signup"));
+
+        // Login Handler
+        loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value;
+
+            const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                localStorage.setItem("roothome_session", JSON.stringify({ email: user.email, name: user.name }));
+                updateAuthStateUI();
+                closeAuth();
+                alert(`반갑고 안온한 복귀입니다, ${user.name} 님!`);
+            } else {
+                alert("이메일 주소 또는 비밀번호가 일치하지 않습니다.");
+            }
+        });
+
+        // Signup Handler
+        signupForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("signup-name").value.trim();
+            const email = document.getElementById("signup-email").value.trim();
+            const password = document.getElementById("signup-password").value;
+
+            if (password.length < 6) {
+                alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+            if (users.some(u => u.email === email)) {
+                alert("이미 등록된 이메일 주소입니다.");
+                return;
+            }
+
+            users.push({ email, name, password });
+            localStorage.setItem("roothome_users", JSON.stringify(users));
+            alert("회원가입이 성공적으로 완료되었습니다! 로그인 해 주세요.");
+            switchTab("login");
+        });
+
+        // Toggle state triggers
+        const sidebarProfile = document.querySelector(".sidebar-profile");
+        const headerLoginBtn = document.querySelector(".header-login-btn-wrapper");
+        const mobHeaderRight = document.querySelector(".mobile-header-right");
+        const mobProfileCard = document.querySelector(".profile-main-card");
+
+        function handleProfileTriggerClick(e) {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            if (session) {
+                if (confirm("로그아웃 하시겠습니까?")) {
+                    localStorage.removeItem("roothome_session");
+                    updateAuthStateUI();
+                    alert("성공적으로 로그아웃되었습니다.");
+                }
+            } else {
+                openAuth();
+            }
+        }
+
+        if (sidebarProfile) sidebarProfile.addEventListener("click", handleProfileTriggerClick);
+        if (headerLoginBtn) headerLoginBtn.addEventListener("click", handleProfileTriggerClick);
+        if (mobHeaderRight) {
+            mobHeaderRight.addEventListener("click", (e) => {
+                if (e.target.closest(".mobile-icon-btn")) return;
+                handleProfileTriggerClick();
+            });
+        }
+        if (mobProfileCard) mobProfileCard.addEventListener("click", handleProfileTriggerClick);
+
+        // Update UI state based on session
+        function updateAuthStateUI() {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            const profileName = document.querySelector(".profile-name");
+            const profileRole = document.querySelector(".profile-role");
+            const mobProfName = document.querySelector(".profile-user-name");
+            const mobProfRole = document.querySelector(".profile-user-role");
+            const headerLoginBtnSpan = headerLoginBtn ? headerLoginBtn.querySelector("span") : null;
+            const headerLoginBtnIcon = headerLoginBtn ? headerLoginBtn.querySelector("i") : null;
+            const mobHeaderRightSpan = mobHeaderRight ? mobHeaderRight.querySelector("span") : null;
+
+            const statNums = document.querySelectorAll(".profile-main-card .stat-box .num");
+
+            if (session) {
+                // Logged In UI
+                if (profileName) profileName.textContent = `${session.name} 님`;
+                if (profileRole) profileRole.textContent = "정착 권한 인증 완료";
+
+                if (headerLoginBtnSpan) headerLoginBtnSpan.textContent = "로그아웃";
+                if (headerLoginBtnIcon) {
+                    headerLoginBtnIcon.setAttribute("data-lucide", "log-out");
+                    headerLoginBtnIcon.style.color = "var(--color-primary)";
+                }
+
+                if (mobHeaderRightSpan) mobHeaderRightSpan.textContent = "로그아웃";
+
+                if (mobProfName) mobProfName.textContent = session.name;
+                if (mobProfRole) mobProfRole.textContent = session.email;
+
+                if (statNums.length >= 3) {
+                    statNums[0].textContent = "68세";
+                    statNums[1].textContent = "A등급";
+                    statNums[2].textContent = "45년";
+                }
+            } else {
+                // Logged Out UI
+                if (profileName) profileName.textContent = "실향민 로그인";
+                if (profileRole) profileRole.textContent = "정착 서비스 대기 중";
+
+                if (headerLoginBtnSpan) headerLoginBtnSpan.textContent = "실향민 안심 로그인";
+                if (headerLoginBtnIcon) {
+                    headerLoginBtnIcon.setAttribute("data-lucide", "log-in");
+                    headerLoginBtnIcon.style.color = "var(--color-text-muted)";
+                }
+
+                if (mobHeaderRightSpan) mobHeaderRightSpan.textContent = "실향민 로그인";
+
+                if (mobProfName) mobProfName.textContent = "실향민 로그인";
+                if (mobProfRole) mobProfRole.textContent = "고향 귀향 서비스를 위한 안심 로그인";
+
+                if (statNums.length >= 3) {
+                    statNums[0].textContent = "-";
+                    statNums[1].textContent = "-";
+                    statNums[2].textContent = "-";
+                }
+            }
+
+            // --- SYNC HOMETOWN & RESIDENCE LABELS ---
+            let hometown = "";
+            let residence = "";
+
+            if (session) {
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const user = users.find(u => u.email === session.email);
+                if (user) {
+                    hometown = user.hometown || "";
+                    residence = user.residence || "";
+                }
+            } else {
+                const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
+                hometown = guestSettings.hometown || "";
+                residence = guestSettings.residence || "";
+            }
+
+            const sidebarMeta = document.getElementById("sidebar-profile-meta");
+            const sidebarHomeSpan = document.getElementById("sidebar-meta-hometown");
+            const sidebarResSpan = document.getElementById("sidebar-meta-residence");
+
+            const mobileMeta = document.getElementById("mobile-profile-meta");
+            const mobileHomeSpan = document.getElementById("mobile-meta-hometown");
+            const mobileResSpan = document.getElementById("mobile-meta-residence");
+
+            if (hometown || residence) {
+                if (sidebarMeta) sidebarMeta.classList.remove("hidden");
+                if (sidebarHomeSpan) sidebarHomeSpan.textContent = hometown || "미지정";
+                if (sidebarResSpan) sidebarResSpan.textContent = residence || "미지정";
+
+                if (mobileMeta) mobileMeta.classList.remove("hidden");
+                if (mobileHomeSpan) mobileHomeSpan.textContent = hometown || "미지정";
+                if (mobileResSpan) mobileResSpan.textContent = residence || "미지정";
+            } else {
+                if (sidebarMeta) sidebarMeta.classList.add("hidden");
+                if (mobileMeta) mobileMeta.classList.add("hidden");
+            }
+            
+            if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+            }
+        }
+
+        // Run UI sync at start
+        updateAuthStateUI();
+
+        // --- SETTINGS SYSTEM INTEGRATION ---
+        const settingsModal = document.getElementById("settings-modal");
+        const settingsCloseBtn = document.getElementById("settings-close-btn");
+        const settingsForm = document.getElementById("settings-form");
+        const settingsHometown = document.getElementById("settings-hometown");
+        const settingsResidence = document.getElementById("settings-residence");
+
+        const settingsName = document.getElementById("settings-name");
+        const settingsEmail = document.getElementById("settings-email");
+        const settingsPasswordCurrent = document.getElementById("settings-password-current");
+        const settingsPassword = document.getElementById("settings-password");
+        const settingsPasswordConfirm = document.getElementById("settings-password-confirm");
+        const settingsPasswordFields = document.getElementById("settings-password-fields");
+        const btnSettingsChangePassword = document.getElementById("btn-settings-change-password");
+        const btnSettingsPasswordText = document.getElementById("btn-settings-password-text");
+        const btnSettingsPasswordSubmit = document.getElementById("btn-settings-password-submit");
+
+        const themeLightBtn = document.getElementById("theme-light-btn");
+        const themeDarkBtn = document.getElementById("theme-dark-btn");
+        let selectedTheme = localStorage.getItem("roothome_theme") || "light";
+
+        // Initialize Theme from localStorage on Startup
+        if (selectedTheme === "dark") {
+            document.body.classList.add("dark-theme");
+        } else {
+            document.body.classList.remove("dark-theme");
+        }
+
+        function openSettings() {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            let nameVal = "";
+            let emailVal = "";
+            let hometownVal = "";
+            let residenceVal = "";
+
+            // Hide password fields and reset on fresh modal open
+            if (settingsPasswordFields) settingsPasswordFields.classList.add("hidden");
+            if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+            if (settingsPassword) settingsPassword.value = "";
+            if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
+
+            if (session) {
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const user = users.find(u => u.email === session.email);
+                if (user) {
+                    nameVal = user.name || "";
+                    emailVal = user.email || "";
+                    hometownVal = user.hometown || "";
+                    residenceVal = user.residence || "";
+                }
+                
+                if (settingsName) { settingsName.value = nameVal; settingsName.disabled = false; settingsName.placeholder = "이름을 입력하세요"; }
+                if (settingsEmail) { settingsEmail.value = emailVal; settingsEmail.disabled = false; settingsEmail.placeholder = "이메일을 입력하세요"; }
+                
+                if (btnSettingsChangePassword) {
+                    btnSettingsChangePassword.disabled = false;
+                    btnSettingsChangePassword.style.opacity = "1";
+                    btnSettingsChangePassword.style.cursor = "pointer";
+                }
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+            } else {
+                const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
+                hometownVal = guestSettings.hometown || "";
+                residenceVal = guestSettings.residence || "";
+                
+                if (settingsName) { settingsName.value = ""; settingsName.disabled = true; settingsName.placeholder = "로그인 시 활성화됩니다"; }
+                if (settingsEmail) { settingsEmail.value = ""; settingsEmail.disabled = true; settingsEmail.placeholder = "로그인 시 활성화됩니다"; }
+                
+                if (btnSettingsChangePassword) {
+                    btnSettingsChangePassword.disabled = true;
+                    btnSettingsChangePassword.style.opacity = "0.5";
+                    btnSettingsChangePassword.style.cursor = "not-allowed";
+                }
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "로그인 시 변경 가능";
+            }
+
+            if (settingsHometown) settingsHometown.value = hometownVal;
+            if (settingsResidence) settingsResidence.value = residenceVal;
+
+            // Sync theme button active states with current theme in body
+            const isDark = document.body.classList.contains("dark-theme");
+            if (isDark) {
+                if (themeDarkBtn) themeDarkBtn.classList.add("active");
+                if (themeLightBtn) themeLightBtn.classList.remove("active");
+                selectedTheme = "dark";
+            } else {
+                if (themeLightBtn) themeLightBtn.classList.add("active");
+                if (themeDarkBtn) themeDarkBtn.classList.remove("active");
+                selectedTheme = "light";
+            }
+
+            if (settingsModal) settingsModal.classList.remove("hidden");
+        }
+
+        function closeSettings() {
+            if (settingsModal) settingsModal.classList.add("hidden");
+        }
+
+        if (settingsCloseBtn) {
+            settingsCloseBtn.addEventListener("click", closeSettings);
+        }
+
+        if (settingsModal) {
+            settingsModal.addEventListener("click", (e) => {
+                if (e.target === settingsModal) closeSettings();
+            });
+        }
+
+        // Bind Settings Triggers
+        const sidebarSettingsLink = document.getElementById("sidebar-settings-link");
+        if (sidebarSettingsLink) {
+            sidebarSettingsLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                openSettings();
+            });
+        }
+
+        const headerSettingsBtn = document.getElementById("header-settings-btn");
+        if (headerSettingsBtn) {
+            headerSettingsBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                openSettings();
+            });
+        }
+
+        const mobSettingsRowHometown = document.getElementById("mobile-settings-row-hometown");
+        if (mobSettingsRowHometown) {
+            mobSettingsRowHometown.addEventListener("click", (e) => {
+                e.preventDefault();
+                openSettings();
+            });
+        }
+
+        // Secure password expand-on-click trigger
+        if (btnSettingsChangePassword) {
+            btnSettingsChangePassword.addEventListener("click", () => {
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (!session) return; // ignore guest clicks
+
+                const isHidden = settingsPasswordFields.classList.contains("hidden");
+                if (isHidden) {
+                    settingsPasswordFields.classList.remove("hidden");
+                    if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "변경 취소하기";
+                } else {
+                    settingsPasswordFields.classList.add("hidden");
+                    if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+                    if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+                    if (settingsPassword) settingsPassword.value = "";
+                    if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
+                }
+            });
+        }
+
+        // Real-time Live Theme Preview Toggles
+        if (themeLightBtn) {
+            themeLightBtn.addEventListener("click", () => {
+                if (themeLightBtn) themeLightBtn.classList.add("active");
+                if (themeDarkBtn) themeDarkBtn.classList.remove("active");
+                document.body.classList.remove("dark-theme");
+                selectedTheme = "light";
+            });
+        }
+
+        if (themeDarkBtn) {
+            themeDarkBtn.addEventListener("click", () => {
+                if (themeDarkBtn) themeDarkBtn.classList.add("active");
+                if (themeLightBtn) themeLightBtn.classList.remove("active");
+                document.body.classList.add("dark-theme");
+                selectedTheme = "dark";
+            });
+        }
+
+        // Secure separate Password Submit click event
+        if (btnSettingsPasswordSubmit) {
+            btnSettingsPasswordSubmit.addEventListener("click", () => {
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (!session) return; // ignore guest clicks
+
+                const currentVal = settingsPasswordCurrent.value;
+                const passVal = settingsPassword.value;
+                const confVal = settingsPasswordConfirm.value;
+
+                if (!currentVal || !passVal || !confVal) {
+                    alert("현재 비밀번호, 새 비밀번호, 확인 입력창을 모두 채워주세요.");
+                    return;
+                }
+
+                // Verify typed current password matches account password in DB
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const userIndex = users.findIndex(u => u.email === session.email);
+                if (userIndex === -1 || users[userIndex].password !== currentVal) {
+                    alert("입력하신 현재 비밀번호가 일치하지 않습니다.");
+                    return;
+                }
+
+                if (passVal !== confVal) {
+                    alert("입력하신 새 비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
+                    return;
+                }
+
+                if (passVal.length < 6) {
+                    alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+                    return;
+                }
+
+                // Update Database entry
+                users[userIndex].password = passVal;
+                localStorage.setItem("roothome_users", JSON.stringify(users));
+
+                // Clean fields and fold drawer
+                if (settingsPasswordCurrent) settingsPasswordCurrent.value = "";
+                if (settingsPassword) settingsPassword.value = "";
+                if (settingsPasswordConfirm) settingsPasswordConfirm.value = "";
+                if (settingsPasswordFields) settingsPasswordFields.classList.add("hidden");
+                if (btnSettingsPasswordText) btnSettingsPasswordText.textContent = "비밀번호 변경하기";
+
+                alert("비밀번호가 성공적으로 변경되었습니다!");
+            });
+        }
+
+        // Settings Form Submission
+        if (settingsForm) {
+            settingsForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const hometown = settingsHometown.value.trim();
+                const residence = settingsResidence.value.trim();
+
+                const session = JSON.parse(localStorage.getItem("roothome_session"));
+                if (session) {
+                    const name = settingsName.value.trim();
+                    const email = settingsEmail.value.trim();
+
+                    if (!name || !email) {
+                        alert("이름과 이메일은 필수 입력 사항입니다.");
+                        return;
+                    }
+
+                    const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                    
+                    // Check if new email is already taken by someone else
+                    const emailExists = users.some(u => u.email === email && u.email !== session.email);
+                    if (emailExists) {
+                        alert("이미 등록된 다른 사용자의 이메일 주소입니다.");
+                        return;
+                    }
+
+                    // Find index using session email (the original identifier)
+                    const userIndex = users.findIndex(u => u.email === session.email);
+                    if (userIndex !== -1) {
+                        // Update Database entry
+                        users[userIndex].name = name;
+                        users[userIndex].email = email;
+                        users[userIndex].hometown = hometown;
+                        users[userIndex].residence = residence;
+                        localStorage.setItem("roothome_users", JSON.stringify(users));
+
+                        // Sync Active Session info
+                        session.name = name;
+                        session.email = email;
+                        localStorage.setItem("roothome_session", JSON.stringify(session));
+                    }
+                } else {
+                    const guestSettings = { hometown, residence };
+                    localStorage.setItem("roothome_guest_settings", JSON.stringify(guestSettings));
+                }
+
+                // Persist theme selection
+                localStorage.setItem("roothome_theme", selectedTheme);
+
+                updateAuthStateUI();
+                autoPrefillTimelineAddresses();
+                closeSettings();
+                alert("설정이 성공적으로 저장되었습니다!");
+            });
+        }
+
+        // AI Timeline Prepopulation Utility
+        function autoPrefillTimelineAddresses() {
+            const session = JSON.parse(localStorage.getItem("roothome_session"));
+            let hometown = "";
+            if (session) {
+                const users = JSON.parse(localStorage.getItem("roothome_users")) || [];
+                const user = users.find(u => u.email === session.email);
+                if (user) hometown = user.hometown || "";
+            } else {
+                const guestSettings = JSON.parse(localStorage.getItem("roothome_guest_settings")) || {};
+                hometown = guestSettings.hometown || "";
+            }
+
+            if (hometown) {
+                const desktopInput = document.getElementById("desktop-address-input");
+                const mobileInput = document.getElementById("mobile-address-input");
+                if (desktopInput && !desktopInput.value) {
+                    desktopInput.value = hometown;
+                }
+                if (mobileInput && !mobileInput.value) {
+                    mobileInput.value = hometown;
+                }
+            }
+        }
+
+        // Prefill Timeline Input Box on load
+        autoPrefillTimelineAddresses();
     }
 
     // --- 11. TAB & DEVICE NAVIGATION VIEW SYSTEM ---
     const deskTabs = document.querySelectorAll(".sidebar-menu .menu-item");
     const mobTabs = document.querySelectorAll(".mobile-nav-item");
 
-    // 데스크톱 탭 이름(rootmap/dignity/timeline)과 모바일 탭 이름(home/matrix/timeline/profile)이 서로 달라
+    // 데스크톱 탭 이름(rootmap/timeline)과 모바일 탭 이름(home/timeline/profile)이 서로 달라
     // 두 방향 매핑이 필요하다.
-    const deskToMobTab = { rootmap: "home", dignity: "matrix", timeline: "timeline" };
-    const mobToDeskTab = { home: "rootmap", matrix: "dignity", timeline: "timeline", profile: "timeline" };
+    const deskToMobTab = { rootmap: "home", timeline: "timeline" };
+    const mobToDeskTab = { home: "rootmap", timeline: "timeline", profile: "timeline" };
 
     window.syncActiveTab = function(tabName, source) {
         const deskTab = source === "mobile" ? (mobToDeskTab[tabName] || tabName) : tabName;
@@ -499,6 +1006,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set Default Tab
     window.syncActiveTab("rootmap", "desktop");
+
+    // --- 11.5 HEADER SUBTABS BINDINGS (실시간 환경 / 예측 분석 / 정책 리소스) ---
+    const headerNavTabs = document.querySelectorAll(".nav-tabs .nav-tab");
+    const subtabContents = document.querySelectorAll(".subtab-content");
+
+    headerNavTabs.forEach((tabBtn, index) => {
+        tabBtn.addEventListener("click", () => {
+            headerNavTabs.forEach(btn => btn.classList.remove("active"));
+            tabBtn.classList.add("active");
+
+            subtabContents.forEach(content => {
+                content.classList.add("hidden");
+                content.classList.remove("active");
+            });
+
+            if (index === 0) {
+                const rt = document.getElementById("subtab-realtime");
+                if (rt) {
+                    rt.classList.remove("hidden");
+                    rt.classList.add("active");
+                }
+                setTimeout(() => {
+                    if (desktopMap) desktopMap.invalidateSize();
+                }, 50);
+            } else if (index === 1) {
+                const pred = document.getElementById("subtab-prediction");
+                if (pred) {
+                    pred.classList.remove("hidden");
+                    pred.classList.add("active");
+                }
+            } else if (index === 2) {
+                const pol = document.getElementById("subtab-policy");
+                if (pol) {
+                    pol.classList.remove("hidden");
+                    pol.classList.add("active");
+                }
+            }
+        });
+    });
 
     // --- 12. RUNTIME SYSTEM BOOTSTRAPPER ---
     initAuthSystem();

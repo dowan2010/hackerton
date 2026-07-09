@@ -36,10 +36,6 @@
                     <i data-lucide="map"></i>
                     <span>루트맵 (RootMap)</span>
                 </a>
-                <a href="#" class="menu-item" data-tab="dignity">
-                    <i data-lucide="award"></i>
-                    <span>존엄성 점수</span>
-                </a>
                 <a href="#" class="menu-item" data-tab="timeline">
                     <i data-lucide="activity"></i>
                     <span>스프링 타임라인</span>
@@ -85,9 +81,6 @@
                             <button class="nav-tab">예측 분석</button>
                             <button class="nav-tab">정책 리소스</button>
                         </div>
-                    </div>
-                    <div class="header-tab-nav hidden" id="header-nav-dignity">
-                        <span class="nav-title">존엄성 점수 매트릭스</span>
                     </div>
                     <div class="header-tab-nav hidden" id="header-nav-timeline">
                         <span class="nav-title">고향의 봄 AI 타임라인</span>
@@ -387,100 +380,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 2: DIGNITY SCORE (DESKTOP) -->
-                <section class="tab-content hidden" id="tab-dignity">
-                    <div class="dignity-grid-layout">
-                        <div class="dignity-card card-upload">
-                            <div class="card-header-row">
-                                <h3 class="dignity-card-title">Gemini AI 증명서 검증</h3>
-                                <span class="badge-secure">실시간 보안 처리</span>
-                            </div>
-                            <div class="upload-dropzone" id="desktop-upload-dropzone">
-                                <input type="file" id="desktop-file-input" accept="image/*" class="hidden-input">
-                                <div class="upload-icon-wrapper"><i data-lucide="upload-cloud"></i></div>
-                                <p class="upload-text">신분증 및 의료 진단서 업로드</p>
-                                <p class="upload-subtext">PDF, JPG, PNG 파일 (최대 10MB)</p>
-                                <button class="btn-select-file" id="desktop-btn-select">파일 선택</button>
-                            </div>
-                            <div id="desktop-upload-status" class="upload-status-box hidden">
-                                <div class="spinner"></div>
-                                <span>Gemini AI 서류 판독 중...</span>
-                            </div>
-                            <div class="upload-metrics-row">
-                                <div class="upload-metric">
-                                    <span class="metric-lbl">인식 정확도</span>
-                                    <span class="metric-val text-blue">99.8%</span>
-                                </div>
-                                <div class="upload-metric">
-                                    <span class="metric-lbl">처리 속도</span>
-                                    <span class="metric-val text-blue" id="desktop-upload-time">1.2s</span>
-                                </div>
-                                <div class="upload-metric">
-                                    <span class="metric-lbl">데이터 보존</span>
-                                    <span class="metric-val text-blue">AES-256</span>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="dignity-card card-weights">
-                            <h3 class="dignity-card-title">존엄성 점수 가중치 (Weights)</h3>
-                            <div class="donut-chart-wrapper">
-                                <svg class="donut-ring" width="160" height="160" viewBox="0 0 160 160">
-                                    <circle cx="80" cy="80" r="60" fill="transparent" stroke="#F1F5F9" stroke-width="18"/>
-                                    <circle cx="80" cy="80" r="60" fill="transparent" stroke="#1E3A8A" stroke-width="18" stroke-dasharray="150.8 376.99" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
-                                    <circle cx="80" cy="80" r="60" fill="transparent" stroke="#2563EB" stroke-width="18" stroke-dasharray="150.8 376.99" stroke-dashoffset="-150.8" transform="rotate(-90 80 80)"/>
-                                    <circle cx="80" cy="80" r="60" fill="transparent" stroke="#93C5FD" stroke-width="18" stroke-dasharray="75.4 376.99" stroke-dashoffset="-301.6" transform="rotate(-90 80 80)"/>
-                                </svg>
-                                <div class="donut-center-text">
-                                    <span class="donut-label">Priority Score</span>
-                                    <span class="donut-score-val" id="desktop-priority-val">100</span>
-                                    <span class="donut-unit">Points</span>
-                                </div>
-                            </div>
-                            <div class="weights-list">
-                                <div class="weight-item"><span class="weight-dot color-deep-blue"></span><span class="weight-name">연령 (Age)</span><span class="weight-val">40%</span></div>
-                                <div class="weight-item"><span class="weight-dot color-blue"></span><span class="weight-name">건강 (Health)</span><span class="weight-val">40%</span></div>
-                                <div class="weight-item"><span class="weight-dot color-light-blue"></span><span class="weight-name">거주 (Residence)</span><span class="weight-val">20%</span></div>
-                            </div>
-                        </div>
-
-                        <div class="dignity-card card-ledger">
-                            <div class="ledger-header">
-                                <div class="ledger-title-group">
-                                    <h3 class="dignity-card-title">공공 우선순위 장부 (Public Ledger)</h3>
-                                    <p class="ledger-subtitle">블록체인 네트워크 기반 실시간 데이터 투명성 확보</p>
-                                </div>
-                                <button class="btn-download-ledger"><i data-lucide="download"></i> 장부 사본 다운로드</button>
-                            </div>
-                            <div class="table-container">
-                                <table class="ledger-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Anonymous User ID</th>
-                                            <th>Priority Score</th>
-                                            <th>Verification Status</th>
-                                            <th>Queue Number</th>
-                                            <th>Timestamp</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="desktop-ledger-rows">
-                                        <!-- Rows generated in JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="ledger-footer">
-                                <span class="footer-count">표시 중: 1 - 5 (전체 2,492건)</span>
-                                <div class="pagination">
-                                    <button class="page-btn"><i data-lucide="chevron-left"></i></button>
-                                    <button class="page-btn active">1</button>
-                                    <button class="page-btn">2</button>
-                                    <button class="page-btn">3</button>
-                                    <button class="page-btn"><i data-lucide="chevron-right"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- TAB 3: SPRING TIMELINE (DESKTOP) -->
                 <section class="tab-content hidden" id="tab-timeline">
@@ -801,119 +701,7 @@
                 </div>
             </section>
 
-            <!-- MOBILE TAB 2: MATRIX (Dignity Score - image5.png) -->
-            <section class="mobile-tab-content hidden" id="mobtab-matrix">
-                <div class="mobile-header-block mb-16">
-                    <h2 class="mobile-page-title">품격 점수 매트릭스</h2>
-                    <p class="mobile-page-subtitle">기후 실향민을 위한 체계적인 복원 지표입니다.</p>
-                </div>
 
-                <!-- Upload Gateway Card -->
-                <div class="mobile-card upload-gateway-card">
-                    <div class="gateway-icon-wrapper"><i data-lucide="file-text"></i></div>
-                    <h3 class="mobile-card-title-center">인증 게이트웨이</h3>
-                    <p class="mobile-card-desc-center">생체 ID 또는 의료 증명서를 업로드하여 복원 단계를 다시 계산하세요.</p>
-                    <div class="gateway-buttons-row">
-                        <input type="file" id="mobile-file-input" accept="image/*" class="hidden-input">
-                        <button class="btn-gateway-solid" id="mobile-btn-upload">파일 선택</button>
-                        <button class="btn-gateway-outline">요구사항 확인</button>
-                    </div>
-                    <div id="mobile-upload-status" class="upload-status-box hidden mt-12">
-                        <div class="spinner"></div>
-                        <span>Gemini AI 서류 분석 중...</span>
-                    </div>
-                </div>
-
-                <!-- Weight Card -->
-                <div class="mobile-card">
-                    <span class="mobile-card-tag-sub">가중치 분포</span>
-                    
-                    <div class="donut-chart-container">
-                        <svg class="donut-ring" width="140" height="140" viewBox="0 0 160 160">
-                            <circle cx="80" cy="80" r="60" fill="transparent" stroke="#F1F5F9" stroke-width="16"/>
-                            <circle cx="80" cy="80" r="60" fill="transparent" stroke="#1E3A8A" stroke-width="16" stroke-dasharray="150.8 376.99" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
-                            <circle cx="80" cy="80" r="60" fill="transparent" stroke="#2563EB" stroke-width="16" stroke-dasharray="150.8 376.99" stroke-dashoffset="-150.8" transform="rotate(-90 80 80)"/>
-                            <circle cx="80" cy="80" r="60" fill="transparent" stroke="#93C5FD" stroke-width="16" stroke-dasharray="75.4 376.99" stroke-dashoffset="-301.6" transform="rotate(-90 80 80)"/>
-                        </svg>
-                        <div class="donut-center-val">
-                            <span class="lbl-small">합계</span>
-                            <span class="val-big">100%</span>
-                        </div>
-                    </div>
-
-                    <div class="weights-list-vertical">
-                        <div class="weight-row"><span class="weight-dot color-deep-blue"></span> <span>연령 요인</span> <span class="weight-percentage">40%</span></div>
-                        <div class="weight-row"><span class="weight-dot color-blue"></span> <span>건강 지수</span> <span class="weight-percentage">40%</span></div>
-                        <div class="weight-row"><span class="weight-dot color-light-blue"></span> <span>거주지 생태</span> <span class="weight-percentage">20%</span></div>
-                    </div>
-                </div>
-
-                <!-- Priority Status Card -->
-                <div class="mobile-status-blue-card">
-                    <div class="card-left">
-                        <span class="lbl">현재 우선순위</span>
-                        <span class="val" id="mobile-priority-score-val">100</span>
-                        <span class="tag">플래티넘 등급</span>
-                    </div>
-                    <div class="card-right-icon"><i data-lucide="heart"></i></div>
-                </div>
-
-                <!-- Queue Number Card -->
-                <div class="mobile-queue-card">
-                    <div class="card-left">
-                        <span class="lbl">대기 번호</span>
-                        <span class="val" id="mobile-queue-number-val">2,104</span>
-                    </div>
-                    <div class="card-right-icon-bg"><i data-lucide="stopwatch"></i></div>
-                </div>
-
-                <!-- Public Ledger Card -->
-                <div class="mobile-card">
-                    <div class="mob-card-header-row mb-12">
-                        <div class="mob-title-with-icon">
-                            <i data-lucide="landmark" class="font-blue"></i>
-                            <h3 class="mobile-card-title-lg">공개 장부</h3>
-                        </div>
-                        <span class="badge-network-live"><span class="pulse-dot"></span> 라이브 네트워크 피드</span>
-                    </div>
-
-                    <!-- Masked table -->
-                    <div class="table-container">
-                        <table class="ledger-table font-sm">
-                            <thead>
-                                <tr>
-                                    <th>시민 ID (마스킹)</th>
-                                    <th>계산된 점수</th>
-                                    <th>상태</th>
-                                    <th>네트워크 대열</th>
-                                </tr>
-                            </thead>
-                            <tbody id="mobile-ledger-rows">
-                                <tr>
-                                    <td>RT-8821-****</td>
-                                    <td class="font-bold font-blue">98.4</td>
-                                    <td><span class="pill-verified">인증됨</span></td>
-                                    <td>#001</td>
-                                </tr>
-                                <tr>
-                                    <td>RT-1149-****</td>
-                                    <td class="font-bold font-blue">94.1</td>
-                                    <td><span class="pill-verified">인증됨</span></td>
-                                    <td>#002</td>
-                                </tr>
-                                <tr>
-                                    <td>RT-0922-****</td>
-                                    <td class="font-bold font-blue">100.0</td>
-                                    <td><span class="pill-critical">최우선</span></td>
-                                    <td>#003</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <a href="#" class="btn-expand-registry-link">전체 레지스트리 확장 <i data-lucide="external-link"></i></a>
-                </div>
-            </section>
 
             <!-- MOBILE TAB 3: TIMELINE (Spring Timeline - image4.png) -->
             <section class="mobile-tab-content hidden" id="mobtab-timeline">
@@ -1079,10 +867,6 @@
             <button class="mobile-nav-item active" data-mobtab="home">
                 <i data-lucide="layout-grid"></i>
                 <span>홈</span>
-            </button>
-            <button class="mobile-nav-item" data-mobtab="matrix">
-                <i data-lucide="wallet-cards"></i>
-                <span>매트릭스</span>
             </button>
             <button class="mobile-nav-item" data-mobtab="timeline">
                 <i data-lucide="history"></i>
