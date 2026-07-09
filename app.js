@@ -2443,15 +2443,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        const headerSettingsBtn = document.querySelector(".header-icon-btn i[data-lucide='settings']");
+        const headerSettingsBtn = document.getElementById("header-settings-btn");
         if (headerSettingsBtn) {
-            const btnParent = headerSettingsBtn.closest(".header-icon-btn");
-            if (btnParent) {
-                btnParent.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    openSettings();
-                });
-            }
+            headerSettingsBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                openSettings();
+            });
         }
 
         const mobSettingsRowHometown = document.getElementById("mobile-settings-row-hometown");
