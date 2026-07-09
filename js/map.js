@@ -235,20 +235,79 @@ export function renderGeoJSONLayers() {
     desktopMapCircles = {};
     mobileMapCircles = {};
 
-    // 1) Outlines
-    const dGeoLayer = L.geoJSON(cachedGeoData, {
-        style: (feature) => {
-            const data = getMunicipalityData(feature.properties.code, feature.properties.name);
-            const fillColor = getStatusColor(data.status);
-            return {
-                fillColor: fillColor,
-                weight: 1.2,
-                opacity: 0.85,
-                color: 'rgba(255, 255, 255, 0.45)',
-                fillOpacity: 0.35
-            };
-        },
-        onEachFeature: (feature, layer) => {
+    // Split features: 광역시(metro) vs 일반 시/군(plain)
+    const features = cachedGeoData.features || [];
+    const metroGroups = {}; // prefix -> [feature, ...]
+    const plainFeatures = [];
+    features.forEach(f => {
+        const prefix = (f.properties.code || "").slice(0, 2);
+        if (METRO_PREFIX[prefix]) {
+            if (!metroGroups[prefix]) metroGroups[prefix] = [];
+            metroGroups[prefix].push(f);
+        } else {
+            plainFeatures.push(f);
+        }
+    });
+
+    // 광역시 expand/collapse 상태
+    const metroState = { expandedPrefix: null, entries: {} };
+
+    function collapseExpandedMetro() {
+        const prefix = metroState.expandedPrefix;
+        if (!prefix) return;
+        const entry = metroState.entries[prefix];
+        if (entry.districtLayer && desktopMap.hasLayer(entry.districtLayer)) desktopMap.removeLayer(entry.districtLayer);
+        if (entry.frameLayer && desktopMap.hasLayer(entry.frameLayer)) desktopMap.removeLayer(entry.frameLayer);
+        if (entry.metroLayer && !desktopMap.hasLayer(entry.metroLayer)) entry.metroLayer.addTo(desktopMap);
+        metroState.expandedPrefix = null;
+    }
+
+    function expandMetro(prefix) {
+        if (metroState.expandedPrefix && metroState.expandedPrefix !== prefix) collapseExpandedMetro();
+        if (metroState.expandedPrefix === prefix) { collapseExpandedMetro(); return; }
+        const entry = metroState.entries[prefix];
+        if (entry.metroLayer && desktopMap.hasLayer(entry.metroLayer)) desktopMap.removeLayer(entry.metroLayer);
+        if (entry.districtLayer) entry.districtLayer.addTo(desktopMap);
+        if (entry.frameLayer) entry.frameLayer.addTo(desktopMap);
+        desktopMap.fitBounds(entry.bounds, { padding: [20, 20] });
+        metroState.expandedPrefix = prefix;
+    }
+
+    function districtStyle(feature) {
+        const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+        return {
+            fillColor: getStatusColor(data.status),
+            weight: 1.2,
+            opacity: 0.85,
+            color: 'rgba(255, 255, 255, 0.45)',
+            fillOpacity: 0.35
+        };
+    }
+
+    function updateLegendCard(districtData) {
+        const cardRegionTitle = document.getElementById("legend-region-title");
+        const cardRegionRecovery = document.getElementById("legend-region-recovery");
+        const cardRegionStatus = document.getElementById("legend-region-status");
+        const cardEnvRating = document.getElementById("legend-env-rating");
+        const cardDiaryBody = document.getElementById("legend-diary-body");
+        if (cardRegionTitle) cardRegionTitle.textContent = `${districtData.name} 복원 지구`;
+        if (cardRegionRecovery) cardRegionRecovery.textContent = `${districtData.recovery_rate}%`;
+        if (cardRegionStatus) {
+            cardRegionStatus.textContent = districtData.status;
+            cardRegionStatus.className = `status-pill ${districtData.status === "봉쇄" ? "pill-danger" : (districtData.status === "예약가능" ? "pill-warning" : "pill-success")}`;
+        }
+        if (cardEnvRating) cardEnvRating.textContent = districtData.recovery_rate >= 80 ? "안심 (A)" : (districtData.recovery_rate >= 55 ? "주의 (B)" : "위험 (C)");
+        if (cardDiaryBody) {
+            cardDiaryBody.innerHTML = `
+                <strong>안내:</strong> 본 구역은 대한민국 기후대피정부 250개 정화 구역 중 하나입니다.<br/>
+                <strong>복원 지표:</strong> 토양 PPM 및 수자원 복구 진척율 ${districtData.recovery_rate}% 수준에 도달하여 현재 <strong>[${districtData.status}]</strong> 등급으로 관제 분류되어 보존 관리 중입니다.
+            `;
+        }
+    }
+
+    // onEachFeature factory: metroPrefix=null이면 일반 시/군 (클릭 시 현재 광역시 축소)
+    function makeOnEachFeature(metroPrefix, parentLayer) {
+        return function(feature, layer) {
             const data = getMunicipalityData(feature.properties.code, feature.properties.name);
             const tooltipContent = `
                 <div class="map-tooltip">
@@ -258,64 +317,89 @@ export function renderGeoJSONLayers() {
                 </div>
             `;
             layer.bindTooltip(tooltipContent, { sticky: true, opacity: 0.95 });
-
             layer.on({
                 mouseover: (e) => {
-                    if (navigatorModeActive) {
-                        layer.closeTooltip();
-                        return;
-                    }
-                    const lyr = e.target;
-                    lyr.setStyle({ fillOpacity: 0.55, weight: 2, color: '#3B82F6' });
+                    if (navigatorModeActive) { layer.closeTooltip(); return; }
+                    e.target.setStyle({ fillOpacity: 0.55, weight: 2, color: '#3B82F6' });
                 },
                 mouseout: (e) => {
                     if (navigatorModeActive) return;
-                    const lyr = e.target;
-                    dGeoLayer.resetStyle(lyr);
+                    if (parentLayer) parentLayer.resetStyle(e.target);
+                    else e.target.setStyle(districtStyle(feature));
                 },
                 click: (e) => {
                     if (navigatorModeActive) {
-                        // 네비게이션 모드 작동 시, 지리 경계면 클릭 간섭을 완전 차단하고 길찾기 기능으로 이벤트를 깨끗하게 중계
-                        if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") {
-                            e.originalEvent.stopPropagation();
-                        }
+                        if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
                         L.DomEvent.stopPropagation(e);
                         handleNavigatorClick(e.latlng);
                         return;
                     }
-                    const properties = feature.properties;
-                    const code = properties.code;
-                    const name = properties.name;
-                    const districtData = getMunicipalityData(code, name);
-                    if (districtData.zone) {
-                        window.selectZone(districtData.zone.zone_id);
+                    if (!metroPrefix) collapseExpandedMetro();
+                    if (data.zone) {
+                        window.selectZone(data.zone.zone_id);
                     } else {
-                        // Dynamically update legend card for generic regions
-                        const cardRegionTitle = document.getElementById("legend-region-title");
-                        const cardRegionRecovery = document.getElementById("legend-region-recovery");
-                        const cardRegionStatus = document.getElementById("legend-region-status");
-                        const cardEnvRating = document.getElementById("legend-env-rating");
-                        const cardDiaryBody = document.getElementById("legend-diary-body");
-
-                        if (cardRegionTitle) cardRegionTitle.textContent = `${districtData.name} 복원 지구`;
-                        if (cardRegionRecovery) cardRegionRecovery.textContent = `${districtData.recovery_rate}%`;
-                        if (cardRegionStatus) {
-                            cardRegionStatus.textContent = districtData.status;
-                            cardRegionStatus.className = `status-pill ${districtData.status === "봉쇄" ? "pill-danger" : (districtData.status === "예약가능" ? "pill-warning" : "pill-success")}`;
-                        }
-                        if (cardEnvRating) cardEnvRating.textContent = districtData.recovery_rate >= 80 ? "안심 (A)" : (districtData.recovery_rate >= 55 ? "주의 (B)" : "위험 (C)");
-                        if (cardDiaryBody) {
-                            cardDiaryBody.innerHTML = `
-                                <strong>안내:</strong> 본 구역은 대한민국 기후대피정부 250개 정화 구역 중 하나입니다.<br/>
-                                <strong>복원 지표:</strong> 토양 PPM 및 수자원 복구 진척율 ${districtData.recovery_rate}% 수준에 도달하여 현재 <strong>[${districtData.status}]</strong> 등급으로 관제 분류되어 보존 관리 중입니다.
-                            `;
-                        }
+                        updateLegendCard(data);
                     }
                 }
             });
-        }
+        };
+    }
+
+    // 1) 일반 시/군
+    const plainCollection = { type: "FeatureCollection", features: plainFeatures };
+    const dGeoLayer = L.geoJSON(plainCollection, {
+        style: districtStyle,
+        onEachFeature: makeOnEachFeature(null, null)
     }).addTo(desktopMap);
     allMunicipalityLayers.push(dGeoLayer);
+
+    // 2) 광역시 — 처음엔 통합 뷰, 클릭하면 구/군 상세 뷰
+    Object.keys(metroGroups).forEach(prefix => {
+        const cityFeatures = metroGroups[prefix];
+        const cityName = METRO_PREFIX[prefix];
+        const cityCollection = { type: "FeatureCollection", features: cityFeatures };
+
+        // 평균 복구율/상태
+        const avgRecovery = Math.round(cityFeatures.reduce((sum, f) => {
+            return sum + getMunicipalityData(f.properties.code, f.properties.name).recovery_rate;
+        }, 0) / cityFeatures.length);
+        const avgStatus = avgRecovery >= 82 ? "귀향시작" : avgRecovery >= 55 ? "예약가능" : "봉쇄";
+        const avgPollution = Math.round((100 - avgRecovery) * 10) / 10;
+        const avgColor = getStatusColor(avgStatus);
+
+        const districtLayer = L.geoJSON(cityCollection, {
+            style: districtStyle,
+            onEachFeature: makeOnEachFeature(prefix, null)
+        });
+
+        const frameLayer = L.geoJSON(cityCollection, {
+            style: () => ({ fill: false, color: "#1e293b", weight: 3, opacity: 0.85, dashArray: "6 4" }),
+            interactive: false
+        });
+
+        const metroLayer = L.geoJSON(cityCollection, {
+            style: () => ({ color: avgColor, weight: 0, fillColor: avgColor, fillOpacity: 0.5 }),
+            onEachFeature: (feature, layer) => {
+                layer.bindTooltip(`<div class="map-tooltip"><strong>📍 ${cityName}</strong><br/>평균 복구율: <span class="badge-accent">${avgRecovery}%</span><br/>상태: ${avgStatus}<br/><span style="font-size:11px;color:#64748B;">클릭하면 구·군별 상세 보기</span></div>`, { sticky: true, opacity: 0.95 });
+                layer.on({
+                    mouseover: () => { if (!navigatorModeActive) layer.setStyle({ fillOpacity: 0.68 }); },
+                    mouseout: () => { if (!navigatorModeActive) layer.setStyle({ fillOpacity: 0.5 }); },
+                    click: (e) => {
+                        if (navigatorModeActive) {
+                            if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
+                            L.DomEvent.stopPropagation(e);
+                            handleNavigatorClick(e.latlng);
+                            return;
+                        }
+                        expandMetro(prefix);
+                    }
+                });
+            }
+        }).addTo(desktopMap);
+
+        metroState.entries[prefix] = { metroLayer, districtLayer, frameLayer, bounds: metroLayer.getBounds() };
+        allMunicipalityLayers.push(metroLayer);
+    });
 
     const mGeoLayer = L.geoJSON(cachedGeoData, {
         style: (feature) => {
