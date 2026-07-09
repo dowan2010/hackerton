@@ -698,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 3.5 HEADER SUBTABS BINDINGS (실시간 환경 / 예측 분석 / 정책 리소스) ---
-    const headerNavTabs = document.querySelectorAll(".header-tab-nav .nav-tab");
+    const headerNavTabs = document.querySelectorAll(".nav-tabs .nav-tab");
     const subtabContents = document.querySelectorAll(".subtab-content");
 
     headerNavTabs.forEach((tabBtn, index) => {
