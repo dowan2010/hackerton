@@ -724,7 +724,7 @@ body {
     align-items: center;
     padding: 0 20px;
     z-index: 10;
-    background-color: #FFFFFF;
+    background-color: var(--color-bg-app);
 }
 
 .region-selector {
@@ -3431,8 +3431,6 @@ body.dark-theme header,
 body.dark-theme .sidebar,
 body.dark-theme .sub-header,
 body.dark-theme .map-legend-card,
-body.dark-theme .map-top-bar,
-body.dark-theme .map-bottom-timeline,
 body.dark-theme .grid-detail-popup,
 body.dark-theme .dignity-card,
 body.dark-theme .policy-card,
@@ -3448,6 +3446,12 @@ body.dark-theme .mobile-nav-bar {
     background-color: #1E293B !important;
     color: #F1F5F9 !important;
     border-color: #334155 !important;
+}
+
+/* Custom dark mode override for map bottom timeline to add more white (make it slightly lighter slate) for premium visibility */
+body.dark-theme .map-bottom-timeline {
+    background-color: #334155 !important; /* Lighter Slate-700 instead of dark #1E293B */
+    border-top: 1px solid #475569 !important;
 }
 
 /* Secure badge high-contrast theme overrides */
@@ -3468,7 +3472,7 @@ body.dark-theme .btn-select-file:hover {
 
 /* Map bottom timeline slider track high-contrast visibility override for dark mode */
 body.dark-theme .timeline-progress-track {
-    background-color: #334155 !important;
+    background-color: #475569 !important; /* Lighter slate-600 */
 }
 
 /* Address search input styling in timeline tab in dark mode */
