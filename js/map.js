@@ -368,37 +368,38 @@ export function renderGeoJSONLayers() {
             style: () => ({ color: 'rgba(255,255,255,0.35)', weight: 0.6, fillColor: avgColor, fillOpacity: 0.5 }),
             onEachFeature: (feature, layer) => {
                 layer.bindTooltip(`<div class="map-tooltip"><strong>📍 ${cityName}</strong><br/>평균 복구율: <span class="badge-accent">${avgRecovery}%</span><br/>상태: ${avgStatus}</div>`, { sticky: true, opacity: 0.95 });
-                layer.on({
-                    mouseover: () => { if (!navigatorModeActive) layer.setStyle({ fillOpacity: 0.7 }); },
-                    mouseout: () => { if (!navigatorModeActive) layer.setStyle({ fillOpacity: 0.5 }); },
-                    click: (e) => {
-                        if (navigatorModeActive) {
-                            if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
-                            L.DomEvent.stopPropagation(e);
-                            handleNavigatorClick(e.latlng);
-                            return;
-                        }
-                        const fakeZoneId = `METRO-${prefix}`;
-                        if (window.zonesData && !window.zonesData.find(z => z.zone_id === fakeZoneId)) {
-                            window.zonesData.push({
-                                zone_id: fakeZoneId,
-                                zone_name: cityName,
-                                status: avgStatus,
-                                recovery_rate: avgRecovery,
-                                time_to_safe_years: avgRecovery >= 82 ? 0 : avgRecovery >= 55 ? 5 : 15,
-                                air_quality: avgRecovery,
-                                soil_contamination: 100 - avgRecovery,
-                                vegetation_ndvi: avgRecovery / 100,
-                                lat: e.latlng.lat,
-                                lng: e.latlng.lng,
-                                description: `${cityName} 광역시 전체 평균 복구율 ${avgRecovery}% 수준입니다.`
-                            });
-                        }
-                        window.selectZone(fakeZoneId);
-                    }
-                });
             }
         }).addTo(desktopMap);
+
+        metroLayer.on({
+            mouseover: () => { if (!navigatorModeActive) metroLayer.setStyle({ fillOpacity: 0.7 }); },
+            mouseout: () => { if (!navigatorModeActive) metroLayer.setStyle({ fillOpacity: 0.5 }); },
+            click: (e) => {
+                if (navigatorModeActive) {
+                    if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
+                    L.DomEvent.stopPropagation(e);
+                    handleNavigatorClick(e.latlng);
+                    return;
+                }
+                const fakeZoneId = `METRO-${prefix}`;
+                if (window.zonesData && !window.zonesData.find(z => z.zone_id === fakeZoneId)) {
+                    window.zonesData.push({
+                        zone_id: fakeZoneId,
+                        zone_name: cityName,
+                        status: avgStatus,
+                        recovery_rate: avgRecovery,
+                        time_to_safe_years: avgRecovery >= 82 ? 0 : avgRecovery >= 55 ? 5 : 15,
+                        air_quality: avgRecovery,
+                        soil_contamination: 100 - avgRecovery,
+                        vegetation_ndvi: avgRecovery / 100,
+                        lat: e.latlng.lat,
+                        lng: e.latlng.lng,
+                        description: `${cityName} 광역시 전체 평균 복구율 ${avgRecovery}% 수준입니다.`
+                    });
+                }
+                window.selectZone(fakeZoneId);
+            }
+        });
 
         allMunicipalityLayers.push(metroLayer);
     });
