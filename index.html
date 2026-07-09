@@ -271,6 +271,139 @@
                                 </div>
                             </div>
                         </div>
+                    </div> <!-- subtab-realtime END -->
+
+                    <!-- Subtab 2: 예측 분석 (50개년 AI 머신러닝 기후 예측 시뮬레이션 상세 리포트) -->
+                    <div class="subtab-content hidden" id="subtab-prediction">
+                        <div class="prediction-dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px;">
+                            
+                            <!-- Left Column: Regression Trends -->
+                            <div class="dignity-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px;">
+                                <h3 style="font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="line-chart" style="color: var(--color-primary); width: 22px; height: 22px;"></i> 50개년 자정 감쇄 회귀 예측
+                                </h3>
+                                <p style="font-size: 14px; color: var(--color-text-light); line-height: 1.6; margin-bottom: 20px;">
+                                    루트홈 기후 예측 AI는 2026년부터 2076년까지 2년 단위로 전체 구역의 안전도 및 환경 정화 지수를 동적 수학 모델링으로 추적합니다. 지수 감쇄 회귀 공식에 의해 오염도는 연간 평균 4.5%씩 자정 감소하며, 계절 미세 기후 요동 사인파(sin) 파동이 미세 가미됩니다.
+                                </p>
+                                
+                                <div class="prediction-formula-card" style="background: rgba(37,99,235,0.05); border: 1px solid rgba(37,99,235,0.15); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                                    <span style="font-size: 12px; font-weight: bold; color: var(--color-primary); text-transform: uppercase;">ML REGRESSION FORMULA</span>
+                                    <p style="font-family: 'Outfit', monospace; font-size: 16px; color: #fff; margin-top: 6px; font-weight: 600;">
+                                        Pollution(t) = Base * e^(-0.045 * t) + sin(0.4 * t) * 3.5 * e^(-0.02 * t)
+                                    </p>
+                                </div>
+
+                                <div class="prediction-guide-steps" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <div style="background: #ef444420; color: #ef4444; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">1</div>
+                                        <div>
+                                            <strong style="color: #fff; font-size: 14px;">1단계: 강력 통제 및 봉쇄 기한 (오염도 > 70%)</strong>
+                                            <p style="font-size: 12px; color: var(--color-text-light); margin-top: 2px;">환경 유해 물질 가용 임계 초과 상태로 무단 귀향 시 형사 처벌 및 특별 기후재해 방어 장벽 가동.</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <div style="background: #f9731620; color: #f97316; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">2</div>
+                                        <div>
+                                            <strong style="color: #fff; font-size: 14px;">2단계: 무인 드론 정화 및 안전 가속화 (오염도 40% ~ 70%)</strong>
+                                            <p style="font-size: 12px; color: var(--color-text-light); margin-top: 2px;">토양 자정 촉진액 수혈 및 드론 대정화 작전 착수. 부분 통제 경계령 하에 긴급 대기 자원 배치.</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <div style="background: #10b98120; color: #10b981; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">3</div>
+                                        <div>
+                                            <strong style="color: #fff; font-size: 14px;">3단계: 공정 가중치 귀향 순차 개방 (오염도 20% ~ 40%)</strong>
+                                            <p style="font-size: 12px; color: var(--color-text-light); margin-top: 2px;">우선순위 귀향 신청 수락 개시. 주민등록등본 및 의사 소견서 검증 완료된 고령층부터 순차 안착.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column: Live Analysis Details -->
+                            <div class="dignity-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                                <div>
+                                    <h3 style="font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                        <i data-lucide="cpu" style="color: #10b981; width: 22px; height: 22px;"></i> 선택된 구역 기후 예측 리포트
+                                    </h3>
+                                    <p style="font-size: 14px; color: var(--color-text-light); line-height: 1.6; margin-bottom: 24px;">
+                                        루트맵 인터랙티브 지도 하단의 연도 조작 슬라이더를 스와이프하면, 머신러닝 예측 데이터베이스와 동기화된 각 구역별 연도별 통제 상태 및 AI 예측 평점이 본 전광판과 지도 위에 카멜레온처럼 연동 변경됩니다.
+                                    </p>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center;">
+                                            <span style="font-size: 11px; color: var(--color-text-light); text-transform: uppercase;">기후 정화 예측율</span>
+                                            <div style="font-size: 32px; font-weight: 800; color: var(--color-primary); margin-top: 4px;" id="predict-cleanup-val">90.2%</div>
+                                        </div>
+                                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center;">
+                                            <span style="font-size: 11px; color: var(--color-text-light); text-transform: uppercase;">완전 자유귀향 시점</span>
+                                            <div style="font-size: 32px; font-weight: 800; color: #10b981; margin-top: 4px;" id="predict-target-year">2076년</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.15); border-radius: 12px; padding: 16px;">
+                                        <strong style="color: #10b981; font-size: 14px; display: flex; align-items: center; gap: 6px;"><span style="display:inline-block; width:8px; height:8px; background:#10b981; border-radius:50%;"></span> AI 기후 수렴 신뢰도 판정</strong>
+                                        <p style="font-size: 13px; color: var(--color-text-light); margin-top: 6px; line-height: 1.5;">
+                                            대구광역시 안전사고/사회재난 유형별 통계와 강원도 국경 한계선의 자연 회복 수치 6만여 건의 가산 데이터를 기계학습 검증하여, 오차범위 ±1.84% 내의 초정밀 실효 예측 가치를 확정 수립했습니다.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                                    <button class="btn-popup-action" style="flex: 1;" onclick="alert('전 구역 50개년 시계열 원시 데이터셋(.csv) 다운로드가 완료되었습니다.')"><i data-lucide="download"></i> 예측 Raw 데이터 다운로드</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subtab 3: 정책 리소스 (기후 실향민 복구 법령 및 정부 보상 자료) -->
+                    <div class="subtab-content hidden" id="subtab-policy" style="padding: 24px;">
+                        <div style="margin-bottom: 24px;">
+                            <h2 style="font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px;">⚖️ 기후 난민 재안착 특별법 및 행정 자원 허브</h2>
+                            <p style="font-size: 14px; color: var(--color-text-light);">임시 거주 지구 실향민들의 신속한 고향 귀환과 재정착을 돕기 위해 국토교통부, 환경부, 안전행정안전부가 심의 수립한 공식 가이드라인 리소스입니다.</p>
+                        </div>
+
+                        <div class="policy-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                            <!-- Card 1 -->
+                            <div class="dignity-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; height: 280px;">
+                                <div>
+                                    <div style="background: rgba(37,99,235,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                        <i data-lucide="home" style="color: var(--color-primary); width: 22px; height: 22px;"></i>
+                                    </div>
+                                    <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px;">정착 특별 장기 저리 대출</h4>
+                                    <p style="font-size: 12px; color: var(--color-text-light); line-height: 1.6;">
+                                        귀향 자격 권한이 검증 완료된 세대에 대해 국토교통부 주택 보증 기금을 통해 최대 1.5억원의 장기 저리(연리 1.2% 고정) 주택 리모델링 및 토지 정화 촉진 융자를 즉시 무매칭 지원합니다.
+                                    </p>
+                                </div>
+                                <span style="font-size: 11px; font-weight: bold; color: var(--color-primary); text-transform: uppercase; cursor: pointer;" onclick="alert('신청 기한: 2026년 12월 31일까지 상시 접수 가능')">상세 신청 안내 &rarr;</span>
+                            </div>
+
+                            <!-- Card 2 -->
+                            <div class="dignity-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; height: 280px;">
+                                <div>
+                                    <div style="background: rgba(16,185,129,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                        <i data-lucide="shield-check" style="color: #10b981; width: 22px; height: 22px;"></i>
+                                    </div>
+                                    <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px;">고향 정착 우선 가중 청약제</h4>
+                                    <p style="font-size: 12px; color: var(--color-text-light); line-height: 1.6;">
+                                        나이(65세 이상 우대), 피해 기간(거주 5년 이상 우대) 등 '존엄성 매트릭스' AI 검증 점수가 70점 이상인 실향민 세대에 대하여 국가 특별 귀향 공공 아파트 청약 가점 12점을 무상 보장 및 수여합니다.
+                                    </p>
+                                </div>
+                                <span style="font-size: 11px; font-weight: bold; color: #10b981; text-transform: uppercase; cursor: pointer;" onclick="alert('환경부 고향의 봄 공공 주택 특별법 제12조 근거 규정')">특별 조항 법령 보기 &rarr;</span>
+                            </div>
+
+                            <!-- Card 3 -->
+                            <div class="dignity-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; height: 280px;">
+                                <div>
+                                    <div style="background: rgba(234,179,8,0.1); border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                        <i data-lucide="droplet" style="color: #eab308; width: 22px; height: 22px;"></i>
+                                    </div>
+                                    <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px;">자원 순환 드론 일자리 고용제</h4>
+                                    <p style="font-size: 12px; color: var(--color-text-light); line-height: 1.6;">
+                                        정화가 한창인 부분 통제 구역에 귀향하여 정화 숲 식재 식물 식생 관리 및 공중 대기질 모니터링 드론 운용 인력으로 참여하는 세대에 한하여 최대 월 320만원의 특수 일자리 고용 보조금을 수여합니다.
+                                    </p>
+                                </div>
+                                <span style="font-size: 11px; font-weight: bold; color: #eab308; text-transform: uppercase; cursor: pointer;" onclick="alert('인근 기술 교육원에서 드론 무료 라이센스 반 상시 연계 개설 중')">드론 기술 교육 신청 &rarr;</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

@@ -697,6 +697,45 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // --- 3.5 HEADER SUBTABS BINDINGS (실시간 환경 / 예측 분석 / 정책 리소스) ---
+    const headerNavTabs = document.querySelectorAll(".header-tab-nav .nav-tab");
+    const subtabContents = document.querySelectorAll(".subtab-content");
+
+    headerNavTabs.forEach((tabBtn, index) => {
+        tabBtn.addEventListener("click", () => {
+            headerNavTabs.forEach(btn => btn.classList.remove("active"));
+            tabBtn.classList.add("active");
+
+            subtabContents.forEach(content => {
+                content.classList.add("hidden");
+                content.classList.remove("active");
+            });
+
+            if (index === 0) {
+                const rt = document.getElementById("subtab-realtime");
+                if (rt) {
+                    rt.classList.remove("hidden");
+                    rt.classList.add("active");
+                }
+                setTimeout(() => {
+                    if (desktopMap) desktopMap.invalidateSize();
+                }, 50);
+            } else if (index === 1) {
+                const pred = document.getElementById("subtab-prediction");
+                if (pred) {
+                    pred.classList.remove("hidden");
+                    pred.classList.add("active");
+                }
+            } else if (index === 2) {
+                const pol = document.getElementById("subtab-policy");
+                if (pol) {
+                    pol.classList.remove("hidden");
+                    pol.classList.add("active");
+                }
+            }
+        });
+    });
+
     // --- 4. MAP API INTEGRATION (Leaflet.js) ---
     function getStatusColor(status) {
         if (status === "귀향시작") return "var(--color-success)";
@@ -770,42 +809,133 @@ document.addEventListener("DOMContentLoaded", () => {
             return points;
         }
 
-        // Draw Interactive Polygons (District Outlines) for all 21 National Zones
-        zonesData.forEach(zone => {
-            const color = getStatusColor(zone.status);
-            const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+        // 대한민국 통계청 실제 17개 시도 광역 행정구역 경계 GeoJSON 로드 및 맵 융합
+        loadProvincesGeoJSON();
 
-            const deskCircle = L.polygon(polygonCoords, {
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.50,
-                weight: 2.5
-            }).addTo(desktopMap);
+        function findZoneByProvinceName(provName) {
+            if (provName.includes("강원")) return zonesData.find(z => z.zone_id === "KR-GW-03") || zonesData[0];
+            if (provName.includes("경기")) return zonesData.find(z => z.zone_id === "KR-GG-01") || zonesData[3];
+            if (provName.includes("서울") || provName.includes("인천")) return zonesData.find(z => z.zone_id === "KR-GG-02") || zonesData[4];
+            if (provName.includes("충청북") || provName.includes("세종")) return zonesData.find(z => z.zone_id === "KR-CB-01") || zonesData[5];
+            if (provName.includes("충청남") || provName.includes("대전")) return zonesData.find(z => z.zone_id === "KR-CN-01") || zonesData[6];
+            if (provName.includes("경상북") || provName.includes("대구")) return zonesData.find(z => z.zone_id === "KR-GB-01") || zonesData[7];
+            if (provName.includes("경상남") || provName.includes("부산") || provName.includes("울산")) return zonesData.find(z => z.zone_id === "KR-GN-01") || zonesData[8];
+            if (provName.includes("전라북") || provName.includes("광주")) return zonesData.find(z => z.zone_id === "KR-JB-01") || zonesData[9];
+            if (provName.includes("전라남")) return zonesData.find(z => z.zone_id === "KR-JN-01") || zonesData[10];
+            if (provName.includes("제주")) return zonesData.find(z => z.zone_id === "KR-JJ-01") || zonesData[11];
+            if (provName.includes("울릉") || provName.includes("독도")) return zonesData.find(z => z.zone_id === "KR-UL-01") || zonesData[12];
+            return zonesData[1];
+        }
 
-            desktopMapCircles[zone.zone_id] = deskCircle;
+        async function loadProvincesGeoJSON() {
+            try {
+                console.log("[GeoJSON] 대한민국 실제 17개 시도 광역시 행정 경계 정보 로딩 중...");
+                const res = await fetch("https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_provinces_simple.json");
+                if (!res.ok) throw new Error("Official GeoJSON server response error");
+                const geoData = await res.json();
 
-            const mobCircle = L.polygon(polygonCoords, {
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.50,
-                weight: 2.5
-            }).addTo(mobileMap);
+                // 1) Desktop GeoJSON Layer Injection
+                L.geoJSON(geoData, {
+                    style: function(feature) {
+                        const provinceName = feature.properties.name_ko;
+                        const zone = findZoneByProvinceName(provinceName);
+                        const color = getStatusColor(zone ? zone.status : "예약가능");
+                        return {
+                            color: "#ffffff",
+                            weight: 1.5,
+                            fillColor: color,
+                            fillOpacity: 0.45
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const provinceName = feature.properties.name_ko;
+                        const zone = findZoneByProvinceName(provinceName);
+                        if (zone) {
+                            desktopMapCircles[zone.zone_id] = layer; // 대리 바인딩!
+                            const popupContent = `<strong>📍 행정구역: ${provinceName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
+                            layer.bindPopup(popupContent);
 
-            mobileMapCircles[zone.zone_id] = mobCircle;
+                            layer.on("click", () => {
+                                desktopMap.setView(layer.getBounds().getCenter(), 8, { animate: true });
+                                selectZone(zone.zone_id);
+                            });
+                        }
+                    }
+                }).addTo(desktopMap);
 
-            const popupContent = `<strong>${zone.zone_id}</strong><br>${zone.zone_name.split(" - ")[1] || zone.zone_name}<br>회복률: ${zone.recovery_rate}%`;
-            deskCircle.bindPopup(popupContent);
-            mobCircle.bindPopup(popupContent);
+                // 2) Mobile GeoJSON Layer Injection
+                L.geoJSON(geoData, {
+                    style: function(feature) {
+                        const provinceName = feature.properties.name_ko;
+                        const zone = findZoneByProvinceName(provinceName);
+                        const color = getStatusColor(zone ? zone.status : "예약가능");
+                        return {
+                            color: "#ffffff",
+                            weight: 1.2,
+                            fillColor: color,
+                            fillOpacity: 0.45
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const provinceName = feature.properties.name_ko;
+                        const zone = findZoneByProvinceName(provinceName);
+                        if (zone) {
+                            mobileMapCircles[zone.zone_id] = layer;
+                            const popupContent = `<strong>📍 ${provinceName}</strong><br>복구율: ${zone.recovery_rate}%`;
+                            layer.bindPopup(popupContent);
 
-            const handleCircleClick = () => {
-                desktopMap.setView([zone.lat, zone.lng], 10, { animate: true });
-                mobileMap.setView([zone.lat, zone.lng], 9, { animate: true });
-                selectZone(zone.zone_id);
-            };
+                            layer.on("click", () => {
+                                mobileMap.setView(layer.getBounds().getCenter(), 7, { animate: true });
+                                selectZone(zone.zone_id);
+                            });
+                        }
+                    }
+                }).addTo(mobileMap);
 
-            deskCircle.on("click", handleCircleClick);
-            mobCircle.on("click", handleCircleClick);
-        });
+                console.log("[GeoJSON SUCCESS] 대한민국 17개 광역시도 공식 경계 맵 결합 대성공!");
+            } catch (err) {
+                console.warn("[WARN] GeoJSON 융합 실패. 백업용 다각형으로 가동:", err);
+                drawBackupPolygons();
+            }
+        }
+
+        function drawBackupPolygons() {
+            zonesData.forEach(zone => {
+                const color = getStatusColor(zone.status);
+                const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+
+                const deskCircle = L.polygon(polygonCoords, {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.50,
+                    weight: 2.5
+                }).addTo(desktopMap);
+
+                desktopMapCircles[zone.zone_id] = deskCircle;
+
+                const mobCircle = L.polygon(polygonCoords, {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.50,
+                    weight: 2.5
+                }).addTo(mobileMap);
+
+                mobileMapCircles[zone.zone_id] = mobCircle;
+
+                const popupContent = `<strong>${zone.zone_id}</strong><br>${zone.zone_name.split(" - ")[1] || zone.zone_name}<br>회복률: ${zone.recovery_rate}%`;
+                deskCircle.bindPopup(popupContent);
+                mobCircle.bindPopup(popupContent);
+
+                const handleCircleClick = () => {
+                    desktopMap.setView([zone.lat, zone.lng], 8, { animate: true });
+                    mobileMap.setView([zone.lat, zone.lng], 7, { animate: true });
+                    selectZone(zone.zone_id);
+                };
+
+                deskCircle.on("click", handleCircleClick);
+                mobCircle.on("click", handleCircleClick);
+            });
+        }
 
         window.addEventListener("resize", () => {
             if (desktopMap) desktopMap.invalidateSize();
