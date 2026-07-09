@@ -172,6 +172,410 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderGraph(graphContainer);
         renderGraph(mobileContainer);
+
+        // --- DYNAMIC SPRING TIMELINE CARDS RENDERING ---
+        const dFlow = document.getElementById("desktop-timeline-flow");
+        const mFlow = document.getElementById("mobile-timeline-flow");
+
+        if (dFlow && mFlow) {
+            const cityName = zone.zone_name.split(" - ")[1] || zone.zone_name;
+            let cardsData;
+            let bannerHTML = "";
+
+            if (zone.isUnsupported) {
+                cardsData = getUnsupportedCardsData(cityName);
+                bannerHTML = `
+                    <div class="unsupported-banner" style="display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.18); border-radius: 16px; backdrop-filter: blur(12px); margin-bottom: 24px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);">
+                        <i data-lucide="alert-triangle" style="width: 28px; height: 28px; color: #ef4444; flex-shrink: 0;"></i>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="font-size: 14px; font-weight: 800; color: #ef4444; font-family: 'Outfit', sans-serif;">⚠️ 아직 지원하지 않는 도시입니다</span>
+                            <span style="font-size: 11.5px; color: #4b5563; font-weight: 500; line-height: 1.5;">현재 <strong>${cityName}</strong> 구역은 기후 우선 복귀 지원 범위에서 제외되어 있습니다. 7대 광역시 우선 프로젝트 정책 수립에 따라 순차적으로 활성화될 예정입니다.</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                cardsData = getTimelineCardsData(zoneId, zone.zone_name);
+            }
+
+            let desktopHTML = bannerHTML;
+            cardsData.cards.forEach(card => {
+                desktopHTML += generateDesktopCardHTML(card);
+            });
+            dFlow.innerHTML = desktopHTML;
+
+            let mobileHTML = bannerHTML;
+            cardsData.cards.forEach(card => {
+                mobileHTML += generateMobileCardHTML(card);
+            });
+            mFlow.innerHTML = mobileHTML;
+
+            if (typeof lucide !== "undefined") {
+                lucide.createIcons();
+            }
+        }
+    }
+
+    function getTimelineCardsData(zoneId, zoneName) {
+        const cleanName = zoneName.replace("과거도시 - ", "").replace("그레이시티 - ", "").split(" - ")[1] || zoneName;
+        const baseName = cleanName.split(" ")[0];
+
+        const cityData = {
+            "KR-SL-01": {
+                cards: [
+                    {
+                        year: 2036, date: "2036년 04월 12일", badge: "PREDICTED 2036", type: "future", dir: "row",
+                        title: "서울 에코돔 스마트 케어 정원 확장 완료",
+                        quote: "서울 하늘 높이 솟은 스마트 타워들이 산소를 공급하며 마침내 에코 장벽을 허물고 전 지구적 대기 정화를 달성했습니다.",
+                        detail: "지속 가능한 삼림 정화 및 AI 기반 탄소 흡착 시스템의 완결로 서울 분지 일대의 대기 오염 정화율이 마침내 기준치를 충족하여 전면 귀향 정착이 선포되었습니다.",
+                        img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600",
+                        imgOverlay: "AI 시뮬레이션 결과<br>스마트 케어 정원",
+                        m1Lbl: "독성 수치 (Toxicity)", m1Val: "0.02 ppm", m1Icon: "trending-down",
+                        m2Lbl: "종 다양성 (Diversity)", m2Val: "98 %", m2Icon: "trending-up"
+                    },
+                    {
+                        year: 2032, date: "2032년 06월 15일", badge: "PREDICTED 2032", type: "future", dir: "reverse",
+                        title: "스마트 그리드 도시 주거망 완결",
+                        quote: "지속 가능한 정착을 위해 건설된 친환경 에너지 주택단지에 실시간 미세기후 방어 실드가 전격 통합 가동되어, 외부 온도 편차를 완전 제어합니다.",
+                        detail: "대기 질이 상시 안전 레벨인 S등급을 기록하며, 전력과 급수를 92% 이상 친환경 에너지로 자급하는 최첨단 스마트 주거촌이 본격 문을 열었습니다.",
+                        img: "https://images.unsplash.com/photo-1449034446853-66c86144b0ad?auto=format&fit=crop&q=80&w=600",
+                        imgOverlay: "기후 정착 인프라 완결",
+                        m1Lbl: "정착 안정 등급", m1Val: "S등급", m1Icon: "shield",
+                        m2Lbl: "친환경 자급률", m2Val: "92 %", m2Icon: "zap"
+                    },
+                    {
+                        year: 2028, date: "2028년 10월 05일", badge: "PREDICTED 2028", type: "mid", dir: "row",
+                        title: "한강 유역 생태천 천연 복원 완료",
+                        quote: "어릴 적 발을 담그던 개울가와 한강 지류에 다시 은어와 생태 수종들이 가득 돌아왔습니다. AI 정화 필터 설치 3년 만에 하천의 자정 능력이 복원되었습니다.",
+                        detail: "수중 용존산소량이 역사상 최고치로 정상 복구되었으며 수변의 흙을 미생물로 자생시켜 영산 하천 수변 생태가 완전히 깨끗해졌습니다.",
+                        img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=600",
+                        imgOverlay: "수변 생태 복원 완료",
+                        m1Lbl: "수질 등급", m1Val: "Grade 1", m1Icon: "droplet",
+                        m2Lbl: "회복 어종", m2Val: "12종", m2Icon: "paw-print"
+                    },
+                    {
+                        year: 2026, date: "2026년 03월 20일", badge: "CURRENT 2026", type: "current",
+                        title: "[올해] 스마트 기후 환경 측정 모니터링 망 가동",
+                        detail: "스마트 센서 네트워크가 서울 핵심 상업지 전역에 배치되었습니다. 실시간 수집되는 토양 및 대기 데이터는 AI 모델로 전송되어 최적의 복구 경로를 설계하는 데 사용됩니다.",
+                        progress: "분석 및 복구 시뮬레이션 100% 완료"
+                    },
+                    {
+                        year: 2024, date: "2024년 06월 15일", badge: "COMPLETED 2024", type: "past",
+                        title: "무인 드론 기후 제어 및 정화 촉진제 투하",
+                        detail: "무인 자동 정화 드론 편대가 서울 핵심 지구 상공에 대규모 투입되어 300헥타르 범위 내의 토양 정화 촉진 물질 및 고속 흡착 유도 분말 투하 작전을 무사히 완수했습니다."
+                    },
+                    {
+                        year: 2020, date: "2020년 08월 30일", badge: "BUDGET PASSED 2020", type: "past",
+                        title: "미세기후 자정 유도 및 생태 복원 특별 국가 예산 가결",
+                        detail: "국토안전위원회 및 환경행정부 공동 발의안에 따라 총 2.4조원 규모의 미세기후 촉진 특별 예산이 가결되었으며, 거점 격리 구역에 대한 친환경 대정화 인프라 보조가 시작되었습니다."
+                    },
+                    {
+                        year: 2016, date: "2016년 03월 10일", badge: "RESEARCH START 2016", type: "past",
+                        title: "기후 대정화 및 우선 귀향 원천 기술 연구 착수",
+                        detail: "초미세 분진 차단용 초전도 자기장 필터 설계 및 탄소 고정용 나노 미생물 배양에 관한 국가 연구개발 과제가 개시되어, 미래 기후 정착의 원천적 기술 토대를 마련했습니다."
+                    }
+                ]
+            },
+            "KR-DG-01": {
+                cards: [
+                    {
+                        year: 2036, date: "2036년 04월 12일", badge: "PREDICTED 2036", type: "future", dir: "row",
+                        title: "대구 분지 친환경 숲속 에코 타운 개소",
+                        quote: "대구 서구 섬유 난민촌의 잿빛 공장지대가 사라진 자리에, 모든 귀향인 가정의 쾌적한 호흡을 보장하는 대규모 친환경 숲속 주거 타운이 개소했습니다.",
+                        detail: "지속 가능한 산림 경영과 AI 기반 토양 정화 기술의 완결로, 분지형 열섬 현상과 대기 정체를 완전히 종식시켰으며, 기후 실향민들의 자유로운 귀향과 정착이 법적으로 온전히 보장됩니다.",
+                        img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=600",
+                        imgOverlay: "AI 시뮬레이션 결과<br>대구 에코 타운",
+                        m1Lbl: "독성 수치 (Toxicity)", m1Val: "0.02 ppm", m1Icon: "trending-down",
+                        m2Lbl: "종 다양성 (Diversity)", m2Val: "98 %", m2Icon: "trending-up"
+                    },
+                    {
+                        year: 2032, date: "2032년 06월 15일", badge: "PREDICTED 2032", type: "future", dir: "reverse",
+                        title: "대구 순환형 친환경 자정 인프라 완결",
+                        quote: "지속 가능한 정착을 위해 건설된 친환경 에너지 주택단지에 실시간 미세기후 방어 실드가 전격 통합 가동되어, 외부 온도 편차를 완전 제어합니다.",
+                        detail: "분지 내부의 극심한 대기 정체 현상을 방어하기 위해 설계된 기류 환기용 수직 바람숲과 그린 주거 단지가 완벽히 준공되어 가동을 선포했습니다.",
+                        img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=600",
+                        imgOverlay: "기후 정착 인프라 완결",
+                        m1Lbl: "정착 안정 등급", m1Val: "S등급", m1Icon: "shield",
+                        m2Lbl: "친환경 자급률", m2Val: "92 %", m2Icon: "zap"
+                    },
+                    {
+                        year: 2028, date: "2028년 10월 05일", badge: "PREDICTED 2028", type: "mid", dir: "row",
+                        title: "금호강 유역 생태 복원 및 야생 조류 귀환",
+                        quote: "어릴 적 발을 담그던 금호강 개울가에 다시 백로와 야생 수종들이 돌아왔습니다. AI 정화 필터가 설치된 지 3년 만에 하천의 자정 능력이 복원되었습니다.",
+                        detail: "금호강 수질 개선이 90% 이상 도달하여 물속 오염 물질이 정화되었으며, 수생 생물의 다양성이 다시 자생할 수 있는 친환경 생태가 열렸습니다.",
+                        img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=600",
+                        imgOverlay: "금호강 생태 복원",
+                        m1Lbl: "수질 등급", m1Val: "Grade 1", m1Icon: "droplet",
+                        m2Lbl: "회복 어종", m2Val: "12종", m2Icon: "paw-print"
+                    },
+                    {
+                        year: 2026, date: "2026년 03월 20일", badge: "CURRENT 2026", type: "current",
+                        title: "[올해] 스마트 기후 환경 측정 모니터링 망 가동",
+                        detail: "대구 서구 섬유 공단 배후 거주지의 대기 유해 분진 노출도를 실시간 감지하여 경보를 울릴 스마트 센서 포스트를 연동하여 기후 환경 측정을 개시했습니다.",
+                        progress: "분석 및 복구 시뮬레이션 100% 완료"
+                    },
+                    {
+                        year: 2024, date: "2024년 06월 15일", badge: "COMPLETED 2024", type: "past",
+                        title: "무인 드론 기후 제어 및 정화 촉진제 투하",
+                        detail: "무인 자동 정화 드론 편대가 대구 공단 상공에 대규모 투입되어 300헥타르 범위 내의 토양 정화 촉진 물질 및 고속 흡착 유도 분말 투하 작전을 무사히 완수했습니다."
+                    },
+                    {
+                        year: 2020, date: "2020년 08월 30일", badge: "BUDGET PASSED 2020", type: "past",
+                        title: "미세기후 자정 유도 및 생태 복원 특별 국가 예산 가결",
+                        detail: "국토안전위원회 및 환경행정부 공동 발의안에 따라 총 2.4조원 규모의 미세기후 촉진 특별 예산이 가결되었으며, 거점 격리 구역에 대한 친환경 대정화 인프라 보조가 시작되었습니다."
+                    },
+                    {
+                        year: 2016, date: "2016년 03월 10일", badge: "RESEARCH START 2016", type: "past",
+                        title: "기후 대정화 및 우선 귀향 원천 기술 연구 착수",
+                        detail: "초미세 분진 차단용 초전도 자기장 필터 설계 및 탄소 고정용 나노 미생물 배양에 관한 국가 연구개발 과제가 개시되어, 미래 기후 정착의 원천적 기술 토대를 마련했습니다."
+                    }
+                ]
+            }
+        };
+
+        if (!cityData[zoneId]) {
+            const genericCards = [
+                {
+                    year: 2036, date: "2036년 04월 12일", badge: "PREDICTED 2036", type: "future", dir: "row",
+                    title: `${baseName} 광역시 에코 정착 타운 최종 완공`,
+                    quote: `잿빛 회색 매연과 독성이 가득했던 ${baseName}의 노후 공단 배후지가 사라지고 쾌적한 숲속 주거 정착지가 완전히 들어섰습니다.`,
+                    detail: `지속 가능한 기후 제어망 통합과 AI 토양 복원 대책의 대성공으로 대기 오염 정화율이 마침내 기준치를 충족하여 전면 귀향과 안심 정착이 온전히 허용됩니다.`,
+                    img: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=600",
+                    imgOverlay: `AI 시뮬레이션 결과<br>${baseName} 에코 타운`,
+                    m1Lbl: "독성 수치 (Toxicity)", m1Val: "0.02 ppm", m1Icon: "trending-down",
+                    m2Lbl: "종 다양성 (Diversity)", m2Val: "98 %", m2Icon: "trending-up"
+                },
+                {
+                    year: 2032, date: "2032년 06월 15일", badge: "PREDICTED 2032", type: "future", dir: "reverse",
+                    title: `${baseName} 대기 및 수변 순환 자립 인프라 완결`,
+                    quote: "지속 가능한 정착을 위해 건설된 친환경 에너지 주택단지에 실시간 미세기후 방어 실드가 전격 통합 가동되어, 외부 온도 편차를 완전 제어합니다.",
+                    detail: `기존 그레이존 장벽 전반에 부착된 2세대 탄소 차단 에어 쉴드가 본격 가동되어, 정착민들의 호흡기 건강을 영구적으로 등급 보장하기 시작했습니다.`,
+                    img: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=600",
+                    imgOverlay: "기후 정착 인프라 완결",
+                    m1Lbl: "정착 안정 등급", m1Val: "S등급", m1Icon: "shield",
+                    m2Lbl: "친환경 자급률", m2Val: "92 %", m2Icon: "zap"
+                },
+                {
+                    year: 2028, date: "2028년 10월 05일", badge: "PREDICTED 2028", type: "mid", dir: "row",
+                    title: `${baseName} 인접 하천 수질 개선 및 생태 천 자립 완료`,
+                    quote: `어릴 적 발을 담그던 ${baseName}의 개울가와 유역에 수질 개선이 90% 이상 도달하여 물속 오염 물질이 정화되었습니다.`,
+                    detail: `상류의 잔류 오염 여과 작업이 완료되어 수질 지수 1등급을 영구 유지하기 시작했으며 수달과 피라미들이 떼 지어 노니는 생태를 이룹니다.`,
+                    img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=600",
+                    imgOverlay: `${baseName} 하천 복원 완료`,
+                    m1Lbl: "수질 등급", m1Val: "Grade 1", m1Icon: "droplet",
+                    m2Lbl: "회복 어종", m2Val: "12종", m2Icon: "paw-print"
+                },
+                {
+                    year: 2026, date: "2026년 03월 20일", badge: "CURRENT 2026", type: "current",
+                    title: `[올해] 스마트 기후 환경 측정 모니터링 망 가동`,
+                    detail: `스마트 센서 네트워크가 ${baseName} 전역의 대기 유해 분진 노출도를 실시간 감지하여 경보를 울릴 스마트 센서 포스트를 연동하여 기후 환경 측정을 개시했습니다.`,
+                    progress: "분석 및 복구 시뮬레이션 100% 완료"
+                },
+                {
+                    year: 2024, date: "2024년 06월 15일", badge: "COMPLETED 2024", type: "past",
+                    title: "무인 드론 기후 제어 및 정화 촉진제 투하",
+                    detail: `무인 자동 정화 드론 편대가 ${baseName} 공단 상공에 대규모 투입되어 300헥타르 범위 내의 토양 정화 촉진 물질 및 고속 흡착 유도 분말 투하 작전을 무사히 완수했습니다.`
+                },
+                {
+                    year: 2020, date: "2020년 08월 30일", badge: "BUDGET PASSED 2020", type: "past",
+                    title: "미세기후 자정 유도 및 생태 복원 특별 국가 예산 가결",
+                    detail: "국토안전위원회 및 환경행정부 공동 발의안에 따라 총 2.4조원 규모의 미세기후 촉진 특별 예산이 가결되었으며, 거점 격리 구역에 대한 친환경 대정화 인프라 보조가 시작되었습니다."
+                },
+                {
+                    year: 2016, date: "2016년 03월 10일", badge: "RESEARCH START 2016", type: "past",
+                    title: "기후 대정화 및 우선 귀향 원천 기술 연구 착수",
+                    detail: "초미세 분진 차단용 초전도 자기장 필터 설계 및 탄소 고정용 나노 미생물 배양에 관한 국가 연구개발 과제가 개시되어, 미래 기후 정착의 원천적 기술 토대를 마련했습니다."
+                }
+            ];
+            return { cards: genericCards };
+        }
+
+        return cityData[zoneId];
+    }
+
+    function getUnsupportedCardsData(cityName) {
+        const cards = [];
+        const years = [2036, 2032, 2028, 2026, 2024, 2020, 2016];
+        
+        years.forEach((yr, idx) => {
+            if (yr === 2026) {
+                cards.push({
+                    year: yr, date: `${yr}년 03월 20일`, badge: "UNSUPPORTED ZONE", type: "current",
+                    title: `[경보] ${cityName} 기후 정화 수치 수집 대기 중`,
+                    detail: `${cityName} 지역은 현재 루트홈 기후 복원 우선 지원 범위에서 제외된 상태입니다. 실시간 정밀 기후 모니터링 센서 포스트가 설치되지 않아 실시간 대기 및 토양 데이터 분석이 제한되어 있습니다.`,
+                    progress: "기후 복구 지원 대상 준비 중"
+                });
+            } else if (yr > 2026) {
+                cards.push({
+                    year: yr, date: `${yr}년 --월 --일`, badge: "LOCKED FUTURE", type: "future", dir: idx % 2 === 0 ? "row" : "reverse",
+                    title: `${cityName} 기후 복원 로드맵 대기`,
+                    quote: `${cityName} 구역은 7대 광역시 우선 순위 정착 시뮬레이터 범위 외 지역으로 기후 모델링 대기 중입니다.`,
+                    detail: `정부 및 AI 환경 제어 연산 노드의 우선 귀향 승인을 기다리고 있습니다. 숲 조림 센서 및 탄소 에어 필터가 가동되지 않아 복원 타임라인 결과 생산이 일시 보류 상태입니다.`,
+                    img: "https://images.unsplash.com/photo-1509023464722-18d996393ca8?auto=format&fit=crop&q=80&w=600",
+                    imgOverlay: "기후 모니터링 잠금",
+                    m1Lbl: "기후 수치", m1Val: "대기 중", m1Icon: "lock",
+                    m2Lbl: "생태 자립", m2Val: "대기 중", m2Icon: "lock"
+                });
+            } else {
+                cards.push({
+                    year: yr, date: `${yr}년 --월 --일`, badge: "LOCKED PAST", type: "past",
+                    title: `${cityName} 과거 미세기후 자료 비활성화`,
+                    detail: `본 지역은 기후 복구 지원 대상 도시가 아니므로 1차 국가 예산 및 정화 드론 촉진제 투하 이력 등 과거 정화 시뮬레이션 원격 데이터 조회가 지원되지 않습니다.`
+                });
+            }
+        });
+        return { cards };
+    }
+
+    function generateDesktopCardHTML(card) {
+        if (card.type === "current") {
+            return `
+                <div class="timeline-card-wrapper start" id="desktop-timeline-card-2026">
+                    <div class="timeline-marker"><div class="marker-circle" style="background-color: var(--color-primary); width:14px; height:14px; left:-2px; top:-2px;"></div></div>
+                    <div class="timeline-feed-card single-column" style="border: 2px solid var(--color-primary-light); background: rgba(37, 99, 235, 0.04); ${card.badge === 'UNSUPPORTED ZONE' ? 'filter: grayscale(80%); opacity: 0.85;' : ''}">
+                        <div class="card-badge-row">
+                            <span class="feed-date text-slate font-bold" style="color: var(--color-primary);">${card.date}</span>
+                            <span class="badge-status-grey" style="background: var(--color-primary); color: white; border-radius: 4px;">${card.badge}</span>
+                        </div>
+                        <h4 class="feed-title" style="color: var(--color-primary); font-weight: 800;">${card.title}</h4>
+                        <p class="feed-content-detail" style="color: #475569; font-size: 13.5px; line-height: 1.6;">
+                            ${card.detail}
+                        </p>
+                        <div class="progress-bar-timeline">
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 100%; background-color: var(--color-primary);"></div>
+                            </div>
+                            <div class="progress-percent-lbl" style="color: var(--color-primary);">${card.progress}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (card.type === "future" || card.type === "mid") {
+            const rowClass = card.dir === "reverse" ? "flex-row-reverse" : "flex-row";
+            const isLocked = card.badge === "LOCKED FUTURE";
+            return `
+                <div class="timeline-card-wrapper ${card.type === 'mid' ? 'mid-term' : 'future'}" style="${isLocked ? 'filter: grayscale(80%); opacity: 0.8;' : ''}">
+                    <div class="timeline-marker"><div class="marker-circle"></div></div>
+                    <div class="timeline-feed-card ${rowClass}">
+                        <div class="card-img-side">
+                            <img src="${card.img}" alt="${card.title}">
+                            <div class="img-overlay-text">${card.imgOverlay}</div>
+                        </div>
+                        <div class="card-text-side">
+                            <div class="card-badge-row">
+                                <span class="feed-date font-blue font-bold">${card.date}</span>
+                                <span class="badge-status-blue">${card.badge}</span>
+                            </div>
+                            <h4 class="feed-title">${card.title}</h4>
+                            <p class="feed-content">"${card.quote}"</p>
+                            <p class="feed-content-detail">${card.detail}</p>
+                            <div class="feed-metrics-row">
+                                <div class="feed-metric">
+                                    <span class="m-lbl">${card.m1Lbl}</span>
+                                    <span class="m-val text-green font-bold">${card.m1Val} <i data-lucide="${card.m1Icon}"></i></span>
+                                </div>
+                                <div class="feed-metric">
+                                    <span class="m-lbl">${card.m2Lbl}</span>
+                                    <span class="m-val text-green font-bold">${card.m2Val} <i data-lucide="${card.m2Icon}"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const isLocked = card.badge === "LOCKED PAST";
+            return `
+                <div class="timeline-card-wrapper" style="${isLocked ? 'filter: grayscale(80%); opacity: 0.75;' : ''}">
+                    <div class="timeline-marker"><div class="marker-circle"></div></div>
+                    <div class="timeline-feed-card single-column">
+                        <div class="card-badge-row">
+                            <span class="feed-date text-slate font-bold">${card.date}</span>
+                            <span class="badge-status-grey" style="background: rgba(37,99,235,0.1); color: #2563EB;">${card.badge}</span>
+                        </div>
+                        <h4 class="feed-title">${card.title}</h4>
+                        <p class="feed-content-detail" style="color: #475569; font-size: 13.5px; line-height: 1.6;">
+                            ${card.detail}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function generateMobileCardHTML(card) {
+        if (card.type === "current") {
+            return `
+                <div class="mobile-timeline-node" id="mobile-timeline-card-2026">
+                    <div class="node-marker"><div class="circle" style="background-color: var(--color-primary); transform: scale(1.3);"></div></div>
+                    <div class="mobile-timeline-card" style="border: 2px solid var(--color-primary-light); background: rgba(37, 99, 235, 0.03); ${card.badge === 'UNSUPPORTED ZONE' ? 'filter: grayscale(80%); opacity: 0.85;' : ''}">
+                        <div class="card-top-row">
+                            <span class="date" style="color: var(--color-primary); font-weight: 700;">${card.date}</span>
+                            <span style="font-size: 9px; font-weight: 800; background: var(--color-primary); color: white; padding: 2px 6px; border-radius: 4px;">${card.badge}</span>
+                        </div>
+                        <h3 class="card-title-bold" style="color: var(--color-primary);">${card.title}</h3>
+                        <p class="card-quote" style="color: #1e293b; padding-left: 0; border-left: none; font-style: normal; margin-bottom: 12px; font-size: 11.5px; line-height: 1.5;">
+                            ${card.detail}
+                        </p>
+                        <div class="card-metrics-box-progress">
+                            <div class="progress-bar-bg" style="height: 6px; background: rgba(0, 0, 0, 0.06); border-radius: 3px; overflow: hidden; margin-bottom: 6px;">
+                                <div class="progress-bar-fill" style="width: 100%; height: 100%; background-color: var(--color-primary);"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--color-primary); font-weight: 600;">${card.progress}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (card.type === "future" || card.type === "mid") {
+            const isLocked = card.badge === "LOCKED FUTURE";
+            return `
+                <div class="mobile-timeline-node" style="${isLocked ? 'filter: grayscale(80%); opacity: 0.8;' : ''}">
+                    <div class="node-marker"><div class="circle"></div></div>
+                    <div class="mobile-timeline-card">
+                        <div class="card-top-row">
+                            <span class="date">${card.date}</span>
+                            <span style="font-size: 8px; background: rgba(37, 99, 235, 0.08); color: var(--color-primary); padding: 1px 4px; border-radius: 3px;">${card.badge}</span>
+                        </div>
+                        <h3 class="card-title-bold">${card.title}</h3>
+                        <p class="card-quote" style="font-size: 11.5px; line-height: 1.5; color: #334155;">
+                            "${card.quote}"
+                        </p>
+                        <div class="card-metrics-box">
+                            <div class="metric-col">
+                                <span class="lbl">${card.m1Lbl}</span>
+                                <span class="val">${card.m1Val}</span>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div class="metric-col flex-row-align">
+                                <i data-lucide="${card.m2Icon === 'lock' ? 'lock' : 'shield-check'}" class="font-blue" style="width: 14px; height: 14px;"></i>
+                                <span class="val-text">${card.m2Val}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-separator-img" style="margin: 12px 0; ${isLocked ? 'filter: grayscale(80%); opacity: 0.7;' : ''}">
+                    <img src="${card.img}" alt="${card.title}" style="width:100%; height:80px; object-fit:cover; border-radius:12px;">
+                    <div class="img-overlay-brand">${card.imgOverlay}</div>
+                </div>
+            `;
+        } else {
+            const isLocked = card.badge === "LOCKED PAST";
+            return `
+                <div class="mobile-timeline-node" style="${isLocked ? 'filter: grayscale(80%); opacity: 0.75;' : ''}">
+                    <div class="node-marker"><div class="circle" style="background: rgba(0,0,0,0.15);"></div></div>
+                    <div class="mobile-timeline-card">
+                        <div class="card-top-row">
+                            <span class="date">${card.date}</span>
+                            <span style="font-size: 8px; background: rgba(0, 0, 0, 0.05); color: #475569; padding: 1px 4px; border-radius: 3px;">${card.badge}</span>
+                        </div>
+                        <h3 class="card-title-bold" style="color: #475569; font-size: 12.5px;">${card.title}</h3>
+                        <p class="card-quote" style="color: #475569; font-size: 11px; padding-left: 0; border-left: none; font-style: normal; margin-bottom: 0;">
+                            ${card.detail}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     // --- 5. TIMELINE CONTROLLERS ---

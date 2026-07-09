@@ -344,6 +344,24 @@ export function renderGeoJSONLayers() {
                     if (data.zone) {
                         window.selectZone(data.zone.zone_id);
                     } else {
+                        const fakeZoneId = `UNSUPPORTED-${feature.properties.code}`;
+                        if (window.zonesData && !window.zonesData.find(z => z.zone_id === fakeZoneId)) {
+                            window.zonesData.push({
+                                zone_id: fakeZoneId,
+                                zone_name: `미지원 - ${data.name}`,
+                                status: "봉쇄",
+                                recovery_rate: data.recovery_rate,
+                                time_to_safe_years: 15.0,
+                                air_quality: 15.0,
+                                soil_contamination: 120.0,
+                                vegetation_ndvi: 0.05,
+                                lat: e.latlng.lat,
+                                lng: e.latlng.lng,
+                                description: `${data.name} 지역은 현재 루트홈 기후 복구 지원 대상이 아닙니다. 우선 귀향 정착 대상 도시로 승인 대기 중입니다.`,
+                                isUnsupported: true
+                            });
+                        }
+                        window.selectZone(fakeZoneId);
                         updateLegendCard(data);
                     }
                 }
