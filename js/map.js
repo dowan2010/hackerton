@@ -611,8 +611,6 @@ function pointInRing(lat, lng, ring) {
 // 봉쇄 구역 폴리곤 목록 — 라우팅용이므로 타임라인 무시하고 현재 기준(t=0.5) 고정
 function getBlockedRings() {
     if (!cachedGeoData) return [];
-    const savedT = window.timelinePercentage;
-    window.timelinePercentage = 0.5;
     const rings = [];
     cachedGeoData.features.forEach(f => {
         if (getMunicipalityData(f.properties.code, f.properties.name).status !== "봉쇄") return;
@@ -620,7 +618,6 @@ function getBlockedRings() {
         if (g.type === "Polygon") rings.push(g.coordinates[0]);
         else if (g.type === "MultiPolygon") g.coordinates.forEach(p => rings.push(p[0]));
     });
-    window.timelinePercentage = savedT;
     return rings;
 }
 
