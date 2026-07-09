@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="style.css?v=20260709-9">
+    <link rel="stylesheet" href="style.css?v=20260709-10">
 </head>
 <body>
     <div class="app-container">
@@ -1047,8 +1047,67 @@
 
     </div>
 
+    <!-- AUTH MODAL OVERLAY (GLASSMORPHISM) -->
+    <div class="auth-modal-overlay hidden" id="auth-modal">
+        <div class="auth-modal-card">
+            <button class="auth-modal-close" id="auth-close-btn">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="tab-login-btn">로그인</button>
+                <button class="auth-tab-btn" id="tab-signup-btn">회원가입</button>
+            </div>
+            
+            <!-- LOGIN FORM -->
+            <form class="auth-form" id="login-form">
+                <div class="auth-input-group">
+                    <label class="auth-label">이메일 주소</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="mail" class="auth-input-icon"></i>
+                        <input type="email" id="login-email" class="auth-input" placeholder="example@roothome.org" required>
+                    </div>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">비밀번호</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="lock" class="auth-input-icon"></i>
+                        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-auth-submit">로그인 완료</button>
+                <p class="auth-helper-text">데모 계정: <strong>test@roothome.org</strong> / <strong>password123</strong></p>
+            </form>
+
+            <!-- SIGNUP FORM -->
+            <form class="auth-form hidden" id="signup-form">
+                <div class="auth-input-group">
+                    <label class="auth-label">이름</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="user" class="auth-input-icon"></i>
+                        <input type="text" id="signup-name" class="auth-input" placeholder="홍길동" required>
+                    </div>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">이메일 주소</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="mail" class="auth-input-icon"></i>
+                        <input type="email" id="signup-email" class="auth-input" placeholder="example@roothome.org" required>
+                    </div>
+                </div>
+                <div class="auth-input-group">
+                    <label class="auth-label">비밀번호</label>
+                    <div class="auth-input-wrapper">
+                        <i data-lucide="lock" class="auth-input-icon"></i>
+                        <input type="password" id="signup-password" class="auth-input" placeholder="최소 6자리 비밀번호" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-auth-submit">회원가입 완료</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Leaflet JS Map API -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="app.js?v=20260709-9"></script>
+    <script src="app.js?v=20260709-10"></script>
 </body>
 </html>
