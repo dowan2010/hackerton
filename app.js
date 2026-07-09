@@ -14,6 +14,7 @@ import {
     resetNavigator,
     getStatusColor,
     getMunicipalityData,
+    computeTimelineAdjustedStatus,
     allMunicipalityLayers,
     cachedGeoData,
     renderGeoJSONLayers
@@ -175,6 +176,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const data = cityAnalysisData[activeZoneId];
 
+        // 안전 귀향 카운트다운(타임라인) 값으로 실시간 도시 상태 재계산
+        const baseZone = window.zonesData ? window.zonesData.find(z => z.zone_id === activeZoneId) : null;
+        const dyn = baseZone ? computeTimelineAdjustedStatus(baseZone.recovery_rate) : null;
+        if (dyn) {
+            data.statusClass = dyn.status === "귀향시작" ? "safe" : dyn.status === "정화진행중" ? "reserve" : "blocked";
+            data.status = `${dyn.status} (실시간 회복도 ${dyn.recovery_rate}%)`;
+        }
+        const stageLabel = dyn ? (dyn.t <= 0.08 ? "예보 초기 단계 (2050)" : dyn.t < 0.6 ? "부분 안정화 예측 (2070)" : "전면 자유귀향 예보 (2090)") : "";
+
         // Generate the 7 City Selector Buttons
         const citySelectorHtml = Object.keys(cityAnalysisData).map(cid => {
             const city = cityAnalysisData[cid];
@@ -210,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${data.status}
                         </span>
                     </div>
-                    <span class="badge-live"><span class="dot"></span> 정밀 모델링 연동</span>
+                    <span class="badge-live"><span class="dot"></span> ${stageLabel || "정밀 모델링 연동"}</span>
                 </div>
                 <p style="font-size: 14px; color: var(--color-text-main); line-height: 1.6; margin-top: 12px; margin-bottom: 0; opacity: 0.9;">
                     ${data.summary}
@@ -844,6 +854,9 @@ document.addEventListener("DOMContentLoaded", () => {
             window.timelinePercentage = timelinePercentage;
             updateCountdownDisplay();
             renderGeoJSONLayers();
+            if (typeof window.updateCityAnalysis === "function") {
+                window.updateCityAnalysis(window.selectedZoneId || "KR-SL-01");
+            }
         };
 
         const setupDrag = (handle, track) => {

@@ -152,28 +152,33 @@ function getRegionFoodBias(code) {
     return 0;
 }
 
-export function getMunicipalityData(code, name) {
-    // timelinePercentage: 0=예보 초기 단계(2050), 0.5=부분 안정화(2070), 1=전면 자유귀향(2090)
+// 타임라인 위치(t)에 따른 회복도/상태 보정 계산 — 지도, 도시분석 화면에서 공용
+export function computeTimelineAdjustedStatus(baseRecoveryRate) {
     const t = window.timelinePercentage != null ? window.timelinePercentage : 0.5;
     // 완만한 회복 곡선: 초반엔 천천히, 후반으로 갈수록 안전 지역이 빠르게 늘어남
     const curved = Math.pow(t, 1.6);
     const timelineBonus = (curved - 0.5) * 60; // -30 ~ +30
     const isEarlyStage = t <= 0.08; // 예보 초기 단계: 안정화 구역 없음, 정화진행중도 극소수
 
+    let adjusted = Math.max(0, Math.min(100, baseRecoveryRate + timelineBonus));
+    let status;
+    if (isEarlyStage) {
+        adjusted = Math.min(adjusted, 78); // 귀향시작(82+) 도달 불가
+        status = adjusted >= 74 ? "정화진행중" : "봉쇄"; // 최상위 구역만 정화진행중
+    } else {
+        status = adjusted >= 82 ? "귀향시작" : adjusted >= 55 ? "정화진행중" : "봉쇄";
+    }
+    return { recovery_rate: Math.round(adjusted * 10) / 10, status, t };
+}
+
+export function getMunicipalityData(code, name) {
     const zone = findZoneByCode(code);
     if (zone) {
-        let adjusted = Math.max(0, Math.min(100, zone.recovery_rate + timelineBonus));
-        let status;
-        if (isEarlyStage) {
-            adjusted = Math.min(adjusted, 78); // 귀향시작(82+) 도달 불가
-            status = adjusted >= 74 ? "정화진행중" : "봉쇄"; // 최상위 구역만 정화진행중
-        } else {
-            status = adjusted >= 82 ? "귀향시작" : adjusted >= 55 ? "정화진행중" : "봉쇄";
-        }
+        const result = computeTimelineAdjustedStatus(zone.recovery_rate);
         return {
             name: zone.zone_name.split(" - ")[1] || zone.zone_name,
-            recovery_rate: Math.round(adjusted * 10) / 10,
-            status: status,
+            recovery_rate: result.recovery_rate,
+            status: result.status,
             zone: zone,
             isKeyZone: true
         };
@@ -188,17 +193,9 @@ export function getMunicipalityData(code, name) {
     const bias = getRegionFoodBias(code);
     const warmingDegrees = window.warmingDegrees || 0.0;
     const warmingPenalty = warmingDegrees * 12;
-    let recovery = Math.max(5, Math.min(98, Math.round((30 + randVal * 68 + bias - warmingPenalty + timelineBonus) * 10) / 10));
-    let status;
-    if (isEarlyStage) {
-        recovery = Math.min(recovery, 78);
-        status = recovery >= 74 ? "정화진행중" : "봉쇄";
-    } else {
-        if (recovery >= 82) status = "귀향시작";
-        else if (recovery >= 55) status = "정화진행중";
-        else status = "봉쇄";
-    }
-    return { name: name, recovery_rate: recovery, status: status, zone: null, isKeyZone: false };
+    const baseRecovery = Math.max(5, Math.min(98, Math.round((30 + randVal * 68 + bias - warmingPenalty) * 10) / 10));
+    const result = computeTimelineAdjustedStatus(baseRecovery);
+    return { name: name, recovery_rate: result.recovery_rate, status: result.status, zone: null, isKeyZone: false };
 }
 
 const METRO_PREFIX = {
