@@ -15,10 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let mobileMap = null;
     let desktopMapCircles = {};
     let mobileMapCircles = {};
-    let backendUrl = `http://${window.location.hostname}:8000`;
-    if (window.location.hostname.includes("loca.lt")) {
-        backendUrl = "https://blue-hoops-watch.loca.lt";
+    let backendUrl = `https://roothome-backend-686146847894.asia-northeast3.run.app`;
+    if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
+        backendUrl = "http://127.0.0.1:8000";
     }
+    let predictionsData = null; // 50개년 머신러닝 기후 예측 데이터 캐시
 
     // 15 National climate risk zones mapped from 'No Humans Land' (ocr_all.txt)
     const mockZones = [
@@ -298,6 +299,164 @@ document.addEventListener("DOMContentLoaded", () => {
             lat: 37.2427,
             lng: 131.8681,
             description: "기후 급변과 동해 방사능 조류 수치를 관측하기 위해 봉쇄된 해양 노휴먼스랜드입니다. AI 드론 탐사선이 실시간 영해 데이터를 루트홈 본부로 송출합니다."
+        },
+        // 5) Extended National Cities (전국 거점 도시 전격 보강)
+        {
+            zone_id: "KR-SU-01",
+            zone_name: "과거도시 - 경기도 수원시 에코돔 복합단지",
+            status: "귀향시작",
+            recovery_rate: 97.2,
+            time_to_safe_years: 0.0,
+            air_quality: 95.0,
+            soil_contamination: 2.0,
+            vegetation_ndvi: 0.84,
+            lat: 37.2636,
+            lng: 127.0286,
+            description: "경기도 남부 기후 연합 본부로, 에코돔 복합 시스템을 가치 있게 승화시킨 안전 구역입니다. 최고 성능의 자체 순환 수자원 정제 타워가 가동 중입니다."
+        },
+        {
+            zone_id: "KR-PJ-01",
+            zone_name: "노휴먼스랜드 - 경기도 파주시 문산읍 (휴전선 접경대)",
+            status: "봉쇄",
+            recovery_rate: 28.9,
+            time_to_safe_years: 6.5,
+            air_quality: 82.0,
+            soil_contamination: 34.0,
+            vegetation_ndvi: 0.48,
+            lat: 37.8545,
+            lng: 126.7876,
+            description: "임진강 전선 인근의 접경지대로, 군사 및 자연 기류 정화 노드들이 동시에 투입되어 토양 자정 및 복원을 모니터링 중입니다."
+        },
+        {
+            zone_id: "KR-CN-02",
+            zone_name: "그레이시티 - 충청남도 천안시 서북구 난민컨테이너단지",
+            status: "예약가능",
+            recovery_rate: 53.2,
+            time_to_safe_years: 1.8,
+            air_quality: 49.0,
+            soil_contamination: 68.0,
+            vegetation_ndvi: 0.23,
+            lat: 36.8150,
+            lng: 127.1130,
+            description: "충남 최대 규모의 임시 난민 밀집 주거 구역입니다. 탄소 차단 배출기 필터와 수질 대정화 기구가 차례로 도입되고 있습니다."
+        },
+        {
+            zone_id: "KR-CB-02",
+            zone_name: "그레이시티 - 충청북도 청주시 오창 과학캠프",
+            status: "예약가능",
+            recovery_rate: 61.4,
+            time_to_safe_years: 1.2,
+            air_quality: 53.0,
+            soil_contamination: 59.0,
+            vegetation_ndvi: 0.35,
+            lat: 36.6424,
+            lng: 127.4890,
+            description: "중부 내륙 과학 정화 노드의 핵심지로, 대규모 드론 배치가 가능하여 최근 미세 대기질 개선 속도가 비약적으로 증가하고 있습니다."
+        },
+        {
+            zone_id: "KR-JB-02",
+            zone_name: "노휴먼스랜드 - 전라북도 전주시 덕진구 (자연치유숲)",
+            status: "예약가능",
+            recovery_rate: 81.5,
+            time_to_safe_years: 0.5,
+            air_quality: 93.0,
+            soil_contamination: 24.0,
+            vegetation_ndvi: 0.76,
+            lat: 35.8468,
+            lng: 127.1290,
+            description: "전주 천택천 인근의 거목 식재 사업 성공으로 녹지 탄소 흡수량이 가속되어 복구 기준 달성 및 완전 해제가 눈앞에 다가왔습니다."
+        },
+        {
+            zone_id: "KR-GN-03",
+            zone_name: "그레이시티 - 경상남도 창원시 성산구 산소대비공단",
+            status: "예약가능",
+            recovery_rate: 58.0,
+            time_to_safe_years: 1.6,
+            air_quality: 52.0,
+            soil_contamination: 62.0,
+            vegetation_ndvi: 0.31,
+            lat: 35.2280,
+            lng: 128.6810,
+            description: "남해 화학 기지 인근 수용 지구로, 정기적인 산소 수혈 큐브 배포와 숲 조성을 통해 복구율이 차례로 우상향 트렌드를 밟고 있습니다."
+        },
+        // 6) Global Hubs (글로벌 핵심 선진국 허브 수도 도시)
+        {
+            zone_id: "GL-TY-01",
+            zone_name: "글로벌허브 - 일본 도쿄 지요다구 그린돔",
+            status: "귀향시작",
+            recovery_rate: 85.4,
+            time_to_safe_years: 1.0,
+            air_quality: 88.0,
+            soil_contamination: 14.0,
+            vegetation_ndvi: 0.74,
+            lat: 35.6762,
+            lng: 139.6503,
+            description: "일본 도쿄 중심부에 구축된 대규모 수직 정원 및 차세대 에코돔입니다. 정화 로봇 군단이 가동되어 대기질 안정도가 타 글로벌 도시에 비해 조기 달성되었습니다."
+        },
+        {
+            zone_id: "GL-NY-01",
+            zone_name: "글로벌허브 - 미국 뉴욕 맨해튼 아일랜드 복구단지",
+            status: "예약가능",
+            recovery_rate: 72.8,
+            time_to_safe_years: 2.1,
+            air_quality: 76.0,
+            soil_contamination: 22.0,
+            vegetation_ndvi: 0.62,
+            lat: 40.7128,
+            lng: -74.0060,
+            description: "해수면 상승 피해에 대응하여 맨해튼 자유의 여신상 일대에 초강력 인공방조제와 방어막을 거치하고 오염 정화 및 부분 귀향을 유치하는 중입니다."
+        },
+        {
+            zone_id: "GL-LD-01",
+            zone_name: "글로벌허브 - 영국 런던 템스강 기후수용본부",
+            status: "귀향시작",
+            recovery_rate: 91.2,
+            time_to_safe_years: 0.0,
+            air_quality: 92.0,
+            soil_contamination: 8.5,
+            vegetation_ndvi: 0.78,
+            lat: 51.5074,
+            lng: -0.1278,
+            description: "런던 템스강 배리어 시스템을 가속하여 대기 정화를 마친 청정 복귀 캠프입니다. 고에너지 친환경 탄소 포집 타워가 템스 변을 따라 집중 기동 중입니다."
+        },
+        {
+            zone_id: "GL-PR-01",
+            zone_name: "글로벌허브 - 프랑스 파리 센강 기후유산보호구",
+            status: "귀향시작",
+            recovery_rate: 94.1,
+            time_to_safe_years: 0.0,
+            air_quality: 95.0,
+            soil_contamination: 6.0,
+            vegetation_ndvi: 0.82,
+            lat: 48.8566,
+            lng: 2.3522,
+            description: "프랑스 안전유산 재건령에 의거 에펠탑 주변을 에코포레스트 삼림으로 완전 복원하였으며, 실향 시민들의 순차적 도시 복귀가 성공적으로 개시되었습니다."
+        },
+        {
+            zone_id: "GL-BJ-01",
+            zone_name: "글로벌허브 - 중국 베이징 차오양 탄소폐쇄지구",
+            status: "봉쇄",
+            recovery_rate: 41.6,
+            time_to_safe_years: 4.8,
+            air_quality: 38.0,
+            soil_contamination: 82.0,
+            vegetation_ndvi: 0.22,
+            lat: 39.9042,
+            lng: 116.4074,
+            description: "기후 봉쇄 구역으로 오염 황사 제어 필터 및 공중 대규모 흡입 기어가 동적 정화를 진행 중이나, 여전히 수년 동안 완전한 정착을 통제하는 중입니다."
+        },
+        {
+            zone_id: "GL-SD-01",
+            zone_name: "글로벌허브 - 호주 시드니 오페라 생태복원해안",
+            status: "귀향시작",
+            recovery_rate: 96.8,
+            time_to_safe_years: 0.0,
+            air_quality: 97.0,
+            soil_contamination: 2.0,
+            vegetation_ndvi: 0.89,
+            lat: -33.8688,
+            lng: 151.2093,
+            description: "호주 남태평양 자연 기류의 빠른 자정 이점을 적극 수혜받아 오염 정화율이 극에 달했으며, 이미 대다수 원주 시민들의 평화로운 해안 귀향이 완료되었습니다."
         }
     ];
 
@@ -696,53 +855,44 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- Desktop RootMap Sub-tabs (Realtime vs Predictive Analysis) ---
-    const btnRealtime = document.getElementById("btn-realtime-env");
-    const btnAnalysis = document.getElementById("btn-predictive-analysis");
-    const viewRealtime = document.getElementById("rootmap-realtime-view");
-    const viewAnalysis = document.getElementById("rootmap-analysis-view");
+    // --- 3.5 HEADER SUBTABS BINDINGS (실시간 환경 / 예측 분석 / 정책 리소스) ---
+    const headerNavTabs = document.querySelectorAll(".nav-tabs .nav-tab");
+    const subtabContents = document.querySelectorAll(".subtab-content");
 
-    if (btnRealtime && btnAnalysis && viewRealtime && viewAnalysis) {
-        btnRealtime.addEventListener("click", () => {
-            btnRealtime.classList.add("active");
-            btnAnalysis.classList.remove("active");
-            viewRealtime.classList.remove("hidden");
-            viewAnalysis.classList.add("hidden");
-            setTimeout(() => {
-                if (desktopMap) desktopMap.invalidateSize();
-            }, 310);
-        });
-        btnAnalysis.addEventListener("click", () => {
-            btnAnalysis.classList.add("active");
-            btnRealtime.classList.remove("active");
-            viewAnalysis.classList.remove("hidden");
-            viewRealtime.classList.add("hidden");
-        });
-    }
+    headerNavTabs.forEach((tabBtn, index) => {
+        tabBtn.addEventListener("click", () => {
+            headerNavTabs.forEach(btn => btn.classList.remove("active"));
+            tabBtn.classList.add("active");
 
-    // --- Mobile RootMap Sub-tabs ---
-    const btnMobRealtime = document.getElementById("btn-mob-realtime");
-    const btnMobAnalysis = document.getElementById("btn-mob-analysis");
-    const mobRealtimeView = document.getElementById("mob-realtime-view");
-    const mobAnalysisView = document.getElementById("mob-analysis-view");
+            subtabContents.forEach(content => {
+                content.classList.add("hidden");
+                content.classList.remove("active");
+            });
 
-    if (btnMobRealtime && btnMobAnalysis && mobRealtimeView && mobAnalysisView) {
-        btnMobRealtime.addEventListener("click", () => {
-            btnMobRealtime.classList.add("active");
-            btnMobAnalysis.classList.remove("active");
-            mobRealtimeView.classList.remove("hidden");
-            mobAnalysisView.classList.add("hidden");
-            setTimeout(() => {
-                if (mobileMap) mobileMap.invalidateSize();
-            }, 310);
+            if (index === 0) {
+                const rt = document.getElementById("subtab-realtime");
+                if (rt) {
+                    rt.classList.remove("hidden");
+                    rt.classList.add("active");
+                }
+                setTimeout(() => {
+                    if (desktopMap) desktopMap.invalidateSize();
+                }, 50);
+            } else if (index === 1) {
+                const pred = document.getElementById("subtab-prediction");
+                if (pred) {
+                    pred.classList.remove("hidden");
+                    pred.classList.add("active");
+                }
+            } else if (index === 2) {
+                const pol = document.getElementById("subtab-policy");
+                if (pol) {
+                    pol.classList.remove("hidden");
+                    pol.classList.add("active");
+                }
+            }
         });
-        btnMobAnalysis.addEventListener("click", () => {
-            btnMobAnalysis.classList.add("active");
-            btnMobRealtime.classList.remove("active");
-            mobAnalysisView.classList.remove("hidden");
-            mobRealtimeView.classList.add("hidden");
-        });
-    }
+    });
 
     // --- 4. MAP API INTEGRATION (Leaflet.js) ---
     function getStatusColor(status) {
@@ -757,40 +907,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const centerPoint = [36.3000, 127.8000]; // Center of South Korea
         const baseZoom = 7; // Nation-wide zoom
 
-        const tileUrl = 'https://tiles.osm.kr/hot/{z}/{x}/{y}.png';
-        const attribution = '&copy; OpenStreetMap contributors, Map tiles by OSM Korea';
+        const tileUrl = 'https://mt1.google.com/vt/lyrs=m&hl=ko&x={x}&y={y}&z={z}';
+        const attribution = '&copy; Google Maps';
 
-        // Limit bounding box to South Korea
-        const southKoreaBounds = L.latLngBounds(
-            L.latLng([32.5, 123.5]), // Southwest
-            L.latLng([38.7, 132.2])  // Northeast
-        );
-
-        // 1) Desktop Map (locked to South Korea scale)
+        // 1) Desktop Map (Global scale unlocked!)
         desktopMap = L.map('desktop-map', {
             center: centerPoint,
-            zoom: baseZoom,
-            minZoom: 7, // Restricted to fit South Korea, cannot zoom out further
-            maxZoom: 13,
-            maxBounds: southKoreaBounds,
-            maxBoundsViscosity: 1.0,
+            zoom: 6,
+            minZoom: 2, // Fully unlocked to see the whole Earth
+            maxZoom: 18,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
-        desktopMap.fitBounds(southKoreaBounds);
 
-        // 2) Mobile Map (locked to South Korea scale)
+        // 2) Mobile Map (Global scale unlocked!)
         mobileMap = L.map('mobile-map', {
             center: centerPoint,
-            zoom: baseZoom, // Default zoom 7 to match desktop scale
-            minZoom: 6, // Restricted for mobile
-            maxZoom: 12,
-            maxBounds: southKoreaBounds,
-            maxBoundsViscosity: 1.0,
+            zoom: 5,
+            minZoom: 2, // Fully unlocked to see the whole Earth
+            maxZoom: 18,
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(mobileMap);
-        mobileMap.fitBounds(southKoreaBounds);
 
 
 
@@ -810,9 +948,10 @@ document.addEventListener("DOMContentLoaded", () => {
         function generateDistrictPolygon(zoneId, lat, lng) {
             const rand = seedRandom(zoneId);
             const points = [];
-            let radiusKm = 12; // Increased from 9 to 12
-            if (zoneId === "KR-DK-01") radiusKm = 4.0; // Increased from 2.5 to 4.0
-            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 18; // Increased from 14 to 18
+            let radiusKm = 8.5; // Compact localized city/municipal scope (8.5km)
+            if (zoneId === "KR-DK-01") radiusKm = 3.5;
+            else if (zoneId.startsWith("GL-")) radiusKm = 15.0; // Global Metropolises have grand ecosystem scale (15km)
+            else if (zoneId === "KR-JN-01" || zoneId === "KR-JJ-01" || zoneId === "KR-UJ-01") radiusKm = 11.5;
             
             const latOffsetDegree = radiusKm / 110.574;
             const lngOffsetDegree = radiusKm / (111.320 * Math.cos(lat * Math.PI / 180));
@@ -829,42 +968,211 @@ document.addEventListener("DOMContentLoaded", () => {
             return points;
         }
 
-        // Draw Interactive Polygons (District Outlines) for all 21 National Zones
-        zonesData.forEach(zone => {
-            const color = getStatusColor(zone.status);
-            const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+        // 대한민국 통계청 실제 250개 시·군·구 기초자치단체(도시) 경계 GeoJSON 로드 및 정밀 매핑
+        loadMunicipalitiesGeoJSON();
 
-            const deskCircle = L.polygon(polygonCoords, {
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.50,
-                weight: 2.5
-            }).addTo(desktopMap);
+        function findZoneByMuniName(muniName) {
+            if (!muniName) return null;
+            if (muniName.includes("고성")) return zonesData.find(z => z.zone_id === "KR-GW-03") || zonesData[0];
+            if (muniName.includes("속초")) return zonesData.find(z => z.zone_id === "KR-GW-02") || zonesData[1];
+            if (muniName.includes("삼척")) return zonesData.find(z => z.zone_id === "KR-GW-04") || zonesData[2];
+            if (muniName.includes("동해")) return zonesData.find(z => z.zone_id === "KR-GW-05") || zonesData[13];
+            if (muniName.includes("강릉")) return zonesData.find(z => z.zone_id === "KR-GW-06") || zonesData[14];
+            
+            if (muniName.includes("울산") || muniName.includes("남구") || muniName.includes("울주")) return zonesData.find(z => z.zone_id === "KR-GN-01") || zonesData[7];
+            if (muniName.includes("기장") || muniName.includes("부산")) return zonesData.find(z => z.zone_id === "KR-GN-02") || zonesData[8];
+            
+            if (muniName.includes("대구") || muniName.includes("수성")) return zonesData.find(z => z.zone_id === "KR-GB-01") || zonesData[6];
+            if (muniName.includes("울진")) return zonesData.find(z => z.zone_id === "KR-GB-02") || zonesData[9];
+            if (muniName.includes("영덕")) return zonesData.find(z => z.zone_id === "KR-GB-03") || zonesData[10];
+            if (muniName.includes("포항")) return zonesData.find(z => z.zone_id === "KR-GB-04") || zonesData[11];
+            
+            if (muniName.includes("울릉")) return zonesData.find(z => z.zone_id === "KR-UL-01") || zonesData[12];
+            if (muniName.includes("여수")) return zonesData.find(z => z.zone_id === "KR-JN-01") || zonesData[3];
+            if (muniName.includes("제주") || muniName.includes("서귀포")) return zonesData.find(z => z.zone_id === "KR-JJ-01") || zonesData[4];
 
-            desktopMapCircles[zone.zone_id] = deskCircle;
+            // 신규 전국 거점 매핑
+            if (muniName.includes("수원")) return zonesData.find(z => z.zone_id === "KR-SU-01");
+            if (muniName.includes("파주")) return zonesData.find(z => z.zone_id === "KR-PJ-01");
+            if (muniName.includes("천안")) return zonesData.find(z => z.zone_id === "KR-CN-02");
+            if (muniName.includes("청주")) return zonesData.find(z => z.zone_id === "KR-CB-02");
+            if (muniName.includes("전주")) return zonesData.find(z => z.zone_id === "KR-JB-02");
+            if (muniName.includes("창원")) return zonesData.find(z => z.zone_id === "KR-GN-03");
 
-            const mobCircle = L.polygon(polygonCoords, {
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.50,
-                weight: 2.5
-            }).addTo(mobileMap);
+            // 신규 글로벌 허브 매핑
+            if (muniName.includes("Tokyo") || muniName.includes("도쿄")) return zonesData.find(z => z.zone_id === "GL-TY-01");
+            if (muniName.includes("New York") || muniName.includes("뉴욕")) return zonesData.find(z => z.zone_id === "GL-NY-01");
+            if (muniName.includes("London") || muniName.includes("런던")) return zonesData.find(z => z.zone_id === "GL-LD-01");
+            if (muniName.includes("Paris") || muniName.includes("파리")) return zonesData.find(z => z.zone_id === "GL-PR-01");
+            if (muniName.includes("Beijing") || muniName.includes("베이징")) return zonesData.find(z => z.zone_id === "GL-BJ-01");
+            if (muniName.includes("Sydney") || muniName.includes("시드니")) return zonesData.find(z => z.zone_id === "GL-SD-01");
 
-            mobileMapCircles[zone.zone_id] = mobCircle;
+            return null; // 우리 관심 재난 영역이 아닌 일반 시군구들은 투명하게 배제하여 도 단위의 혼잡을 영구 도려냄!
+        }
 
-            const popupContent = `<strong>${zone.zone_id}</strong><br>${zone.zone_name.split(" - ")[1] || zone.zone_name}<br>회복률: ${zone.recovery_rate}%`;
-            deskCircle.bindPopup(popupContent);
-            mobCircle.bindPopup(popupContent);
+        async function loadMunicipalitiesGeoJSON() {
+            try {
+                console.log("[GeoJSON] 대한민국 실제 250개 시군구 도시 행정 경계 정보 로딩 중...");
+                const res = await fetch("./skorea_municipalities_simple.json");
+                if (!res.ok) throw new Error("Local Si-Gun-Gu GeoJSON server response error");
+                const geoData = await res.json();
 
-            const handleCircleClick = () => {
-                desktopMap.setView([zone.lat, zone.lng], 10, { animate: true });
-                mobileMap.setView([zone.lat, zone.lng], 9, { animate: true });
-                selectZone(zone.zone_id);
-            };
+                // 1) Desktop GeoJSON Layer Injection (시군구 정밀 도시 매핑)
+                L.geoJSON(geoData, {
+                    style: function(feature) {
+                        const muniName = feature.properties.name;
+                        const zone = findZoneByMuniName(muniName);
+                        if (!zone) {
+                            return {
+                                color: "transparent",
+                                weight: 0,
+                                fillColor: "transparent",
+                                fillOpacity: 0
+                            };
+                        }
+                        const color = getStatusColor(zone.status);
+                        return {
+                            color: "#ffffff",
+                            weight: 1.8,
+                            fillColor: color,
+                            fillOpacity: 0.52
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const muniName = feature.properties.name;
+                        const zone = findZoneByMuniName(muniName);
+                        if (zone) {
+                            desktopMapCircles[zone.zone_id] = layer; // 대리 바인딩!
+                            const popupContent = `<strong>📍 도시 행정구역: ${muniName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
+                            layer.bindPopup(popupContent);
 
-            deskCircle.on("click", handleCircleClick);
-            mobCircle.on("click", handleCircleClick);
-        });
+                            layer.on("click", () => {
+                                desktopMap.setView(layer.getBounds().getCenter(), 10, { animate: true });
+                                selectZone(zone.zone_id);
+                            });
+                        }
+                    }
+                }).addTo(desktopMap);
+
+                // 2) Mobile GeoJSON Layer Injection (시군구 정밀 도시 매핑)
+                L.geoJSON(geoData, {
+                    style: function(feature) {
+                        const muniName = feature.properties.name;
+                        const zone = findZoneByMuniName(muniName);
+                        if (!zone) {
+                            return {
+                                color: "transparent",
+                                weight: 0,
+                                fillColor: "transparent",
+                                fillOpacity: 0
+                            };
+                        }
+                        const color = getStatusColor(zone.status);
+                        return {
+                            color: "#ffffff",
+                            weight: 1.2,
+                            fillColor: color,
+                            fillOpacity: 0.52
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const muniName = feature.properties.name;
+                        const zone = findZoneByMuniName(muniName);
+                        if (zone) {
+                            mobileMapCircles[zone.zone_id] = layer;
+                            const popupContent = `<strong>📍 ${muniName}</strong><br>복구율: ${zone.recovery_rate}%`;
+                            layer.bindPopup(popupContent);
+
+                            layer.on("click", () => {
+                                mobileMap.setView(layer.getBounds().getCenter(), 9, { animate: true });
+                                selectZone(zone.zone_id);
+                            });
+                        }
+                    }
+                }).addTo(mobileMap);
+
+                // 3) Global Nodes & GeoJSON Exception fallbacks (해외 유명 선진 도시 기후 다각형 및 신규 한국 거점 예외 렌더링)
+                zonesData.forEach(zone => {
+                    if (zone.zone_id.startsWith("GL-") || !desktopMapCircles[zone.zone_id]) {
+                        const color = getStatusColor(zone.status);
+                        const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+
+                        const deskPoly = L.polygon(polygonCoords, {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.50,
+                            weight: 2.5
+                        }).addTo(desktopMap);
+                        desktopMapCircles[zone.zone_id] = deskPoly;
+
+                        const mobPoly = L.polygon(polygonCoords, {
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.50,
+                            weight: 1.8
+                        }).addTo(mobileMap);
+                        mobileMapCircles[zone.zone_id] = mobPoly;
+
+                        const cleanName = zone.zone_name.includes(" - ") ? zone.zone_name.split(" - ")[1] : zone.zone_name;
+                        const popupContent = `<strong>📍 기후 구역: ${cleanName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
+                        deskPoly.bindPopup(popupContent);
+                        mobPoly.bindPopup(`<strong>📍 ${cleanName}</strong><br>복구율: ${zone.recovery_rate}%`);
+
+                        deskPoly.on("click", () => {
+                            desktopMap.setView([zone.lat, zone.lng], 9, { animate: true });
+                            selectZone(zone.zone_id);
+                        });
+                        mobPoly.on("click", () => {
+                            mobileMap.setView([zone.lat, zone.lng], 8, { animate: true });
+                            selectZone(zone.zone_id);
+                        });
+                    }
+                });
+
+                console.log("[GeoJSON SUCCESS] 대한민국 시군구(도시 단위) 공식 경계 맵 융합 및 글로벌 다국적 허브 렌더링 대성공!");
+            } catch (err) {
+                console.warn("[WARN] 도시 단위 GeoJSON 융합 실패. 백업용 다각형으로 가동:", err);
+                drawBackupPolygons();
+            }
+        }
+
+        function drawBackupPolygons() {
+            zonesData.forEach(zone => {
+                const color = getStatusColor(zone.status);
+                const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
+
+                const deskCircle = L.polygon(polygonCoords, {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.50,
+                    weight: 2.5
+                }).addTo(desktopMap);
+
+                desktopMapCircles[zone.zone_id] = deskCircle;
+
+                const mobCircle = L.polygon(polygonCoords, {
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.50,
+                    weight: 2.5
+                }).addTo(mobileMap);
+
+                mobileMapCircles[zone.zone_id] = mobCircle;
+
+                const popupContent = `<strong>${zone.zone_id}</strong><br>${zone.zone_name.split(" - ")[1] || zone.zone_name}<br>회복률: ${zone.recovery_rate}%`;
+                deskCircle.bindPopup(popupContent);
+                mobCircle.bindPopup(popupContent);
+
+                const handleCircleClick = () => {
+                    desktopMap.setView([zone.lat, zone.lng], 8, { animate: true });
+                    mobileMap.setView([zone.lat, zone.lng], 7, { animate: true });
+                    selectZone(zone.zone_id);
+                };
+
+                deskCircle.on("click", handleCircleClick);
+                mobCircle.on("click", handleCircleClick);
+            });
+        }
 
         window.addEventListener("resize", () => {
             if (desktopMap) desktopMap.invalidateSize();
@@ -909,6 +1217,11 @@ document.addEventListener("DOMContentLoaded", () => {
         
         initLeafletMaps();
         selectZone("KR-GW-03"); // Select default (아야진리)
+        
+        // 50개년 머신러닝 기후 예측 API 덤프 기동 및 연도 슬라이더 바인딩 연동
+        fetch50YearPredictions().then(() => {
+            initTimelineDragController();
+        });
     }
 
     // --- 5. ZONE SELECTION & INTERACTIVE STATS & TIMELINE SYNC ---
@@ -959,13 +1272,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const waterCaption = document.getElementById("water-caption");
         const waterTrend = document.getElementById("water-trend");
         if (zone.recovery_rate > 90) {
-            waterCaption.textContent = "생활 용수 기준 충족: 정수 자립 상태 진입";
+            waterCaption.textContent = "수질 환경 기준 충족: 정수 자립 상태 진입";
             waterTrend.innerHTML = `<i data-lucide="trending-up"></i> +12.4%`;
         } else if (zone.recovery_rate > 70) {
-            waterCaption.textContent = "거주용 용수 공급망 안정화 가속";
+            waterCaption.textContent = "담수 구역 정화 가속화 단계 진입";
             waterTrend.innerHTML = `<i data-lucide="trending-up"></i> +8.2%`;
         } else {
-            waterCaption.textContent = "생활 용수 1차 여과 시설 가동 중";
+            waterCaption.textContent = "수중 오염 물질 여과 장치 가동 중";
             waterTrend.innerHTML = `<i data-lucide="trending-up"></i> +4.5%`;
         }
 
@@ -976,40 +1289,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("carbon-percent").textContent = `${carbonVal}%`;
         document.getElementById("carbon-fill").style.width = `${carbonVal}%`;
 
-        // Update Predictive Analysis panel
-        const analysisTitle = document.getElementById("analysis-panel-title");
-        if (analysisTitle) {
-            analysisTitle.textContent = `[${zone.zone_name}] 에코-회복 10년 예측 분석`;
-        }
-        const reportPart1 = document.getElementById("analysis-report-part1");
-        const reportPart2 = document.getElementById("analysis-report-part2");
-        const biodiversityCard = document.getElementById("biodiversity-sim-card");
-
-        if (reportPart1 && reportPart2) {
-            if (zone.recovery_rate > 80 || zone.status === "귀향시작") {
-                reportPart1.textContent = `해당 구역(${zone.zone_name})의 토양 및 수질 정화 인프라가 안정적으로 가동 중이며, 오염 물질 분해 속도가 기존 대비 45% 향상되어 매우 빠른 생태계 복원이 예측됩니다.`;
-                reportPart2.textContent = `자생 생태계가 외부 개입 없이도 독립적으로 순환할 수 있는 자립 임계점(Stability Threshold 9.0)을 조기 돌파할 가능성이 높습니다. 실향민의 영구적 재정착 준비를 시작해도 좋은 수준입니다. 이미 자연 생태계가 안정을 되찾았으므로, 별도의 인위적인 생물 다양성 회복 시뮬레이션은 불필요합니다.`;
-                if (biodiversityCard) biodiversityCard.style.display = "none";
-            } else if (zone.recovery_rate > 50) {
-                reportPart1.textContent = `해당 구역(${zone.zone_name})은 점진적인 회복세를 보이고 있습니다. 미세 플라스틱 및 오염 물질 분해 속도가 35% 증가하며, 하천 수질이 2등급 이상으로 안정화 단계에 진입합니다.`;
-                reportPart2.textContent = `기후 조절 능력이 일부 회복되어 극한 기상 현상의 국지적 피해가 20% 감소합니다. 10년 후에는 자립 임계점에 도달할 것으로 전망되어 지속적인 모니터링이 필요합니다.`;
-                if (biodiversityCard) biodiversityCard.style.display = "block";
-            } else {
-                reportPart1.textContent = `해당 구역(${zone.zone_name})은 현재 오염 심화 상태로 초기 정화 작업이 집중적으로 요구됩니다. 토양 회복율을 높이기 위한 추가적인 생태 공학적 개입이 필요합니다.`;
-                reportPart2.textContent = `정화 설비 확충을 통해 향후 5년 내 수질 개선을 1차 목표로 합니다. 자생 생태계 회복까지는 예상보다 긴 시간이 소요될 수 있으며, 실향민 재정착은 아직 권장되지 않습니다.`;
-                if (biodiversityCard) biodiversityCard.style.display = "block";
-            }
-        }
-
         const stability = ((zone.recovery_rate * 0.08) + (zone.air_quality * 0.02)).toFixed(1);
         document.getElementById("stability-score").textContent = stability;
         const stabilityDesc = document.getElementById("stability-desc");
         if (stability >= 9.0) {
-            stabilityDesc.textContent = "대기, 수자원 및 주거 인프라 지수가 최적치에 도달하여 영구적이고 안전한 거주가 보장됩니다.";
+            stabilityDesc.textContent = "대기, 수질 및 식생 인덱스가 모두 최적치에 도달하여 생태계 자립적 안전 거주가 완전 보장됩니다.";
         } else if (stability >= 7.5) {
-            stabilityDesc.textContent = "현재 지반 안정성과 생활 용수 개선 추세를 바탕으로 거주 적합도가 안전 임계치를 넘어섰습니다.";
+            stabilityDesc.textContent = "현재 탄소 고정율과 수질 개선 추세를 바탕으로 생태계 자립도가 안전 임계치를 넘어섰습니다.";
         } else {
-            stabilityDesc.textContent = "지반 안정화 및 대기질 회복 속도에 비해 생활 용수 공급 지연으로 보완 작업이 진행 중입니다.";
+            stabilityDesc.textContent = "식생지수와 대기질 회복 속도에 비해 수자원 안정화 지연으로 보완 모니터링이 수행 중입니다.";
         }
 
         document.getElementById("selected-zone-id").textContent = `그리드 ID: ${zone.zone_id}`;
@@ -1395,6 +1683,202 @@ document.addEventListener("DOMContentLoaded", () => {
         mobGenerateBtn.addEventListener("click", () => {
             const addr = mobAddressInput.value.trim();
             if (addr) runTimelineAPIRequest(addr);
+        });
+    }
+
+    // --- 7.5 50-YEAR PREDICTIONS & TIMELINE DRAG CONTROLLER ---
+    async function fetch50YearPredictions() {
+        try {
+            console.log("[Prediction] Fetching 50-year forecasting data from:", `${backendUrl}/api/zones/prediction`);
+            const res = await fetch(`${backendUrl}/api/zones/prediction`);
+            if (res.ok) {
+                predictionsData = await res.json();
+                console.log("[Prediction SUCCESS] 50개년 기후 오염 예측 데이터 수집 성공!");
+            } else {
+                throw new Error("FastAPI prediction endpoint error");
+            }
+        } catch (err) {
+            console.warn("[Prediction FALLBACK] 원격 API 접속 실패. 로컬 회귀수식 백업 예보 엔진을 구동합니다:", err);
+            // 인터넷 장애나 백엔드 통신 오류 시 가동되는 안전한 백업 예보 발전기
+            predictionsData = zonesData.map(zone => {
+                const basePollution = 100 - zone.recovery_rate;
+                const predictions = [];
+                for (let t = 0; t <= 50; t += 2) {
+                    const year = 2026 + t;
+                    const wave = Math.sin(0.4 * t) * 3.5 * Math.exp(-0.02 * t);
+                    const pollution = Math.max(0, Math.min(100, (basePollution * Math.exp(-0.045 * t) + wave)));
+                    const statusText = pollution > 70 ? "강력 봉쇄 (접근 불허)" : pollution > 40 ? "부분 경계 (정화 진행)" : pollution > 20 ? "귀향 가용 (우선 귀향 티켓 발행)" : "전면 정화 (자유 귀향 구역)";
+                    predictions.push({
+                        year,
+                        pollution_rate: Math.round(pollution * 10) / 10,
+                        status: statusText
+                    });
+                }
+                return {
+                    zone_id: zone.zone_id,
+                    zone_name: zone.zone_name,
+                    predictions
+                };
+            });
+        }
+    }
+
+    function updateMapForYear(year) {
+        if (!predictionsData) return;
+
+        predictionsData.forEach(predGroup => {
+            const zoneId = predGroup.zone_id;
+            const predForYear = predGroup.predictions.find(p => p.year === year);
+            if (!predForYear) return;
+
+            const pollution = predForYear.pollution_rate;
+
+            let color;
+            if (pollution > 70) {
+                color = "#ef4444"; // 강력 봉쇄 (Red)
+            } else if (pollution > 40) {
+                color = "#f97316"; // 부분 경계 (Orange)
+            } else if (pollution > 20) {
+                color = "#eab308"; // 귀향 가용 (Yellow)
+            } else {
+                color = "#10b981"; // 전면 정화 (Green!)
+            }
+
+            // 1) 데스크탑 폴리곤 스타일 및 팝업 갱신
+            const deskPoly = desktopMapCircles[zoneId];
+            if (deskPoly) {
+                deskPoly.setStyle({
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.55
+                });
+                const zoneName = predGroup.zone_name.split(" - ")[1] || predGroup.zone_name;
+                deskPoly.bindPopup(`
+                    <div style="font-family:'Outfit',sans-serif; padding:4px; line-height:1.4;">
+                         <strong style="color:${color}; font-size:14px;">📡 ${year}년 기후/재난 예보</strong><br>
+                         <strong style="font-size:13px; display:block; margin-top:4px;">📍 구역: ${zoneName}</strong>
+                         <span style="font-size:12px; color:#64748b; display:block; margin:2px 0;">오염 점수: <strong>${pollution}%</strong></span>
+                         <span style="font-size:11px; font-weight:bold; background:${color}15; color:${color}; padding:3px 6px; border-radius:4px; display:inline-block; margin-top:2px;">${predForYear.status}</span>
+                    </div>
+                `);
+            }
+
+            // 2) 모바일 폴리곤 스타일 및 팝업 갱신
+            const mobPoly = mobileMapCircles[zoneId];
+            if (mobPoly) {
+                mobPoly.setStyle({
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.55
+                });
+                const zoneName = predGroup.zone_name.split(" - ")[1] || predGroup.zone_name;
+                mobPoly.bindPopup(`
+                    <div style="font-family:sans-serif; line-height:1.4;">
+                         <strong style="color:${color};">${year}년 예보: ${zoneName}</strong><br>
+                         오염 점수: ${pollution}%<br>
+                         통제 상태: <strong>${predForYear.status}</strong>
+                    </div>
+                `);
+            }
+        });
+
+        // 우측 상세 제어 패널 디테일 실시간 스와이핑
+        const currentSelected = zonesData.find(z => z.zone_id === selectedZoneId);
+        if (currentSelected) {
+            const predGroup = predictionsData.find(p => p.zone_id === selectedZoneId);
+            if (predGroup) {
+                const predForYear = predGroup.predictions.find(p => p.year === year);
+                if (predForYear) {
+                    const badge = document.getElementById("selected-zone-status");
+                    if (badge) {
+                        badge.textContent = predForYear.status;
+                        badge.style.color = colorMap(predForYear.pollution_rate);
+                    }
+                    const desc = document.getElementById("selected-zone-desc");
+                    if (desc) {
+                        desc.textContent = `${year}년 기후 시뮬레이션: 기후 난민 재정착 오염도가 ${predForYear.pollution_rate}%로 예측 연산되었습니다. 이에 따라 기후재난 통제 등급은 '${predForYear.status}' 단계로 수립됩니다.`;
+                    }
+                }
+            }
+        }
+    }
+
+    function colorMap(pollution) {
+        if (pollution > 70) return "#ef4444";
+        if (pollution > 40) return "#f97316";
+        if (pollution > 20) return "#eab308";
+        return "#10b981";
+    }
+
+    function initTimelineDragController() {
+        const track = document.querySelector(".timeline-progress-track");
+        const fill = document.querySelector(".timeline-progress-fill");
+        const handle = document.querySelector(".timeline-handle");
+        const countdownDays = document.getElementById("countdown-days");
+        const marks = document.querySelectorAll(".slider-marks .mark-item");
+
+        if (!track || !fill || !handle) return;
+
+        let isDragging = false;
+
+        function updateTimelineByPosition(clientX) {
+            const rect = track.getBoundingClientRect();
+            let percentage = (clientX - rect.left) / rect.width;
+            percentage = Math.max(0, Math.min(1, percentage)); // Clamp 0% ~ 100%
+
+            fill.style.width = `${percentage * 100}%`;
+            handle.style.left = `${percentage * 100}%`;
+
+            const step = Math.round(percentage * 25);
+            const targetYear = 2026 + step * 2;
+
+            // 남은 일수 디그라데이션 연산 (2026: 142일 -> 2076: 0일)
+            const daysRemaining = Math.max(0, Math.round((1 - (step / 25)) * 142));
+            if (countdownDays) countdownDays.textContent = daysRemaining;
+
+            // 라벨 active 인덱싱 교정
+            marks.forEach((mark, index) => {
+                if (index === 0 && targetYear <= 2040) {
+                    mark.classList.add("active");
+                } else if (index === 1 && targetYear > 2040 && targetYear <= 2060) {
+                    mark.classList.add("active");
+                } else if (index === 2 && targetYear > 2060) {
+                    mark.classList.add("active");
+                } else {
+                    mark.classList.remove("active");
+                }
+            });
+
+            updateMapForYear(targetYear);
+        }
+
+        track.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            updateTimelineByPosition(e.clientX);
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            updateTimelineByPosition(e.clientX);
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+
+        // 모바일 터치이벤트 대응
+        track.addEventListener("touchstart", (e) => {
+            isDragging = true;
+            if (e.touches[0]) updateTimelineByPosition(e.touches[0].clientX);
+        });
+
+        window.addEventListener("touchmove", (e) => {
+            if (!isDragging) return;
+            if (e.touches[0]) updateTimelineByPosition(e.touches[0].clientX);
+        });
+
+        window.addEventListener("touchend", () => {
+            isDragging = false;
         });
     }
 
