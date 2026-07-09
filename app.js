@@ -809,92 +809,115 @@ document.addEventListener("DOMContentLoaded", () => {
             return points;
         }
 
-        // 대한민국 통계청 실제 17개 시도 광역 행정구역 경계 GeoJSON 로드 및 맵 융합
-        loadProvincesGeoJSON();
+        // 대한민국 통계청 실제 250개 시·군·구 기초자치단체(도시) 경계 GeoJSON 로드 및 정밀 매핑
+        loadMunicipalitiesGeoJSON();
 
-        function findZoneByProvinceName(provName) {
-            if (provName.includes("강원")) return zonesData.find(z => z.zone_id === "KR-GW-03") || zonesData[0];
-            if (provName.includes("경기")) return zonesData.find(z => z.zone_id === "KR-GG-01") || zonesData[3];
-            if (provName.includes("서울") || provName.includes("인천")) return zonesData.find(z => z.zone_id === "KR-GG-02") || zonesData[4];
-            if (provName.includes("충청북") || provName.includes("세종")) return zonesData.find(z => z.zone_id === "KR-CB-01") || zonesData[5];
-            if (provName.includes("충청남") || provName.includes("대전")) return zonesData.find(z => z.zone_id === "KR-CN-01") || zonesData[6];
-            if (provName.includes("경상북") || provName.includes("대구")) return zonesData.find(z => z.zone_id === "KR-GB-01") || zonesData[7];
-            if (provName.includes("경상남") || provName.includes("부산") || provName.includes("울산")) return zonesData.find(z => z.zone_id === "KR-GN-01") || zonesData[8];
-            if (provName.includes("전라북") || provName.includes("광주")) return zonesData.find(z => z.zone_id === "KR-JB-01") || zonesData[9];
-            if (provName.includes("전라남")) return zonesData.find(z => z.zone_id === "KR-JN-01") || zonesData[10];
-            if (provName.includes("제주")) return zonesData.find(z => z.zone_id === "KR-JJ-01") || zonesData[11];
-            if (provName.includes("울릉") || provName.includes("독도")) return zonesData.find(z => z.zone_id === "KR-UL-01") || zonesData[12];
-            return zonesData[1];
+        function findZoneByMuniName(muniName) {
+            if (!muniName) return null;
+            if (muniName.includes("고성")) return zonesData.find(z => z.zone_id === "KR-GW-03") || zonesData[0];
+            if (muniName.includes("속초")) return zonesData.find(z => z.zone_id === "KR-GW-02") || zonesData[1];
+            if (muniName.includes("삼척")) return zonesData.find(z => z.zone_id === "KR-GW-04") || zonesData[2];
+            if (muniName.includes("동해")) return zonesData.find(z => z.zone_id === "KR-GW-05") || zonesData[13];
+            if (muniName.includes("강릉")) return zonesData.find(z => z.zone_id === "KR-GW-06") || zonesData[14];
+            
+            if (muniName.includes("울산") || muniName.includes("남구") || muniName.includes("울주")) return zonesData.find(z => z.zone_id === "KR-GN-01") || zonesData[7];
+            if (muniName.includes("기장") || muniName.includes("부산")) return zonesData.find(z => z.zone_id === "KR-GN-02") || zonesData[8];
+            
+            if (muniName.includes("대구") || muniName.includes("수성")) return zonesData.find(z => z.zone_id === "KR-GB-01") || zonesData[6];
+            if (muniName.includes("울진")) return zonesData.find(z => z.zone_id === "KR-GB-02") || zonesData[9];
+            if (muniName.includes("영덕")) return zonesData.find(z => z.zone_id === "KR-GB-03") || zonesData[10];
+            if (muniName.includes("포항")) return zonesData.find(z => z.zone_id === "KR-GB-04") || zonesData[11];
+            
+            if (muniName.includes("울릉")) return zonesData.find(z => z.zone_id === "KR-UL-01") || zonesData[12];
+            if (muniName.includes("여수")) return zonesData.find(z => z.zone_id === "KR-JN-01") || zonesData[3];
+            if (muniName.includes("제주") || muniName.includes("서귀포")) return zonesData.find(z => z.zone_id === "KR-JJ-01") || zonesData[4];
+            return null; // 우리 관심 재난 영역이 아닌 일반 시군구들은 투명하게 배제하여 도 단위의 혼잡을 영구 도려냄!
         }
 
-        async function loadProvincesGeoJSON() {
+        async function loadMunicipalitiesGeoJSON() {
             try {
-                console.log("[GeoJSON] 대한민국 실제 17개 시도 광역시 행정 경계 정보 로딩 중...");
-                const res = await fetch("https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_provinces_simple.json");
-                if (!res.ok) throw new Error("Official GeoJSON server response error");
+                console.log("[GeoJSON] 대한민국 실제 250개 시군구 도시 행정 경계 정보 로딩 중...");
+                const res = await fetch("https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_municipalities_simple.json");
+                if (!res.ok) throw new Error("Official Si-Gun-Gu GeoJSON server response error");
                 const geoData = await res.json();
 
-                // 1) Desktop GeoJSON Layer Injection
+                // 1) Desktop GeoJSON Layer Injection (시군구 정밀 도시 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const provinceName = feature.properties.name_ko;
-                        const zone = findZoneByProvinceName(provinceName);
-                        const color = getStatusColor(zone ? zone.status : "예약가능");
+                        const muniName = feature.properties.name_ko;
+                        const zone = findZoneByMuniName(muniName);
+                        if (!zone) {
+                            return {
+                                color: "transparent",
+                                weight: 0,
+                                fillColor: "transparent",
+                                fillOpacity: 0
+                            };
+                        }
+                        const color = getStatusColor(zone.status);
                         return {
                             color: "#ffffff",
-                            weight: 1.5,
+                            weight: 1.8,
                             fillColor: color,
-                            fillOpacity: 0.45
+                            fillOpacity: 0.52
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const provinceName = feature.properties.name_ko;
-                        const zone = findZoneByProvinceName(provinceName);
+                        const muniName = feature.properties.name_ko;
+                        const zone = findZoneByMuniName(muniName);
                         if (zone) {
                             desktopMapCircles[zone.zone_id] = layer; // 대리 바인딩!
-                            const popupContent = `<strong>📍 행정구역: ${provinceName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
+                            const popupContent = `<strong>📍 도시 행정구역: ${muniName}</strong><br>오염 복구율: ${zone.recovery_rate}%<br>통제 상태: <strong>${zone.status}</strong>`;
                             layer.bindPopup(popupContent);
 
                             layer.on("click", () => {
-                                desktopMap.setView(layer.getBounds().getCenter(), 8, { animate: true });
+                                desktopMap.setView(layer.getBounds().getCenter(), 10, { animate: true });
                                 selectZone(zone.zone_id);
                             });
                         }
                     }
                 }).addTo(desktopMap);
 
-                // 2) Mobile GeoJSON Layer Injection
+                // 2) Mobile GeoJSON Layer Injection (시군구 정밀 도시 매핑)
                 L.geoJSON(geoData, {
                     style: function(feature) {
-                        const provinceName = feature.properties.name_ko;
-                        const zone = findZoneByProvinceName(provinceName);
-                        const color = getStatusColor(zone ? zone.status : "예약가능");
+                        const muniName = feature.properties.name_ko;
+                        const zone = findZoneByMuniName(muniName);
+                        if (!zone) {
+                            return {
+                                color: "transparent",
+                                weight: 0,
+                                fillColor: "transparent",
+                                fillOpacity: 0
+                            };
+                        }
+                        const color = getStatusColor(zone.status);
                         return {
                             color: "#ffffff",
                             weight: 1.2,
                             fillColor: color,
-                            fillOpacity: 0.45
+                            fillOpacity: 0.52
                         };
                     },
                     onEachFeature: function(feature, layer) {
-                        const provinceName = feature.properties.name_ko;
-                        const zone = findZoneByProvinceName(provinceName);
+                        const muniName = feature.properties.name_ko;
+                        const zone = findZoneByMuniName(muniName);
                         if (zone) {
                             mobileMapCircles[zone.zone_id] = layer;
-                            const popupContent = `<strong>📍 ${provinceName}</strong><br>복구율: ${zone.recovery_rate}%`;
+                            const popupContent = `<strong>📍 ${muniName}</strong><br>복구율: ${zone.recovery_rate}%`;
                             layer.bindPopup(popupContent);
 
                             layer.on("click", () => {
-                                mobileMap.setView(layer.getBounds().getCenter(), 7, { animate: true });
+                                mobileMap.setView(layer.getBounds().getCenter(), 9, { animate: true });
                                 selectZone(zone.zone_id);
                             });
                         }
                     }
                 }).addTo(mobileMap);
 
-                console.log("[GeoJSON SUCCESS] 대한민국 17개 광역시도 공식 경계 맵 결합 대성공!");
+                console.log("[GeoJSON SUCCESS] 대한민국 시군구(도시 단위) 공식 경계 맵 융합 대성공!");
             } catch (err) {
-                console.warn("[WARN] GeoJSON 융합 실패. 백업용 다각형으로 가동:", err);
+                console.warn("[WARN] 도시 단위 GeoJSON 융합 실패. 백업용 다각형으로 가동:", err);
                 drawBackupPolygons();
             }
         }
