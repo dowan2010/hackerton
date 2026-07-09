@@ -709,8 +709,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const centerPoint = [36.3000, 127.8000]; // Center of South Korea
         const baseZoom = 7; // Nation-wide zoom
 
-        const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-        const attribution = '&copy; OpenStreetMap &copy; CartoDB';
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const attribution = '&copy; OpenStreetMap contributors';
 
         // 1) Desktop Map
         desktopMap = L.map('desktop-map', {
@@ -727,6 +727,17 @@ document.addEventListener("DOMContentLoaded", () => {
             zoomControl: false
         });
         L.tileLayer(tileUrl, { attribution: attribution }).addTo(mobileMap);
+
+        // Add "황해" text label in the Yellow Sea (West Sea)
+        const yellowSeaCoords = [36.2, 123.8];
+        const yellowSeaIcon = L.divIcon({
+            className: 'map-label-yellow-sea',
+            html: '<div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: bold; color: #4b5563; text-shadow: 0 0 4px #ffffff; white-space: nowrap; opacity: 0.85;">황해</div>',
+            iconSize: [80, 20],
+            iconAnchor: [40, 10]
+        });
+        L.marker(yellowSeaCoords, { icon: yellowSeaIcon, interactive: false }).addTo(desktopMap);
+        L.marker(yellowSeaCoords, { icon: yellowSeaIcon, interactive: false }).addTo(mobileMap);
 
         // Helper function for deterministic pseudo-random generator
         function seedRandom(str) {
