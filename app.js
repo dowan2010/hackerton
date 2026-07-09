@@ -1076,14 +1076,23 @@ document.addEventListener("DOMContentLoaded", () => {
             switchTab("login");
         }
         function closeAuth() {
-            authModal.classList.add("hidden");
+            // 로그인 완료 세션 상태일 때만 닫기 허용 (처음 사이트 진입 차단가드)
+            const session = localStorage.getItem("roothome_session");
+            if (session) {
+                authModal.classList.add("hidden");
+            } else {
+                alert("극비 귀향 관제 정보 조회를 위해 실향민 로그인 또는 회원가입이 필수적입니다.");
+            }
         }
 
         authCloseBtn.addEventListener("click", closeAuth);
 
-        // Click outside to close
+        // Click outside to close (Only allow closing if authenticated)
         authModal.addEventListener("click", (e) => {
-            if (e.target === authModal) closeAuth();
+            if (e.target === authModal) {
+                const session = localStorage.getItem("roothome_session");
+                if (session) closeAuth();
+            }
         });
 
         // Switch Tabs
@@ -1104,7 +1113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tabLoginBtn.addEventListener("click", () => switchTab("login"));
         tabSignupBtn.addEventListener("click", () => switchTab("signup"));
 
-        // Login Handler
+        // Login Handler with STRICT Password Match Verification
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const email = document.getElementById("login-email").value.trim();
@@ -1112,6 +1121,39 @@ document.addEventListener("DOMContentLoaded", () => {
             const submitBtn = loginForm.querySelector("button[type='submit']");
             if (submitBtn) submitBtn.disabled = true;
 
+            // 1. 데모 계정 사전 가드 검증
+            const isDemo = (email === "test@roothome.org" && password === "password123");
+
+            // 2. 로컬 유저 데이터베이스 획득
+            const localUsers = JSON.parse(localStorage.getItem("roothome_users")) || [];
+            const matchedUser = localUsers.find(u => u.email === email);
+
+            if (isDemo || (matchedUser && matchedUser.password === password)) {
+                // 성공 플로우 가동
+                const sessionName = isDemo ? "홍길동(데모)" : matchedUser.name;
+                localStorage.setItem("roothome_session", JSON.stringify({ email, name: sessionName }));
+                updateAuthStateUI();
+                closeAuth();
+                alert(`반갑고 안온한 복귀입니다, ${sessionName} 님!`);
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+
+            // 만약 가입은 되어있으나 비밀번호가 불일치하는 경우 엄격 차단
+            if (matchedUser && matchedUser.password !== password) {
+                alert("❌ 입력하신 비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+
+            // 데모계정인데 비번이 틀린 경우
+            if (email === "test@roothome.org" && password !== "password123") {
+                alert("❌ 데모 계정의 비밀번호가 일치하지 않습니다.");
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+
+            // 3. 백엔드 가입 유저가 있는지도 함께 폴백 시도
             try {
                 const response = await fetch(`${window.backendUrl}/api/auth/login`, {
                     method: "POST",
@@ -1126,17 +1168,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     closeAuth();
                     alert(`반갑고 안온한 복귀입니다, ${data.name} 님!`);
                 } else {
-                    alert(data.detail || "이메일 주소 또는 비밀번호가 일치하지 않습니다.");
+                    alert("❌ 가입되지 않은 이메일 주소이거나 비밀번호가 일치하지 않습니다.");
                 }
             } catch (err) {
-                console.warn("[Auth] 로그인 API 호출 실패:", err);
-                alert("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+                console.warn("[Auth] API 오프라인 - 로컬 로그인 실패 경고:", err);
+                alert("❌ 가입 정보가 존재하지 않거나, 이메일/비밀번호가 올바르지 않습니다.");
             } finally {
                 if (submitBtn) submitBtn.disabled = false;
             }
         });
 
-        // Signup Handler
+        // Signup Handler with Local DB sync
         signupForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const name = document.getElementById("signup-name").value.trim();
@@ -1151,6 +1193,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const submitBtn = signupForm.querySelector("button[type='submit']");
             if (submitBtn) submitBtn.disabled = true;
 
+            // 로컬 가상 유저 DB 에 가입 정보 즉시 이식 저장
+            const localUsers = JSON.parse(localStorage.getItem("roothome_users")) || [];
+            if (localUsers.some(u => u.email === email)) {
+                alert("❌ 이미 등록된 이메일 주소입니다. 로그인을 시도해 주세요.");
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+
+            localUsers.push({ name, email, password, hometown: "", residence: "" });
+            localStorage.setItem("roothome_users", JSON.stringify(localUsers));
+
+            // 백엔드가 기동 중일 수 있으니 백엔드 싱크 시도
             try {
                 const response = await fetch(`${window.backendUrl}/api/auth/signup`, {
                     method: "POST",
@@ -1158,19 +1212,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ email, name, password })
                 });
                 const data = await response.json();
-
+                
                 if (response.ok) {
-                    alert("회원가입이 성공적으로 완료되었습니다! 로그인 해 주세요.");
-                    switchTab("login");
-                } else {
-                    alert(data.detail || "회원가입에 실패했습니다.");
+                    console.log("[Auth Sync] 백엔드 가입 성공 동기화 완료");
                 }
             } catch (err) {
-                console.warn("[Auth] 회원가입 API 호출 실패:", err);
-                alert("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
-            } finally {
-                if (submitBtn) submitBtn.disabled = false;
+                console.log("[Auth Sync] 백엔드 오프라인 - 로컬 가입 전격 처리완료");
             }
+
+            alert("🎉 회원가입이 안전하게 완료되었습니다! 가입하신 정보로 로그인해 주세요.");
+            switchTab("login");
+            if (submitBtn) submitBtn.disabled = false;
         });
 
         // Toggle state triggers
@@ -1205,6 +1257,24 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update UI state based on session
         function updateAuthStateUI() {
             const session = JSON.parse(localStorage.getItem("roothome_session"));
+            const appContainer = document.querySelector(".app-container");
+            const authModal = document.getElementById("auth-modal");
+
+            // 사이트 방문 시 로그인/회원가입 먼저 강제하는 Secure Gateway 가드 작동
+            if (session) {
+                if (appContainer) appContainer.classList.remove("auth-locked-mode");
+                if (authModal) {
+                    authModal.classList.add("hidden");
+                    authModal.classList.remove("auth-strict-no-close");
+                }
+            } else {
+                if (appContainer) appContainer.classList.add("auth-locked-mode");
+                if (authModal) {
+                    authModal.classList.remove("hidden"); // 로그인 폼 필수 팝업!
+                    authModal.classList.add("auth-strict-no-close"); // 닫기 X 버튼 차단!
+                }
+            }
+
             const profileName = document.querySelector(".profile-name");
             const profileRole = document.querySelector(".profile-role");
             const mobProfName = document.querySelector(".profile-user-name");
