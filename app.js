@@ -1068,6 +1068,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
+            // 광역시 확장/축소 상태 — 한 번에 하나만 펼쳐진 채로 유지한다.
+            const metroState = { expandedPrefix: null, entries: {} };
+
+            function collapseExpandedMetro() {
+                const prefix = metroState.expandedPrefix;
+                if (!prefix) return;
+                const entry = metroState.entries[prefix];
+                if (map.hasLayer(entry.districtLayer)) map.removeLayer(entry.districtLayer);
+                if (map.hasLayer(entry.frameLayer)) map.removeLayer(entry.frameLayer);
+                entry.metroLayer.addTo(map);
+                metroState.expandedPrefix = null;
+            }
+
+            function expandMetro(prefix) {
+                if (metroState.expandedPrefix && metroState.expandedPrefix !== prefix) {
+                    collapseExpandedMetro();
+                }
+                const entry = metroState.entries[prefix];
+                if (map.hasLayer(entry.metroLayer)) map.removeLayer(entry.metroLayer);
+                entry.districtLayer.addTo(map);
+                entry.frameLayer.addTo(map);
+                map.fitBounds(entry.bounds, { padding: [20, 20] });
+                metroState.expandedPrefix = prefix;
+            }
+
             function districtStyle(feature) {
                 const data = getMunicipalityData(feature.properties.code, feature.properties.name);
                 return {
@@ -1078,33 +1103,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
             }
 
-            function bindDistrictFeature(feature, layer) {
-                const data = getMunicipalityData(feature.properties.code, feature.properties.name);
-                const pollution = Math.round((100 - data.recovery_rate) * 10) / 10;
-                layer.bindPopup(`<strong>📍 ${data.name}</strong><br>오염도: ${pollution}%<br>복구율: ${data.recovery_rate}%<br>통제 상태: <strong>${data.status}</strong>`);
-                if (data.zone) mapCircles[data.zone.zone_id] = layer;
-                layer.on("click", (e) => {
-                    if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
-                    map.setView(layer.getBounds().getCenter(), zoomOnClick, { animate: true });
-                    if (data.zone) selectZone(data.zone.zone_id);
-                });
-                if (isDesktop) {
-                    layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.72, weight: 2 }));
-                    layer.on("mouseout", () => layer.setStyle({
-                        fillOpacity: data.isKeyZone ? 0.58 : 0.32,
-                        weight: data.isKeyZone ? weight : lightWeight
-                    }));
-                }
+            // metroPrefix: 이 feature가 광역시 소속이면 그 코드 접두, 일반 시/군이면 null.
+            // 일반 시/군을 선택하면 현재 펼쳐진 광역시가 있을 때 원래 통합 뷰로 되돌린다.
+            function bindDistrictFeature(metroPrefix) {
+                return function(feature, layer) {
+                    const data = getMunicipalityData(feature.properties.code, feature.properties.name);
+                    const pollution = Math.round((100 - data.recovery_rate) * 10) / 10;
+                    layer.bindPopup(`<strong>📍 ${data.name}</strong><br>오염도: ${pollution}%<br>복구율: ${data.recovery_rate}%<br>통제 상태: <strong>${data.status}</strong>`);
+                    if (data.zone) mapCircles[data.zone.zone_id] = layer;
+                    layer.on("click", (e) => {
+                        if (e.originalEvent) L.DomEvent.stopPropagation(e.originalEvent);
+                        if (!metroPrefix) collapseExpandedMetro();
+                        map.setView(layer.getBounds().getCenter(), zoomOnClick, { animate: true });
+                        if (data.zone) selectZone(data.zone.zone_id);
+                    });
+                    if (isDesktop) {
+                        layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.72, weight: 2 }));
+                        layer.on("mouseout", () => layer.setStyle({
+                            fillOpacity: data.isKeyZone ? 0.58 : 0.32,
+                            weight: data.isKeyZone ? weight : lightWeight
+                        }));
+                    }
+                };
             }
 
             // 1) 일반 시/군 — 기존처럼 개별 표시
             L.geoJSON({ type: "FeatureCollection", features: plainFeatures }, {
                 style: districtStyle,
-                onEachFeature: bindDistrictFeature
+                onEachFeature: bindDistrictFeature(null)
             }).addTo(map);
 
             // 2) 광역시 — 처음엔 시 전체를 하나로(경계선 없이 같은 색이라 자연스럽게 한 덩어리로 보임),
-            //    클릭하면 실제 구/군 상세 뷰로 전환
+            //    클릭하면 실제 구/군 상세 뷰로 전환. 다른 지역을 선택하거나 다른 광역시를 펼치면 원상복구.
             Object.keys(metroGroups).forEach(prefix => {
                 const features = metroGroups[prefix];
                 const cityName = METRO_PREFIX[prefix];
@@ -1116,24 +1146,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const districtLayer = L.geoJSON(cityCollection, {
                     style: districtStyle,
-                    onEachFeature: bindDistrictFeature
+                    onEachFeature: bindDistrictFeature(prefix)
                 }); // 상세 뷰: 클릭 전엔 지도에 addTo 하지 않음
+
+                // 상세 뷰일 때 시 전체 경계를 굵은 점선 프레임으로 강조 (구별 경계선과 구분되도록)
+                const frameLayer = L.geoJSON(cityCollection, {
+                    style: () => ({ fill: false, color: "#1e293b", weight: isDesktop ? 3 : 2, opacity: 0.85, dashArray: "6 4" }),
+                    interactive: false
+                });
 
                 const metroLayer = L.geoJSON(cityCollection, {
                     style: () => ({ color: getStatusColor(avgStatus), weight: 0, fillColor: getStatusColor(avgStatus), fillOpacity: 0.5 }),
                     onEachFeature: (feature, layer) => {
                         layer.bindPopup(`<strong>📍 ${cityName}</strong><br>평균 오염도: ${avgPollution}%<br>평균 복구율: ${avgRecovery}%<br>통제 상태: <strong>${avgStatus}</strong><br><span style="font-size:11px;color:#64748B;">클릭하면 구·군별 상세 보기</span>`);
-                        layer.on("click", () => {
-                            map.removeLayer(metroLayer);
-                            districtLayer.addTo(map);
-                            map.fitBounds(metroLayer.getBounds(), { padding: [20, 20] });
-                        });
+                        layer.on("click", () => expandMetro(prefix));
                         if (isDesktop) {
                             layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.68 }));
                             layer.on("mouseout", () => layer.setStyle({ fillOpacity: 0.5 }));
                         }
                     }
                 }).addTo(map);
+
+                metroState.entries[prefix] = { metroLayer, districtLayer, frameLayer, bounds: metroLayer.getBounds() };
             });
         }
 
@@ -1151,7 +1185,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderMunicipalities(geoData, mobileMap, mobileMapCircles, false);
 
                 // 3) Global Nodes & GeoJSON Exception fallbacks (해외 유명 선진 도시 기후 다각형 및 신규 한국 거점 예외 렌더링)
+                // KR-GW-01·02는 KR-GW-03과 같은 고성군 소속이라 GeoJSON 폴리곤 하나(GW-03)로 이미 표시됨 —
+                // 여기서 또 그리면 고성군 위에 다각형이 중복으로 겹쳐 보인다.
+                const DUPLICATE_COUNTY_ZONES = ["KR-GW-01", "KR-GW-02"];
                 zonesData.forEach(zone => {
+                    if (DUPLICATE_COUNTY_ZONES.includes(zone.zone_id)) return;
                     if (zone.zone_id.startsWith("GL-") || !desktopMapCircles[zone.zone_id]) {
                         const color = getStatusColor(zone.status);
                         const polygonCoords = generateDistrictPolygon(zone.zone_id, zone.lat, zone.lng);
