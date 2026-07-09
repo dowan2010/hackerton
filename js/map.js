@@ -43,7 +43,10 @@ export function initLeafletMaps() {
         zoomControl: false
     });
     L.tileLayer(tileUrl, { attribution: attribution }).addTo(desktopMap);
-    desktopMap.on("click", (e) => { if (navigatorModeActive) handleNavigatorClick(e.latlng); });
+    desktopMap.on("click", (e) => {
+        if (navigatorModeActive) { handleNavigatorClick(e.latlng); return; }
+        if (window.deselectMetroLayers) window.deselectMetroLayers();
+    });
 
     // 2) Mobile Map
     mobileMap = L.map('mobile-map', {
@@ -255,6 +258,8 @@ export function renderGeoJSONLayers() {
         }
     });
 
+    const metroLayers = [];
+
     function districtStyle(feature) {
         const data = getMunicipalityData(feature.properties.code, feature.properties.name);
         return {
@@ -310,12 +315,13 @@ export function renderGeoJSONLayers() {
                     else e.target.setStyle(districtStyle(feature));
                 },
                 click: (e) => {
+                    L.DomEvent.stopPropagation(e);
                     if (navigatorModeActive) {
                         if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
-                        L.DomEvent.stopPropagation(e);
                         handleNavigatorClick(e.latlng);
                         return;
                     }
+                    metroLayers.forEach(ml => ml.setStyle({ weight: ml._baseWeight, color: 'rgba(255,255,255,0.35)' }));
                     if (data.zone) {
                         window.selectZone(data.zone.zone_id);
                     } else {
@@ -371,16 +377,20 @@ export function renderGeoJSONLayers() {
             }
         }).addTo(desktopMap);
 
+        metroLayer._baseWeight = 0.6;
         metroLayer.on({
             mouseover: () => { if (!navigatorModeActive) metroLayer.setStyle({ fillOpacity: 0.7 }); },
             mouseout: () => { if (!navigatorModeActive) metroLayer.setStyle({ fillOpacity: 0.5 }); },
             click: (e) => {
+                L.DomEvent.stopPropagation(e);
                 if (navigatorModeActive) {
                     if (e.originalEvent && typeof e.originalEvent.stopPropagation === "function") e.originalEvent.stopPropagation();
-                    L.DomEvent.stopPropagation(e);
                     handleNavigatorClick(e.latlng);
                     return;
                 }
+                metroLayers.forEach(ml => ml.setStyle({ weight: ml._baseWeight, color: 'rgba(255,255,255,0.35)' }));
+                metroLayer.setStyle({ weight: 3.5, color: '#2563EB' });
+
                 const fakeZoneId = `METRO-${prefix}`;
                 if (window.zonesData && !window.zonesData.find(z => z.zone_id === fakeZoneId)) {
                     window.zonesData.push({
@@ -401,6 +411,7 @@ export function renderGeoJSONLayers() {
             }
         });
 
+        metroLayers.push(metroLayer);
         allMunicipalityLayers.push(metroLayer);
     });
 
@@ -453,6 +464,10 @@ export function renderGeoJSONLayers() {
         }); // Preserved in memory without rendering on mobileMap
         mobileMapCircles[z.zone_id] = mCircle;
     });
+
+    window.deselectMetroLayers = function() {
+        metroLayers.forEach(ml => ml.setStyle({ weight: ml._baseWeight, color: 'rgba(255,255,255,0.35)' }));
+    };
 }
 
 // 3) Safe Path Finder Logic (REAL ROAD OSRM Routing + Blocked Zone Bypassing)
