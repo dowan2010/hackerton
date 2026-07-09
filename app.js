@@ -19,7 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const zone = zonesData.find(z => z.zone_id === selectedZoneId);
         const el = document.getElementById("countdown-days");
         if (!zone || !el) return;
-        const totalDays = Math.round(zone.time_to_safe_years * 365);
+        // 이미 귀향시작(안전 완료)인 zone은 time_to_safe_years가 0이라 슬라이더를 움직여도
+        // 항상 0으로 고정되어 "고장난 것"처럼 보인다. 이 경우 데모 기본 스케일(142일)로
+        // 대체해 슬라이더 조작이 항상 눈에 보이는 반응을 주도록 한다.
+        const totalDays = zone.time_to_safe_years > 0 ? Math.round(zone.time_to_safe_years * 365) : 142;
         el.textContent = Math.max(0, Math.round((1 - timelinePercentage) * totalDays));
     }
     
