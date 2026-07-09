@@ -1,0 +1,25 @@
+# Secrets & configuration files
+.env
+backend/.env
+serviceAccountKey.json
+backend/serviceAccountKey.json
+
+# Local virtual environments
+backend/venv/
+venv/
+.venv/
+env/
+
+# Python compiled cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating system noise
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
