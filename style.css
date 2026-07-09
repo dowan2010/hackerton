@@ -415,9 +415,14 @@ body {
 /* --- TAB 1: ROOTMAP SPECIFIC LAYOUT --- */
 .rootmap-grid-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 380px 1fr;
     gap: 20px;
     height: 100%;
+    transition: grid-template-columns 0.3s ease-in-out;
+}
+
+.rootmap-grid-layout.map-only {
+    grid-template-columns: 1fr;
 }
 
 /* Left Stats Panel */

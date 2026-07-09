@@ -699,24 +699,27 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- RootMap Sub-tabs (Realtime vs Predictive Analysis) ---
     const btnRealtime = document.getElementById("btn-realtime-env");
     const btnAnalysis = document.getElementById("btn-predictive-analysis");
-    const viewRealtime = document.getElementById("rootmap-realtime-view");
-    const viewAnalysis = document.getElementById("rootmap-analysis-view");
+    const mainGrid = document.getElementById("rootmap-main-layout");
+    const statsPanel = document.getElementById("rootmap-stats-panel");
 
-    if (btnRealtime && btnAnalysis && viewRealtime && viewAnalysis) {
+    if (btnRealtime && btnAnalysis && mainGrid && statsPanel) {
         btnRealtime.addEventListener("click", () => {
             btnRealtime.classList.add("active");
             btnAnalysis.classList.remove("active");
-            viewRealtime.classList.remove("hidden");
-            viewAnalysis.classList.add("hidden");
+            mainGrid.classList.add("map-only");
+            statsPanel.classList.add("hidden");
             setTimeout(() => {
                 if (desktopMap) desktopMap.invalidateSize();
-            }, 100);
+            }, 310);
         });
         btnAnalysis.addEventListener("click", () => {
             btnAnalysis.classList.add("active");
             btnRealtime.classList.remove("active");
-            viewAnalysis.classList.remove("hidden");
-            viewRealtime.classList.add("hidden");
+            mainGrid.classList.remove("map-only");
+            statsPanel.classList.remove("hidden");
+            setTimeout(() => {
+                if (desktopMap) desktopMap.invalidateSize();
+            }, 310);
         });
     }
 
