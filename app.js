@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Bind state to window so other modules can dynamically read/write
     window.zonesData = [...mockZones];
-    window.selectedZoneId = "KR-GW-03"; // Default: 아야진리
+    window.selectedZoneId = "KR-DG-01"; // Default: 대구 서구 섬유난민촌
     window.warmingDegrees = 0.0;
     
     // Auto-resolve Backend URL depending on local/production context
@@ -99,6 +99,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mobileMap && mobileMapCircles[zoneId]) {
             mobileMap.setView([zone.lat, zone.lng], mobileMap.getZoom(), { animate: true });
             mobileMapCircles[zoneId].openPopup();
+        }
+
+        // Update Spring Timeline Active Zone Headers dynamically
+        const dTimelineZone = document.getElementById("desktop-timeline-active-zone");
+        if (dTimelineZone) {
+            dTimelineZone.textContent = zone.zone_name.split(" - ")[1] || zone.zone_name;
+        }
+        const mTimelineZone = document.getElementById("mobile-timeline-active-zone");
+        if (mTimelineZone) {
+            mTimelineZone.textContent = zone.zone_name.split(" - ")[1] || zone.zone_name;
         }
 
         updateCountdownDisplay();
