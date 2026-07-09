@@ -3091,3 +3091,34 @@ body {
     color: var(--color-primary) !important;
 }
 
+/* Mobile Sub-tabs Segments Styling */
+.mobile-sub-tabs {
+    display: flex;
+    background-color: var(--color-bg-secondary);
+    padding: 6px;
+    border-radius: 12px;
+    margin: 12px 16px;
+    gap: 4px;
+}
+
+.mobile-sub-tab {
+    flex: 1;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+}
+
+.mobile-sub-tab.active {
+    background-color: var(--color-surface);
+    color: var(--color-primary) !important;
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+}
+

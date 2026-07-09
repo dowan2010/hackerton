@@ -106,115 +106,8 @@
             <div class="content-body">
                 <!-- TAB 1: ROOTMAP (DESKTOP) -->
                 <section class="tab-content active" id="tab-rootmap">
-                    <div class="rootmap-grid-layout map-only" id="rootmap-main-layout">
-                        <!-- Left Panel (Eco-Recovery Predictor) -->
-                        <div class="stats-panel hidden" id="rootmap-stats-panel">
-                            <div class="panel-header-row" style="margin-bottom: 20px;">
-                                <div class="panel-title-group">
-                                    <h2 class="panel-section-title" id="analysis-panel-title">에코-회복 10년 예측 분석</h2>
-                                    <p class="panel-section-subtitle">AI 시뮬레이션 기반 지역 생태계 변화 예측 모델</p>
-                                </div>
-                                <span class="badge-live" style="background-color: var(--color-primary-light); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--color-primary); display: flex; align-items: center; gap: 4px;">
-                                    <span class="dot" style="width: 6px; height: 6px; background-color: var(--color-primary); border-radius: 50%;"></span> AI 분석
-                                </span>
-                            </div>
-
-                            <div class="metric-card">
-                                <h3 class="card-title">거주 환경 대기질 (AQI)</h3>
-                                <div class="circle-charts-row">
-                                    <div class="circle-chart-container">
-                                        <svg class="progress-ring" width="100" height="100">
-                                            <circle class="progress-ring__background" stroke="#E2E8F0" stroke-width="8" fill="transparent" r="38" cx="50" cy="50"/>
-                                            <circle class="progress-ring__circle" id="aqi-o2-circle" stroke="#2563EB" stroke-width="8" fill="transparent" r="38" cx="50" cy="50" stroke-dasharray="238.76" stroke-dashoffset="57.3"/>
-                                        </svg>
-                                        <div class="circle-val" id="aqi-o2-val">76%</div>
-                                        <div class="circle-label">O2 수치</div>
-                                    </div>
-                                    <div class="circle-chart-container">
-                                        <svg class="progress-ring" width="100" height="100">
-                                            <circle class="progress-ring__background" stroke="#E2E8F0" stroke-width="8" fill="transparent" r="38" cx="50" cy="50"/>
-                                            <circle class="progress-ring__circle" id="aqi-dust-circle" stroke="#94A3B8" stroke-width="8" fill="transparent" r="38" cx="50" cy="50" stroke-dasharray="238.76" stroke-dashoffset="181.4"/>
-                                        </svg>
-                                        <div class="circle-val" id="aqi-dust-val">24%</div>
-                                        <div class="circle-label">미세먼지</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="metric-card">
-                                <div class="card-title-row">
-                                    <h3 class="card-title">생활 용수 및 수자원 확보</h3>
-                                    <span class="text-trend-up" id="water-trend"><i data-lucide="trending-up"></i> +8.2%</span>
-                                </div>
-                                <div class="bar-chart-container">
-                                    <div class="bar-chart-bars" id="water-bars">
-                                        <!-- Bars loaded in JS -->
-                                    </div>
-                                </div>
-                                <p class="chart-caption" id="water-caption">담수 구역 정화 가속화 단계 진입</p>
-                            </div>
-
-                            <div class="metric-card">
-                                <h3 class="card-title">주거지 지반 안정성 및 인프라</h3>
-                                <div class="progress-list">
-                                    <div class="progress-item">
-                                        <div class="progress-label-row">
-                                            <span class="progress-name">지반 안정화율</span>
-                                            <span class="progress-percent" id="soil-percent">64%</span>
-                                        </div>
-                                        <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" id="soil-fill" style="width: 64%; background-color: #1E3A8A;"></div>
-                                        </div>
-                                    </div>
-                                    <div class="progress-item">
-                                        <div class="progress-label-row">
-                                            <span class="progress-name">거주 인프라 구축</span>
-                                            <span class="progress-percent" id="carbon-percent">42%</span>
-                                        </div>
-                                        <div class="progress-bar-bg">
-                                            <div class="progress-bar-fill" id="carbon-fill" style="width: 42%; background-color: #3B82F6;"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="score-card-blue" style="margin-bottom: 16px;">
-                                <h3 class="score-card-title">예상 거주 적합도 점수</h3>
-                                <div class="score-display">
-                                    <span class="score-big" id="stability-score">8.4</span>
-                                    <span class="score-slash">/ 10</span>
-                                </div>
-                                <p class="score-description" id="stability-desc">현재 탄소 고정율과 수질 개선 추세를 바탕으로 생태계 자립도가 임계치를 넘어섰습니다.</p>
-                            </div>
-
-                            <div class="metric-card analysis-card" id="biodiversity-sim-card" style="margin-bottom: 16px;">
-                                <h3 class="card-title" style="margin-bottom: 16px;">생물 다양성 회복 시뮬레이션</h3>
-                                <div class="mock-chart-container" style="height: 180px; display:flex; align-items:flex-end; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--color-border);">
-                                    <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 20%; border-radius:4px 4px 0 0;"></div>
-                                    <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 45%; border-radius:4px 4px 0 0;"></div>
-                                    <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 60%; border-radius:4px 4px 0 0;"></div>
-                                    <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 80%; border-radius:4px 4px 0 0;"></div>
-                                    <div style="width: 15%; background: linear-gradient(to top, #10B981, #059669); height: 100%; border-radius:4px 4px 0 0;"></div>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; margin-top: 8px; color: var(--color-text-muted); font-size: 11px;">
-                                    <span>1단계</span>
-                                    <span>2단계</span>
-                                    <span>3단계</span>
-                                    <span>4단계</span>
-                                    <span>완전회복</span>
-                                </div>
-                                <p class="chart-caption" style="margin-top: 12px;">자연 복원력에 따른 종 다양성 증가율</p>
-                            </div>
-
-                            <div class="metric-card analysis-card" style="margin-bottom: 16px;">
-                                <h3 class="card-title" style="margin-bottom: 12px;">상세 예측 리포트 (Gemini AI 생성)</h3>
-                                <div class="report-content" style="background: var(--color-bg-secondary); padding: 16px; border-radius: 12px; line-height: 1.6; color: var(--color-text-muted); font-size: 13px;">
-                                    <p style="margin-bottom: 12px;"><strong style="color: var(--color-text-main);">[2026-2030] 1차 회복기:</strong> <span id="analysis-report-part1">토양 내 미세 플라스틱 및 오염 물질 분해 속도가 35% 증가하며, 하천 수질이 2등급 이상으로 안정화됩니다. 이로 인해 수생 식물 군락이 40% 이상 복원될 것으로 예측됩니다. 특히 오염 집중 구역의 회복 탄력성이 극대화되어 자연 복원 가속화 단계에 진입합니다.</span></p>
-                                    <p><strong style="color: var(--color-text-main);">[2031-2035] 2차 안정기:</strong> <span id="analysis-report-part2">기후 조절 능력이 일부 회복되어 극한 기상 현상의 국지적 피해가 20% 감소합니다. 자생 생태계가 외부 개입 없이도 독립적으로 순환할 수 있는 자립 임계점(Stability Threshold 9.0)을 돌파합니다. 실향민의 영구적 재정착이 가능한 환경 퀄리티 점수를 지속적으로 상회할 것으로 전망됩니다.</span></p>
-                                </div>
-                            </div>
-                        </div>
-
+                    <!-- Realtime View (Map Only) -->
+                    <div class="rootmap-grid-layout map-only" id="rootmap-realtime-view">
                         <!-- Right Panel -->
                         <div class="map-panel" id="rootmap-map-panel">
                             <div class="map-top-bar">
@@ -293,6 +186,116 @@
                                     <span class="status-val" id="selected-zone-status">회복 가속화</span>
                                     <button class="btn-export-report"><i data-lucide="download"></i> 보고서 추출</button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictive Analysis View -->
+                    <div class="rootmap-analysis-layout hidden" id="rootmap-analysis-view" style="padding: 20px; height: 100%; overflow-y: auto;">
+                        <div class="analysis-header" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h2 class="panel-section-title" id="analysis-panel-title" style="font-size: 28px; margin-bottom: 8px;">에코-회복 10년 예측 분석</h2>
+                                <p class="panel-section-subtitle" style="font-size: 14px;">AI 시뮬레이션 기반 지역 생태계 변화 예측 모델</p>
+                            </div>
+                            <span class="badge-live" style="background-color: var(--color-primary-light); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--color-primary); display: flex; align-items: center; gap: 6px;">
+                                <span class="dot" style="width: 8px; height: 8px; background-color: var(--color-primary); border-radius: 50%;"></span> AI 분석 가동중
+                            </span>
+                        </div>
+                        
+                        <div class="analysis-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                            <div class="metric-card">
+                                <h3 class="card-title">거주 환경 대기질 (AQI)</h3>
+                                <div class="circle-charts-row">
+                                    <div class="circle-chart-container">
+                                        <svg class="progress-ring" width="100" height="100">
+                                            <circle class="progress-ring__background" stroke="#E2E8F0" stroke-width="8" fill="transparent" r="38" cx="50" cy="50"/>
+                                            <circle class="progress-ring__circle" id="aqi-o2-circle" stroke="#2563EB" stroke-width="8" fill="transparent" r="38" cx="50" cy="50" stroke-dasharray="238.76" stroke-dashoffset="57.3"/>
+                                        </svg>
+                                        <div class="circle-val" id="aqi-o2-val">76%</div>
+                                        <div class="circle-label">O2 수치</div>
+                                    </div>
+                                    <div class="circle-chart-container">
+                                        <svg class="progress-ring" width="100" height="100">
+                                            <circle class="progress-ring__background" stroke="#E2E8F0" stroke-width="8" fill="transparent" r="38" cx="50" cy="50"/>
+                                            <circle class="progress-ring__circle" id="aqi-dust-circle" stroke="#94A3B8" stroke-width="8" fill="transparent" r="38" cx="50" cy="50" stroke-dasharray="238.76" stroke-dashoffset="181.4"/>
+                                        </svg>
+                                        <div class="circle-val" id="aqi-dust-val">24%</div>
+                                        <div class="circle-label">미세먼지</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="card-title-row">
+                                    <h3 class="card-title">생활 용수 및 수자원 확보</h3>
+                                    <span class="text-trend-up" id="water-trend"><i data-lucide="trending-up"></i> +8.2%</span>
+                                </div>
+                                <div class="bar-chart-container">
+                                    <div class="bar-chart-bars" id="water-bars">
+                                        <!-- Bars loaded in JS -->
+                                    </div>
+                                </div>
+                                <p class="chart-caption" id="water-caption">담수 구역 정화 가속화 단계 진입</p>
+                            </div>
+
+                            <div class="metric-card">
+                                <h3 class="card-title">주거지 지반 안정성 및 인프라</h3>
+                                <div class="progress-list">
+                                    <div class="progress-item">
+                                        <div class="progress-label-row">
+                                            <span class="progress-name">지반 안정화율</span>
+                                            <span class="progress-percent" id="soil-percent">64%</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" id="soil-fill" style="width: 64%; background-color: #1E3A8A;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-item">
+                                        <div class="progress-label-row">
+                                            <span class="progress-name">거주 인프라 구축</span>
+                                            <span class="progress-percent" id="carbon-percent">42%</span>
+                                        </div>
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-bar-fill" id="carbon-fill" style="width: 42%; background-color: #3B82F6;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="score-card-blue">
+                                <h3 class="score-card-title">예상 거주 적합도 점수</h3>
+                                <div class="score-display">
+                                    <span class="score-big" id="stability-score">8.4</span>
+                                    <span class="score-slash">/ 10</span>
+                                </div>
+                                <p class="score-description" id="stability-desc">현재 탄소 고정율과 수질 개선 추세를 바탕으로 생태계 자립도가 임계치를 넘어섰습니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="metric-card analysis-card" id="biodiversity-sim-card" style="margin-bottom: 24px;">
+                            <h3 class="card-title" style="margin-bottom: 16px;">생물 다양성 회복 시뮬레이션</h3>
+                            <div class="mock-chart-container" style="height: 200px; display:flex; align-items:flex-end; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid var(--color-border);">
+                                <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 20%; border-radius:4px 4px 0 0;"></div>
+                                <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 45%; border-radius:4px 4px 0 0;"></div>
+                                <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 60%; border-radius:4px 4px 0 0;"></div>
+                                <div style="width: 15%; background: linear-gradient(to top, #34D399, #10B981); height: 80%; border-radius:4px 4px 0 0;"></div>
+                                <div style="width: 15%; background: linear-gradient(to top, #10B981, #059669); height: 100%; border-radius:4px 4px 0 0;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px; color: var(--color-text-muted); font-size: 12px;">
+                                <span>1단계</span>
+                                <span>2단계</span>
+                                <span>3단계</span>
+                                <span>4단계</span>
+                                <span>완전회복</span>
+                            </div>
+                            <p class="chart-caption" style="margin-top: 12px;">자연 복원력에 따른 종 다양성 증가율</p>
+                        </div>
+
+                        <div class="metric-card analysis-card" style="margin-bottom: 24px;">
+                            <h3 class="card-title" style="margin-bottom: 16px;">상세 예측 리포트 (Gemini AI 생성)</h3>
+                            <div class="report-content" style="background: var(--color-bg-secondary); padding: 24px; border-radius: 12px; line-height: 1.8; color: var(--color-text-muted); font-size: 14px;">
+                                <p style="margin-bottom: 16px;"><strong style="color: var(--color-text-main);">[2026-2030] 1차 회복기:</strong> <span id="analysis-report-part1">토양 내 미세 플라스틱 및 오염 물질 분해 속도가 35% 증가하며, 하천 수질이 2등급 이상으로 안정화됩니다. 이로 인해 수생 식물 군락이 40% 이상 복원될 것으로 예측됩니다. 특히 오염 집중 구역의 회복 탄력성이 극대화되어 자연 복원 가속화 단계에 진입합니다.</span></p>
+                                <p><strong style="color: var(--color-text-main);">[2031-2035] 2차 안정기:</strong> <span id="analysis-report-part2">기후 조절 능력이 일부 회복되어 극한 기상 현상의 국지적 피해가 20% 감소합니다. 자생 생태계가 외부 개입 없이도 독립적으로 순환할 수 있는 자립 임계점(Stability Threshold 9.0)을 돌파합니다. 실향민의 영구적 재정착이 가능한 환경 퀄리티 점수를 지속적으로 상회할 것으로 전망됩니다.</span></p>
                             </div>
                         </div>
                     </div>
@@ -548,8 +551,14 @@
             
             <!-- MOBILE TAB 1: HOME (RootMap - image3.png) -->
             <section class="mobile-tab-content active" id="mobtab-home">
+                <!-- Mobile Sub-tabs -->
+                <div class="mobile-sub-tabs">
+                    <button class="mobile-sub-tab active" id="btn-mob-realtime">실시간 환경</button>
+                    <button class="mobile-sub-tab" id="btn-mob-analysis">예측 분석</button>
+                </div>
+
                 <!-- Map Viewport (Real Leaflet Map) -->
-                <div class="mobile-map-card">
+                <div class="mobile-map-card" id="mob-realtime-view" style="margin-top: 4px;">
                     <div class="mobile-map-viewport">
                         <div id="mobile-map" class="map-instance"></div>
                         <div class="mobile-map-legend">
@@ -563,82 +572,85 @@
                     </div>
                 </div>
 
-                <!-- Analysis / Eco recovery predictor -->
-                <div class="mobile-card">
-                    <span class="mobile-card-tag">분석</span>
-                    <div class="mob-card-header-row">
-                        <h3 class="mobile-card-title">에코 회복 예측기</h3>
-                        <span class="badge-tag-blue" id="mobile-toxic-badge"><i data-lucide="trending-down"></i> -14% 독성 감소</span>
-                    </div>
-                    
-                    <!-- Line Chart SVG representation -->
-                    <div class="line-chart-svg-container">
-                        <svg class="line-chart-svg" viewBox="0 0 300 120">
-                            <line x1="0" y1="20" x2="300" y2="20" stroke="#E2E8F0" stroke-dasharray="4"/>
-                            <line x1="0" y1="65" x2="300" y2="65" stroke="#E2E8F0" stroke-dasharray="4"/>
-                            <line x1="0" y1="100" x2="300" y2="100" stroke="#E2E8F0" stroke-dasharray="4"/>
-                            
-                            <path id="mobile-chart-line-path" d="M10,95 C70,80 120,45 180,35 C240,25 270,18 290,18" fill="none" stroke="#2563EB" stroke-width="4"/>
-                            
-                            <circle id="mobile-chart-dot" cx="290" cy="18" r="5" fill="#2563EB"/>
-                            <text x="240" y="32" class="chart-text-value" id="mobile-line-chart-val">12.4</text>
-                            <text x="240" y="44" class="chart-text-sub">목표치: &lt; 5.0</text>
-                        </svg>
-                        <div class="chart-footer-label">토양 오염 추세 (PPM)</div>
-                    </div>
-                </div>
-
-                <!-- Air Quality Card -->
-                <div class="mobile-card align-center">
-                    <h4 class="mobile-card-subtitle">현재 공기 질</h4>
-                    <div class="circular-progress-wrapper">
-                        <svg class="mob-circle" width="110" height="110">
-                            <circle cx="55" cy="55" r="46" fill="transparent" stroke="#F1F5F9" stroke-width="10"/>
-                            <circle cx="55" cy="55" r="46" fill="transparent" stroke="#2563EB" stroke-width="10" 
-                                    stroke-dasharray="289" id="mobile-aqi-circle" stroke-dashoffset="43.3"/>
-                        </svg>
-                        <div class="mob-circle-center">
-                            <span class="val" id="mobile-aqi-val">85%</span>
-                            <span class="lbl">최적</span>
+                <!-- Predictive Analysis Sub-view -->
+                <div class="mobile-analysis-cards-container hidden" id="mob-analysis-view" style="padding: 0 16px;">
+                    <!-- Analysis / Eco recovery predictor -->
+                    <div class="mobile-card">
+                        <span class="mobile-card-tag">분석</span>
+                        <div class="mob-card-header-row">
+                            <h3 class="mobile-card-title">에코 회복 예측기</h3>
+                            <span class="badge-tag-blue" id="mobile-toxic-badge"><i data-lucide="trending-down"></i> -14% 독성 감소</span>
+                        </div>
+                        
+                        <!-- Line Chart SVG representation -->
+                        <div class="line-chart-svg-container">
+                            <svg class="line-chart-svg" viewBox="0 0 300 120">
+                                <line x1="0" y1="20" x2="300" y2="20" stroke="#E2E8F0" stroke-dasharray="4"/>
+                                <line x1="0" y1="65" x2="300" y2="65" stroke="#E2E8F0" stroke-dasharray="4"/>
+                                <line x1="0" y1="100" x2="300" y2="100" stroke="#E2E8F0" stroke-dasharray="4"/>
+                                
+                                <path id="mobile-chart-line-path" d="M10,95 C70,80 120,45 180,35 C240,25 270,18 290,18" fill="none" stroke="#2563EB" stroke-width="4"/>
+                                
+                                <circle id="mobile-chart-dot" cx="290" cy="18" r="5" fill="#2563EB"/>
+                                <text x="240" y="32" class="chart-text-value" id="mobile-line-chart-val">12.4</text>
+                                <text x="240" y="44" class="chart-text-sub">목표치: &lt; 5.0</text>
+                            </svg>
+                            <div class="chart-footer-label">토양 오염 추세 (PPM)</div>
                         </div>
                     </div>
-                    <p class="mobile-card-desc" id="mobile-aqi-desc">지난 배포 이후 미세먼지가 40% 감소했습니다.</p>
-                </div>
 
-                <!-- NDVI Card -->
-                <div class="mobile-card">
-                    <div class="mob-card-header-row mb-8">
-                        <h4 class="mobile-card-subtitle font-bold">정규식생지수 (NDVI)</h4>
-                        <span class="ndvi-score" id="mobile-ndvi-val">0.68 / 1.0</span>
-                    </div>
-                    <div class="progress-bar-bg mb-12">
-                        <div class="progress-bar-fill" id="mobile-ndvi-fill" style="width: 68%; background-color: #1E3A8A;"></div>
-                    </div>
-                    <p class="mobile-card-desc-left" id="mobile-ndvi-desc">7-G 구역에서 식생 밀도가 회복력을 보이고 있습니다.</p>
-                </div>
-
-                <!-- Simulation Countdown Card -->
-                <div class="mobile-card">
-                    <h3 class="mobile-card-title-lg">시뮬레이션: 귀환 카운트다운</h3>
-                    <p class="mobile-card-desc-left mb-16">타임라인을 조정하여 생태계 안정화 벤치마크를 예측합니다.</p>
-                    
-                    <div class="simulation-score-row mb-16">
-                        <span class="sim-years" id="mobile-sim-years">Y24</span>
-                        <span class="badge-tag-status" id="mobile-status-badge-timeline">안정 상태</span>
-                    </div>
-
-                    <div class="timeline-track-wrapper">
-                        <div class="timeline-track-slider">
-                            <div class="track-fill" id="mobile-timeline-track-fill" style="width: 80%;"></div>
-                            <span class="track-thumb" id="mobile-timeline-track-thumb" style="left: 80%;"></span>
+                    <!-- Air Quality Card -->
+                    <div class="mobile-card align-center">
+                        <h4 class="mobile-card-subtitle">현재 공기 질</h4>
+                        <div class="circular-progress-wrapper">
+                            <svg class="mob-circle" width="110" height="110">
+                                <circle cx="55" cy="55" r="46" fill="transparent" stroke="#F1F5F9" stroke-width="10"/>
+                                <circle cx="55" cy="55" r="46" fill="transparent" stroke="#2563EB" stroke-width="10" 
+                                        stroke-dasharray="289" id="mobile-aqi-circle" stroke-dashoffset="43.3"/>
+                            </svg>
+                            <div class="mob-circle-center">
+                                <span class="val" id="mobile-aqi-val">85%</span>
+                                <span class="lbl">최적</span>
+                            </div>
                         </div>
-                        <div class="timeline-labels-row">
-                            <span>현재</span>
-                            <span>5년</span>
-                            <span>10년</span>
-                            <span>15년</span>
-                            <span>20년</span>
-                            <span class="font-blue font-bold">25년(완료)</span>
+                        <p class="mobile-card-desc" id="mobile-aqi-desc">지난 배포 이후 미세먼지가 40% 감소했습니다.</p>
+                    </div>
+
+                    <!-- NDVI Card -->
+                    <div class="mobile-card">
+                        <div class="mob-card-header-row mb-8">
+                            <h4 class="mobile-card-subtitle font-bold">정규식생지수 (NDVI)</h4>
+                            <span class="ndvi-score" id="mobile-ndvi-val">0.68 / 1.0</span>
+                        </div>
+                        <div class="progress-bar-bg mb-12">
+                            <div class="progress-bar-fill" id="mobile-ndvi-fill" style="width: 68%; background-color: #1E3A8A;"></div>
+                        </div>
+                        <p class="mobile-card-desc-left" id="mobile-ndvi-desc">7-G 구역에서 식생 밀도가 회복력을 보이고 있습니다.</p>
+                    </div>
+
+                    <!-- Simulation Countdown Card -->
+                    <div class="mobile-card">
+                        <h3 class="mobile-card-title-lg">시뮬레이션: 귀환 카운트다운</h3>
+                        <p class="mobile-card-desc-left mb-16">타임라인을 조정하여 생태계 안정화 벤치마크를 예측합니다.</p>
+                        
+                        <div class="simulation-score-row mb-16">
+                            <span class="sim-years" id="mobile-sim-years">Y24</span>
+                            <span class="badge-tag-status" id="mobile-status-badge-timeline">안정 상태</span>
+                        </div>
+
+                        <div class="timeline-track-wrapper">
+                            <div class="timeline-track-slider">
+                                <div class="track-fill" id="mobile-timeline-track-fill" style="width: 80%;"></div>
+                                <span class="track-thumb" id="mobile-timeline-track-thumb" style="left: 80%;"></span>
+                            </div>
+                            <div class="timeline-labels-row">
+                                <span>현재</span>
+                                <span>5년</span>
+                                <span>10년</span>
+                                <span>15년</span>
+                                <span>20년</span>
+                                <span class="font-blue font-bold">25년(완료)</span>
+                            </div>
                         </div>
                     </div>
                 </div>

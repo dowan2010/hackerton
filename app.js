@@ -696,18 +696,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- RootMap Sub-tabs (Realtime vs Predictive Analysis) ---
+    // --- Desktop RootMap Sub-tabs (Realtime vs Predictive Analysis) ---
     const btnRealtime = document.getElementById("btn-realtime-env");
     const btnAnalysis = document.getElementById("btn-predictive-analysis");
-    const mainGrid = document.getElementById("rootmap-main-layout");
-    const statsPanel = document.getElementById("rootmap-stats-panel");
+    const viewRealtime = document.getElementById("rootmap-realtime-view");
+    const viewAnalysis = document.getElementById("rootmap-analysis-view");
 
-    if (btnRealtime && btnAnalysis && mainGrid && statsPanel) {
+    if (btnRealtime && btnAnalysis && viewRealtime && viewAnalysis) {
         btnRealtime.addEventListener("click", () => {
             btnRealtime.classList.add("active");
             btnAnalysis.classList.remove("active");
-            mainGrid.classList.add("map-only");
-            statsPanel.classList.add("hidden");
+            viewRealtime.classList.remove("hidden");
+            viewAnalysis.classList.add("hidden");
             setTimeout(() => {
                 if (desktopMap) desktopMap.invalidateSize();
             }, 310);
@@ -715,11 +715,32 @@ document.addEventListener("DOMContentLoaded", () => {
         btnAnalysis.addEventListener("click", () => {
             btnAnalysis.classList.add("active");
             btnRealtime.classList.remove("active");
-            mainGrid.classList.remove("map-only");
-            statsPanel.classList.remove("hidden");
+            viewAnalysis.classList.remove("hidden");
+            viewRealtime.classList.add("hidden");
+        });
+    }
+
+    // --- Mobile RootMap Sub-tabs ---
+    const btnMobRealtime = document.getElementById("btn-mob-realtime");
+    const btnMobAnalysis = document.getElementById("btn-mob-analysis");
+    const mobRealtimeView = document.getElementById("mob-realtime-view");
+    const mobAnalysisView = document.getElementById("mob-analysis-view");
+
+    if (btnMobRealtime && btnMobAnalysis && mobRealtimeView && mobAnalysisView) {
+        btnMobRealtime.addEventListener("click", () => {
+            btnMobRealtime.classList.add("active");
+            btnMobAnalysis.classList.remove("active");
+            mobRealtimeView.classList.remove("hidden");
+            mobAnalysisView.classList.add("hidden");
             setTimeout(() => {
-                if (desktopMap) desktopMap.invalidateSize();
+                if (mobileMap) mobileMap.invalidateSize();
             }, 310);
+        });
+        btnMobAnalysis.addEventListener("click", () => {
+            btnMobAnalysis.classList.add("active");
+            btnMobRealtime.classList.remove("active");
+            mobAnalysisView.classList.remove("hidden");
+            mobRealtimeView.classList.add("hidden");
         });
     }
 
