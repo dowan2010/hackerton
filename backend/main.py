@@ -76,12 +76,12 @@ async def upload_and_evaluate_document(
         file_bytes = await file.read()
         
         # 2) Firebase Storage 업로드 진행
-        public_url = firebase_service.upload_document_file(user_id, file_bytes, file.filename)
+        public_url = firebase_service.upload_document_file(user_id, file_bytes, file.filename, content_type=file.content_type)
         print(f"[API] 파일 업로드 완료. URL: {public_url}")
         
         # 3) Gemini API 멀티모달 정형 데이터 분석 진행
         print("[API] Gemini 멀티모달 분석을 시작합니다...")
-        analysis_result = await gemini_service.analyze_document(file_bytes)
+        analysis_result = await gemini_service.analyze_document(file_bytes, mime_type=file.content_type)
         print(f"[API] Gemini 분석 완료: {analysis_result}")
         
         # 4) Dignity Score Matrix 알고리즘 기반 스코어 연산

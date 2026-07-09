@@ -19,7 +19,7 @@ class GeminiService:
             except Exception as e:
                 print(f"[Gemini Warning] Google GenAI Client 초기화 실패: {str(e)}. '가상 AI 데모 모드'로 응답합니다.")
 
-    async def analyze_document(self, image_bytes: bytes) -> DocumentAnalysisResult:
+    async def analyze_document(self, image_bytes: bytes, mime_type: str = "image/jpeg") -> DocumentAnalysisResult:
         """
         제출된 증빙 서류 이미지(등본, 진단서 등)에서 주민 정보를 멀티모달 인식 및 Structured Output으로 정형 추출합니다.
         """
@@ -37,7 +37,7 @@ class GeminiService:
         try:
             image_part = types.Part.from_bytes(
                 data=image_bytes,
-                mime_type="image/jpeg",
+                mime_type=mime_type,
             )
             
             prompt = (

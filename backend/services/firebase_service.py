@@ -195,7 +195,7 @@ class FirebaseService:
                 queue_number=7 # 임의 대기 번호 부여
             )
 
-    def upload_document_file(self, user_id: str, file_bytes: bytes, filename: str) -> str:
+    def upload_document_file(self, user_id: str, file_bytes: bytes, filename: str, content_type: str = "image/jpeg") -> str:
         """Cloud Storage에 유저 서류 파일을 안전하게 업로드하고 public URL을 발급합니다."""
         safe_filename = f"{user_id}_{uuid.uuid4().hex}_{filename}"
         
@@ -206,7 +206,7 @@ class FirebaseService:
             
         try:
             blob = self.bucket.blob(f"applicants/{user_id}/{safe_filename}")
-            blob.upload_from_string(file_bytes, content_type="image/jpeg")
+            blob.upload_from_string(file_bytes, content_type=content_type)
             blob.make_public()
             return blob.public_url
         except Exception as e:
