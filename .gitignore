@@ -1,0 +1,40 @@
+# Secrets & configuration files
+.env
+backend/.env
+serviceAccountKey.json
+backend/serviceAccountKey.json
+
+# Local virtual environments
+backend/venv/
+venv/
+.venv/
+env/
+
+# Python compiled cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating system noise
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Exclude backend and non-frontend files from git tracking on this branch
+backend/
+ocr_all.txt
+message.txt
+message1.txt
+remend.md
+AGENTS (1).md
+app.js.orig
+image.png
+image1.png
+image2.png
+image3.png
+image4.png
+image5.png
