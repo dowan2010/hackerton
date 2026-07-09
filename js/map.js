@@ -530,267 +530,158 @@ export function resetNavigator() {
     if (routeWidget) routeWidget.classList.add("hidden");
 }
 
-function pointInPolygonRing(lat, lng, ring) {
+// ── 라우팅 엔진 ────────────────────────────────────────────────────────────────
+
+// GeoJSON ring [lng, lat] 기준 point-in-polygon
+function pointInRing(lat, lng, ring) {
     let inside = false;
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const xi = ring[i][0], yi = ring[i][1];
-        const xj = ring[j][0], yj = ring[j][1];
-        const intersect = ((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-        if (intersect) inside = !inside;
+        const [x1, y1] = [ring[i][0], ring[i][1]]; // lng, lat
+        const [x2, y2] = [ring[j][0], ring[j][1]];
+        if (((y1 > lat) !== (y2 > lat)) && (lng < (x2 - x1) * (lat - y1) / (y2 - y1) + x1)) {
+            inside = !inside;
+        }
     }
     return inside;
 }
 
-function getBlockedPolygons() {
+// 봉쇄 구역 폴리곤 목록 (GeoJSON ring 배열)
+function getBlockedRings() {
     if (!cachedGeoData) return [];
-    const polys = [];
+    const rings = [];
     cachedGeoData.features.forEach(f => {
-        const data = getMunicipalityData(f.properties.code, f.properties.name);
-        if (data.status !== "봉쇄") return;
-        const geom = f.geometry;
-        if (geom.type === "Polygon") polys.push(geom.coordinates[0]);
-        else if (geom.type === "MultiPolygon") geom.coordinates.forEach(p => polys.push(p[0]));
+        if (getMunicipalityData(f.properties.code, f.properties.name).status !== "봉쇄") return;
+        const g = f.geometry;
+        if (g.type === "Polygon") rings.push(g.coordinates[0]);
+        else if (g.type === "MultiPolygon") g.coordinates.forEach(p => rings.push(p[0]));
     });
-    return polys;
+    return rings;
 }
 
-function isLatLngBlocked(lat, lng, blockedRings) {
-    for (const ring of blockedRings) {
-        if (pointInPolygonRing(lat, lng, ring)) return true;
+function isBlocked(lat, lng, rings) {
+    return rings.some(r => pointInRing(lat, lng, r));
+}
+
+// OSRM 실제 도로 요청. waypoints: [[lat,lng], ...]
+async function osrmRoute(waypoints) {
+    const coords = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(";");
+    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+    try {
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) return null;
+        const json = await res.json();
+        const r = json.routes && json.routes[0];
+        if (!r) return null;
+        return {
+            coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+            distance: r.distance,
+            duration: r.duration
+        };
+    } catch {
+        return null;
+    }
+}
+
+// 경로 좌표 중 봉쇄 구역 통과 여부 샘플링 체크
+function routePassesBlocked(coords, rings) {
+    // 좌표 수가 많으면 10개 간격으로 샘플링
+    const step = Math.max(1, Math.floor(coords.length / 30));
+    for (let i = 0; i < coords.length; i += step) {
+        if (isBlocked(coords[i][0], coords[i][1], rings)) return true;
     }
     return false;
 }
 
-// OSRM API Route Downloader Helper
-async function fetchOSRMRoute(waypoints) {
-    const coordsStr = waypoints.map(wp => `${wp[1]},${wp[0]}`).join(";");
-    const url = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
-    try {
-        const res = await fetch(url);
-        if (res.ok) {
-            const data = await res.json();
-            if (data.routes && data.routes.length > 0) {
-                const route = data.routes[0];
-                return {
-                    coordinates: route.geometry.coordinates.map(c => [c[1], c[0]]), // OSRM [lng, lat] -> Leaflet [lat, lng]
-                    distance: route.distance, // meters
-                    duration: route.duration // seconds
-                };
+// 봉쇄 구역을 우회하는 경유지 후보 탐색
+// 출발→도착 직선을 따라 여러 t 지점에서 수직 방향으로 오프셋
+function findBypassVia(start, end, rings) {
+    const dLat = end[0] - start[0];
+    const dLng = end[1] - start[1];
+    const len = Math.sqrt(dLat * dLat + dLng * dLng);
+    // 수직 단위 벡터
+    const perpLat = -dLng / len;
+    const perpLng = dLat / len;
+
+    const offsets = [0.08, 0.15, 0.22, 0.30]; // 약 8~30km
+    const tValues = [0.3, 0.5, 0.7, 0.2, 0.8]; // 직선 위치 비율
+
+    for (const t of tValues) {
+        const baseLat = start[0] + dLat * t;
+        const baseLng = start[1] + dLng * t;
+        for (const off of offsets) {
+            for (const sign of [1, -1]) {
+                const via = [baseLat + perpLat * off * sign, baseLng + perpLng * off * sign];
+                if (!isBlocked(via[0], via[1], rings)) return via;
             }
         }
-    } catch (e) {
-        console.error("OSRM Route fetching failed, fallback to direct line.", e);
     }
     return null;
 }
 
-export function findSafeRoute(start, end, blockedRings) {
-    const GRID = 32;
-    const pad = 0.08;
-    const latMin = Math.min(start[0], end[0]) - pad;
-    const latMax = Math.max(start[0], end[0]) + pad;
-    const lngMin = Math.min(start[1], end[1]) - pad;
-    const lngMax = Math.max(start[1], end[1]) + pad;
-    const latStep = (latMax - latMin) / GRID;
-    const lngStep = (lngMax - lngMin) / GRID;
-
-    function toCell(lat, lng) {
-        return [Math.round((lat - latMin) / latStep), Math.round((lng - lngMin) / lngStep)];
-    }
-    function toLatLng(r, c) {
-        return [latMin + r * latStep, lngMin + c * lngStep];
-    }
-    const startCell = toCell(start[0], start[1]);
-    const endCell = toCell(end[0], end[1]);
-
-    function isBlockedCell(r, c) {
-        if ((r === startCell[0] && c === startCell[1]) || (r === endCell[0] && c === endCell[1])) return false;
-        if (r < 0 || r > GRID || c < 0 || c > GRID) return true;
-        const [lat, lng] = toLatLng(r, c);
-        return isLatLngBlocked(lat, lng, blockedRings);
-    }
-
-    const key = (r, c) => r + "," + c;
-    const visited = new Set([key(startCell[0], startCell[1])]);
-    const queue = [[startCell, [startCell]]];
-    const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [-1, 1], [1, -1], [1, 1]];
-    let foundPath = null;
-
-    while (queue.length) {
-        const [cur, path] = queue.shift();
-        if (cur[0] === endCell[0] && cur[1] === endCell[1]) { foundPath = path; break; }
-        for (const [dr, dc] of dirs) {
-            const nr = cur[0] + dr, nc = cur[1] + dc;
-            const k = key(nr, nc);
-            if (visited.has(k)) continue;
-            if (isBlockedCell(nr, nc)) continue;
-            visited.add(k);
-            queue.push([[nr, nc], [...path, [nr, nc]]]);
-        }
-    }
-
-    if (!foundPath) return [start, end];
-    const raw = foundPath.map(([r, c]) => toLatLng(r, c));
-    // Ramer-Douglas-Peucker simplification to remove grid staircase noise
-    return rdpSimplify(raw, 0.003);
-}
-
-function rdpSimplify(points, epsilon) {
-    if (points.length < 3) return points;
-    let maxDist = 0, maxIdx = 0;
-    const [lat1, lng1] = points[0];
-    const [lat2, lng2] = points[points.length - 1];
-    const denom = Math.sqrt((lat2 - lat1) ** 2 + (lng2 - lng1) ** 2);
-    for (let i = 1; i < points.length - 1; i++) {
-        const [lat, lng] = points[i];
-        const dist = denom === 0 ? Math.sqrt((lat - lat1) ** 2 + (lng - lng1) ** 2)
-            : Math.abs((lat2 - lat1) * (lng1 - lng) - (lat1 - lat) * (lng2 - lng1)) / denom;
-        if (dist > maxDist) { maxDist = dist; maxIdx = i; }
-    }
-    if (maxDist > epsilon) {
-        const left = rdpSimplify(points.slice(0, maxIdx + 1), epsilon);
-        const right = rdpSimplify(points.slice(maxIdx), epsilon);
-        return [...left.slice(0, -1), ...right];
-    }
-    return [points[0], points[points.length - 1]];
-}
-
 export async function drawSafeRoute(start, end) {
-    const blockedRings = getBlockedPolygons();
-    const setNavStatusText = window.setNavStatusText || console.log;
-    
-    setNavStatusText("🛣️ 실제 도로망 분석 및 기후 안심 우회 경로 탐색 가동 중...");
+    const status = window.setNavStatusText || (() => {});
+    status("🛣️ 경로 탐색 중...");
 
-    // 1) Direct road search first
-    let routeData = await fetchOSRMRoute([start, end]);
-    let needsBypass = false;
+    const rings = getBlockedRings();
+    let route = await osrmRoute([start, end]);
+    let bypassed = false;
 
-    if (routeData) {
-        for (const pt of routeData.coordinates) {
-            if (isLatLngBlocked(pt[0], pt[1], blockedRings)) {
-                needsBypass = true;
-                break;
-            }
-        }
-    } else {
-        needsBypass = true;
-    }
-
-    // 2) If the route penetrates blocked zone, calculate best bypass waypoints
-    if (needsBypass && routeData) {
-        console.log("[NAV] 차단 장벽 감지! 안전 우회 경유 노드 연산 중...");
-        const midLat = (start[0] + end[0]) / 2;
-        const midLng = (start[1] + end[1]) / 2;
-
-        // Try bypass offsets around the center (Approx 10~15km deviations)
-        const offsets = [
-            [0.10, 0.10],   // NE
-            [-0.10, 0.10],  // SE
-            [0.10, -0.10],  // NW
-            [-0.10, -0.10], // SW
-            [0.0, 0.15],    // E
-            [0.0, -0.15],   // W
-            [0.15, 0.0],    // N
-            [-0.15, 0.0]    // S
-        ];
-
-        let bestVia = null;
-        for (const [oLat, oLng] of offsets) {
-            const candidateVia = [midLat + oLat, midLng + oLng];
-            if (!isLatLngBlocked(candidateVia[0], candidateVia[1], blockedRings)) {
-                bestVia = candidateVia;
-                break;
-            }
-        }
-
-        if (bestVia) {
-            const bypassRoute = await fetchOSRMRoute([start, bestVia, end]);
-            if (bypassRoute) {
-                let secondCheckPassed = true;
-                for (const pt of bypassRoute.coordinates) {
-                    if (isLatLngBlocked(pt[0], pt[1], blockedRings)) {
-                        secondCheckPassed = false;
-                        break;
-                    }
-                }
-                if (secondCheckPassed) {
-                    routeData = bypassRoute;
-                    console.log("[NAV] 실제 도로 우회 안전 경로 획득 완료.");
-                }
+    // 직통 경로가 봉쇄 구역 통과 → 우회
+    if (route && routePassesBlocked(route.coords, rings)) {
+        const via = findBypassVia(start, end, rings);
+        if (via) {
+            const alt = await osrmRoute([start, via, end]);
+            if (alt && !routePassesBlocked(alt.coords, rings)) {
+                route = alt;
+                bypassed = true;
             }
         }
     }
 
-    // 3) Format distance, duration, rendering
-    let routeLatLngs;
-    let distanceText = "계산 불가";
-    let etaText = "계산 불가";
-    let isBypassedLabel = needsBypass ? "⚠️ 안전 우회 통과" : "🟢 직통 안전 개방";
+    // OSRM 실패 fallback: 직선
+    const coords = route ? route.coords : [start, end];
+    const distKm = route ? (route.distance / 1000).toFixed(1) : (haversineDist(start, end)).toFixed(1);
+    const totalSec = route ? route.duration : null;
+    const etaText = totalSec != null
+        ? (totalSec >= 3600 ? `${Math.floor(totalSec / 3600)}시간 ${Math.round((totalSec % 3600) / 60)}분` : `${Math.round(totalSec / 60)}분`)
+        : "알 수 없음";
+    const distText = `${distKm} km`;
+    const statusLabel = bypassed ? "⚠️ 안전 우회" : "🟢 직통";
 
-    if (routeData) {
-        routeLatLngs = routeData.coordinates;
-        const distKm = (routeData.distance / 1000).toFixed(1);
-        distanceText = `${distKm} km`;
-        
-        const totalSec = routeData.duration;
-        const hours = Math.floor(totalSec / 3600);
-        const mins = Math.round((totalSec % 3600) / 60);
-        etaText = hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`;
-    } else {
-        // Fallback to BFS grid path
-        routeLatLngs = findSafeRoute(start, end, blockedRings);
-        const distanceSim = (start[0] !== end[0]) ? (Math.abs(start[0] - end[0]) * 111).toFixed(1) : "5.4";
-        distanceText = `${distanceSim} km (격자)`;
-        etaText = `${Math.round(distanceSim * 1.5)}분`;
-    }
+    if (navRouteLine) { desktopMap.removeLayer(navRouteLine); navRouteLine = null; }
 
-    if (navRouteLine) {
-        if (navRouteLine._outline) desktopMap.removeLayer(navRouteLine._outline);
-        desktopMap.removeLayer(navRouteLine);
-        navRouteLine = null;
-    }
-    navRouteLine = L.polyline(routeLatLngs, {
-        color: needsBypass ? "#EA580C" : "#2563EB",
+    navRouteLine = L.polyline(coords, {
+        color: bypassed ? "#EA580C" : "#2563EB",
         weight: 2.5,
-        opacity: 0.9
+        opacity: 0.92,
+        lineJoin: "round",
+        lineCap: "round"
     }).addTo(desktopMap);
-    
-    desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [40, 40] });
 
-    // Store in global window for cross-tab sharing
-    window.lastCalculatedRoute = {
-        distance: distanceText,
-        eta: etaText,
-        status: isBypassedLabel
-    };
-
-    setNavStatusText(`🧭 실제 도로 안전우회 경로 탐색 완료 — 예상 시간: [ ${etaText} ] | 실주행 거리: [ ${distanceText} ] (${isBypassedLabel})`);
-
-    // Injects highly-aesthetic ETA widgets inside the legend env card
-    updateRouteWidgetUI(distanceText, etaText, isBypassedLabel);
+    desktopMap.fitBounds(navRouteLine.getBounds(), { padding: [48, 48], animate: true });
+    status(`🧭 탐색 완료 — ${statusLabel} | ${etaText} | ${distText}`);
+    updateRouteWidget(distText, etaText, bypassed);
 }
 
-function updateRouteWidgetUI(dist, eta, status) {
-    const routeWidget = document.getElementById("map-route-widget");
-    if (!routeWidget) return;
+function haversineDist([lat1, lng1], [lat2, lng2]) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-    const etaVal = document.getElementById("route-eta-val");
-    const distVal = document.getElementById("route-dist-val");
-    const bypassStatus = document.getElementById("route-bypass-status");
-
-    if (etaVal) etaVal.textContent = eta;
-    if (distVal) distVal.textContent = dist;
-    if (bypassStatus) {
-        if (status.includes("우회")) {
-            bypassStatus.innerHTML = "🟠 안전 우회로 작동중";
-            bypassStatus.style.color = "#EA580C";
-        } else {
-            bypassStatus.innerHTML = "🟢 안전 경로 작동중";
-            bypassStatus.style.color = "#16A34A";
-        }
+function updateRouteWidget(dist, eta, bypassed) {
+    const widget = document.getElementById("map-route-widget");
+    if (!widget) return;
+    const etaEl = document.getElementById("route-eta-val");
+    const distEl = document.getElementById("route-dist-val");
+    const statusEl = document.getElementById("route-bypass-status");
+    if (etaEl) etaEl.textContent = eta;
+    if (distEl) distEl.textContent = dist;
+    if (statusEl) {
+        statusEl.textContent = bypassed ? "🟠 안전 우회로 작동중" : "🟢 안전 경로 작동중";
+        statusEl.style.color = bypassed ? "#EA580C" : "#16A34A";
     }
-
-    // 왼쪽 하단에 스르륵 투명 등장
-    routeWidget.classList.remove("hidden");
-    routeWidget.style.animation = "slideUpFadeIn 0.3s ease";
+    widget.classList.remove("hidden");
 }
