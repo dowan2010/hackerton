@@ -590,12 +590,20 @@ function isBlocked(lat, lng, rings) {
 }
 
 // OSRM 실제 도로 요청. waypoints: [[lat,lng], ...]
-async function osrmRoute(waypoints) {
-    const coords = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(";");
-    const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+// 두 개의 공개 OSRM 서버를 순차 시도
+const OSRM_ENDPOINTS = [
+    "https://router.project-osrm.org/route/v1/driving",
+    "https://routing.openstreetmap.de/routed-car/route/v1/driving"
+];
+
+async function osrmFetch(baseUrl, coords) {
+    const url = `${baseUrl}/${coords}?overview=full&geometries=geojson`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 9000);
     try {
-        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-        if (!res.ok) return null;
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) { console.warn("[OSRM] HTTP", res.status, baseUrl); return null; }
         const json = await res.json();
         const r = json.routes && json.routes[0];
         if (!r) return null;
@@ -604,9 +612,21 @@ async function osrmRoute(waypoints) {
             distance: r.distance,
             duration: r.duration
         };
-    } catch {
+    } catch (e) {
+        clearTimeout(timer);
+        console.warn("[OSRM] fetch fail:", baseUrl, e.message);
         return null;
     }
+}
+
+async function osrmRoute(waypoints) {
+    const coords = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(";");
+    for (const endpoint of OSRM_ENDPOINTS) {
+        const result = await osrmFetch(endpoint, coords);
+        if (result) return result;
+    }
+    console.error("[OSRM] 모든 서버 실패 — 직선 fallback");
+    return null;
 }
 
 // 경로 좌표 중 봉쇄 구역 통과 여부 샘플링 체크
