@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.warmingDegrees = 0.0;
     
     // Auto-resolve Backend URL depending on local/production context
-    window.backendUrl = `https://roothome-backend-686146847894.asia-northeast3.run.app`;
+    window.backendUrl = `https://roothome-fastapi-backend-686146847894.asia-northeast3.run.app`;
     if (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") {
         window.backendUrl = "http://127.0.0.1:8000";
     }
