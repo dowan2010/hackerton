@@ -7,7 +7,7 @@ class GeminiService:
     def __init__(self):
         # google-genai SDK 1.0+ 표준 초기화
         # API Key는 환경 변수 GEMINI_API_KEY에서 로드되거나 명시적으로 전달 가능
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6LmgW0Un5kC0etMNfjCip5CZknC-qZ91Bn1EGLZK5iTDQ")
         self.client = None
         
         if not api_key:
