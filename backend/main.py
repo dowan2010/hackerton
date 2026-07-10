@@ -221,6 +221,21 @@ async def delete_law(law_id: str, user_id: str):
         )
     return {"status": "deleted", "law_id": law_id}
 
+@app.post("/api/policy/generate")
+async def generate_policy():
+    """
+    10. 국가 특별조치 법령안 실시간 생성 API
+    Gemini AI가 기후 실향민 지원을 위한 법령안을 실시간으로 생성합니다.
+    """
+    try:
+        policy_text = await gemini_service.generate_national_policy()
+        return {"policy_text": policy_text}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"법령안 생성 중 장애 발생: {str(e)}"
+        )
+
 if __name__ == "__main__":
     import uvicorn
     # 로컬 수동 테스트 구동용

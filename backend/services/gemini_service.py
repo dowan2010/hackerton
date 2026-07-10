@@ -206,6 +206,49 @@ class GeminiService:
                 f"당신의 보금자리로 향하는 길이 조금씩 가까워지고 있음을 느낍니다."
             )
 
+    async def generate_national_policy(self) -> str:
+        """
+        전국 기후 실향민 지원을 위한 국가 특별조치 법령안을 Gemini로 실시간 생성합니다.
+        """
+        if not self.client:
+            print("[Gemini Demo] API 키가 감지되지 않아 사전 작성된 법령안 템플릿을 반환합니다.")
+            return (
+                "[제2035-09호] 대한민국 기후 피난민 대안착 및 국가 대자연 정제 비상조치법안\n\n"
+                "■ 제1조 (목적 및 기본 이념)\n"
+                "본 특별법안은 대한민국 전역의 대기 정화 지표가 평균 92.5%에 도달함에 따라, 전국 250개 행정 단위의 균형 잡힌 생태 복원과 실향 가구의 영구 정착을 위한 법률적 기준과 가이드라인 수립을 목적으로 한다.\n\n"
+                "■ 제2조 (생태 장벽의 단계적 해제 및 자유 이동 보장)\n"
+                "대기 지수 90점, 토양 오염도 10ppm 미만을 동시에 충족하는 1급 정화 완료 시군구에 대하여, 기후대피정부는 설치되었던 통제 장벽을 정식 철거하고 거주민들의 정주 권리를 영구 보충 승인한다."
+            )
+
+        try:
+            prompt = (
+                "당신은 대한민국 기후대피정부의 입법 담당 AI입니다. "
+                "기후 재난으로 실향민이 된 국민들의 안전한 귀향과 정착을 지원하기 위한 "
+                "국가 특별조치 법령안을 하나 작성해 주세요.\n\n"
+                "형식은 다음을 반드시 따르세요:\n"
+                "1번째 줄: '[제20XX-XX호] <법안 제목>' 형태로 고시 번호와 제목\n"
+                "이후 빈 줄을 두고 '■ 제N조 (조항 제목)' 형태로 시작하는 조문을 최소 4개, 최대 6개 작성\n"
+                "각 조문은 2~3문장으로 구체적인 지원 내용(재정 지원, 우선순위, 인프라, 일자리, 안전망 등)을 담을 것.\n"
+                "실제 대한민국 행정 법령체 문투로, 진지하고 공식적인 톤으로 작성해 주세요."
+            )
+
+            response = self.client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.9,
+                    max_output_tokens=1200,
+                )
+            )
+            return response.text.strip()
+        except Exception as e:
+            print(f"[Gemini Policy Error] 법령안 생성 실패: {str(e)}")
+            return (
+                "[제2035-09호] 대한민국 기후 피난민 대안착 및 국가 대자연 정제 비상조치법안\n\n"
+                "■ 제1조 (목적 및 기본 이념)\n"
+                "본 특별법안은 기후 실향민의 안전한 귀향과 정착 지원을 위한 법률적 기준을 수립함을 목적으로 한다."
+            )
+
     def predict_50year_pollution(self, zone_id: str, zone_name: str) -> dict:
         """
         특정 구역 ID에 대해 실제 기후/사회적 취약성 통계를 기저 오염치로 매핑하여,
