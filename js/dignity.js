@@ -432,7 +432,7 @@ export function initNationalPolicyGenerator() {
         }
     }
 
-    btnPolicy.addEventListener("click", function() {
+    btnPolicy.addEventListener("click", async function() {
         btnPolicy.disabled = true;
         btnPolicy.innerHTML = '<span>⚙️ 입법 시뮬레이션 제정 중...</span>';
 
@@ -455,18 +455,24 @@ export function initNationalPolicyGenerator() {
             if (loaderText) loaderText.textContent = "🤖 Gemini AI 국정 비상 입법 엔진 분석 드라이브 가동...";
         }, 800);
 
-        setTimeout(() => {
-            if (loaderText) loaderText.textContent = "⚖️ 기후 난민 재안착 특별법령 기획서 수립 및 자원 수혈 준비 완료!";
-        }, 1600);
+        try {
+            const response = await fetch(`${window.backendUrl}/api/policy/generate`, { method: "POST" });
+            const data = await response.json();
+            const policyText = data.policy_text || policies[Math.floor(Math.random() * policies.length)];
 
-        setTimeout(() => {
+            if (loaderText) loaderText.textContent = "⚖️ 기후 난민 재안착 특별법령 기획서 수립 및 자원 수혈 준비 완료!";
+
+            const parsed = parsePolicyText(policyText);
+            renderPolicyCards(parsed, resultBox);
+        } catch (err) {
+            console.warn("[Policy] Gemini 법령안 생성 API 호출 실패, 로컬 템플릿으로 대체:", err);
             const randomPolicy = policies[Math.floor(Math.random() * policies.length)];
             const parsed = parsePolicyText(randomPolicy);
             renderPolicyCards(parsed, resultBox);
-
+        } finally {
             btnPolicy.disabled = false;
             btnPolicy.innerHTML = '<i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> ⚡ 국정 특별 조치 법령안 제정';
             lucide.createIcons();
-        }, 2400);
+        }
     });
 }
